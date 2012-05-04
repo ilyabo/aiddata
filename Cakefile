@@ -4,8 +4,8 @@ path = require 'path'
 log = console.log
       
 task 'build', ->
-  run 'coffee -o static/js/coffee -c ' +
-                'web/*.coffee'
+  run 'coffee -o static/coffee -c ' +
+                'frontend/**.coffee'
 
 task 'rerun', ->
   invoke 'build'

@@ -27,10 +27,10 @@
     div id: 'ffprints', style:'margin-top:20px'
 
     script src: 'js/fit-projection.js'
-    script src: 'js/coffee/ffprints.js'
-    script src: 'js/coffee/utils.js'
+    script src: 'coffee/ffprints.js'
+    script src: 'coffee/utils.js'
 
-    script src: "js/coffee/ffprints-#{@dataset}.js"
+    script src: "coffee/ffprints-#{@dataset}.js"
     
 
 
@@ -39,7 +39,7 @@
   @view bubbles: ->
     @page = "aiddata-bubbles"
 
-    script src: "js/coffee/bubbles-#{@aiddata}.js"
+    script src: "coffee/bubbles-#{@aiddata}.js"
 
 
 
