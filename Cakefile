@@ -5,7 +5,7 @@ log = console.log
       
 task 'build', ->
   run 'coffee -o static/coffee -c ' +
-                'frontend/**.coffee'
+                'frontend/*.coffee frontend/*/*.coffee'
 
 task 'rerun', ->
   invoke 'build'
