@@ -7,16 +7,23 @@ task 'build', ->
   run 'coffee -o static/coffee -c ' +
                 'frontend/*.coffee frontend/*/*.coffee'
 
-task 'rerun', ->
+task 'restart', ->
   invoke 'build'
   run 'PATH=$PATH:/usr/local/bin  && kill -9 `pgrep -f app.coffee`'
+  invoke '_start'
+    
+
+task 'start', ->
+  invoke 'build'
+  invoke '_start'
+
+task '_start', ->
   now = new Date()
   date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
 
   if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
-  run "coffee app.coffee >logs/#{date}.log  2>&1"
+  run "coffee app.coffee >logs/#{date}.log  2>&1  &"
   run "tail -f logs/#{date}.log"
-    
 
 
 

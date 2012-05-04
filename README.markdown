@@ -4,4 +4,4 @@ To install dependencies run
 
 To run the app use
   
-    cake rerun
+    cake start
