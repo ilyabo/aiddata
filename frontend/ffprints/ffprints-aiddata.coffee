@@ -64,15 +64,10 @@ loadData()
   .onload (data) ->
     
     
-    countriesByCode = {}
-    for c in data.countries
-      countriesByCode[c.Code] = c
-
-    for node in data.nodes
-      c = countriesByCode[node.code]
-      if c?
-        node.Lat = c.Lat
-        node.Lon = c.Lon
+    provideCountryNodesWithCoords(
+      data.nodes, { code: chart.nodeIdAttr(), lat: chart.latAttr(), lon:chart.lonAttr() },
+      data.countries, { code: "Code", lat: "Lat", lon: "Lon"}
+    )
 
     $("#loading").hide()
 

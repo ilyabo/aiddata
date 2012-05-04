@@ -83,6 +83,24 @@ root.winkelTripel =
 
 
 
+root.provideCountryNodesWithCoords = 
+
+  (nodes, nodeAttrs, countries, countryAttrs) ->
+
+    { code: ncode, lat:nlat, lon:nlon } = nodeAttrs
+    { code: ccode, lat:clat, lon:clon } = countryAttrs
+
+    countriesByCode = {}
+    for c in countries
+      countriesByCode[c[ccode]] = c
+
+    for node in nodes
+      c = countriesByCode[node[ncode]]
+      if c?
+        node[nlat] = c[clat]
+        node[nlon] = c[clon]
+
+
 
 root.provideNodesWithTotals =
 
