@@ -57,28 +57,6 @@ this.ffprintsChart = () ->
   )()
 
 
-  calcMaxTotalMagnitudes = ->
-    # max of totals
-    totalsMax = {}
-    for attrGroup, props of conf.flowMagnAttrs
-      max = (dir, attr) -> ( 
-        d3.max(data.nodes, (node) -> node.totals?[attrGroup][dir]?[attr]) 
-      )
-      
-      max_out = (max('outbound', attr)  for attr of props.attrs)
-      max_in = (max('inbound', attr)  for attr of props.attrs)
-
-      totalsMax[attrGroup] =
-        outbound : max_out
-        inbound : max_in
-        max : Math.max(d3.max(max_out), d3.max(max_in))
-
-    #console.log totalsMax
-
-    
-    state.totalsMax = totalsMax
-    #console.log totalsMax
-
 
   oppositeFlowDirection = (flowDirection) ->
     switch flowDirection
@@ -908,7 +886,7 @@ this.ffprintsChart = () ->
       throw new Error("Either data.flows or data.originTotals must be specified")
 
 
-    calcMaxTotalMagnitudes()
+    state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
     #totalsValues = makeNodeTotalsValuesList(data.nodes, state.selMagnAttrGrp)

@@ -1,28 +1,101 @@
+bubblesChartWidth = $(document).width()*0.95
+bubblesChartHeight = $(document).height()*0.8
+
+svg = d3.select("body")
+  .append("svg")
+    .attr("width", bubblesChartWidth)
+    .attr("height", bubblesChartHeight)
+    .attr("class", "bubbles")
+
+
+conf = 
+  code:"code"
+  lat:"Lat"
+  lon:"Lon"
+  flowOriginAttr: 'donor'
+  flowDestAttr: 'recipient'
+  nodeIdAttr: 'code'
+  nodeLabelAttr: 'name'
+  latAttr: 'Lat'
+  lonAttr: 'Lon'
+  flowMagnAttrs:
+    aid:
+      attrs: [1947..2011]
+      explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
+
+state = 
+  selMagnAttrGrp: "aid"
+  selAttrIndex: 64
+
+
+
+mapProj = winkelTripel()
+mapProjPath = d3.geo.path().projection(mapProj)
+
+
+projectNode = (node) ->  
+  lon = node[conf.lonAttr]
+  lat = node[conf.latAttr]
+  if (isNumber(lon) and isNumber(lat))
+    mapProj([lon, lat])
+  else
+    undefined
+
+
+
 loadData()
   .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
   .csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
   #.csv('originTotals', "#{dynamicDataPath}aiddata-donor-totals.csv")
   #.csv('destTotals', "#{dynamicDataPath}aiddata-recipient-totals.csv")
-  #.json('map', "data/world-countries.json")
+  .json('map', "data/world-countries.json")
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
+    fitProjection(mapProj, data.map, [[0,0],[bubblesChartWidth, bubblesChartHeight]], true)
 
-    svg = selection.append("svg")
-          .attr("width", ffprintsChartWidth)
-          .attr("height", ffprintsChartHeight)
-          .attr("class", "ffprints")
 
-    
-    countriesByCode = {}
-    for c in data.countries
-      countriesByCode[c.Code] = c
+    provideNodesWithTotals(data, conf)
+    provideCountryNodesWithCoords(
+      data.nodes, conf,
+      data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
+    )
 
-    for node in data.nodes
-      c = countriesByCode[node.code]
-      if c?
-        node.Lat = c.Lat
-        node.Lon = c.Lon
+
+    state.totalsMax = calcMaxTotalMagnitudes(data, conf)
+
+
+    max = state.totalsMax[state.selMagnAttrGrp]
+    rscale = d3.scale.sqrt()
+      .range([0, 50])
+      .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
+
+
+    hasFlows = (node, flowDirection) -> 
+      totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
+      (if totals? then d3.max(totals) > 0 else 0)
+
+    nodesWithFlows = data.nodes.filter(
+      (node) -> hasFlows(node, "inbound") or hasFlows(node, "outbound")
+    )
+
+    nodesWithLocation = nodesWithFlows.filter (node) -> projectNode(node)?
+
+
+    bubbles = svg.selectAll("g.bubble")
+        .data(nodesWithLocation)
+      .enter()
+        .append("g")
+          .attr("class", "bubble")
+
+    bubbles.append("circle")
+      .attr("cx", (d) -> projectNode(d)[0])
+      .attr("cy", (d) -> projectNode(d)[1])
+      .attr("r", (d) -> rscale(d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0))
+      .attr("fill", "#f00")
+
+
+
 
 
 
