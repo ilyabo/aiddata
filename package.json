@@ -1,0 +1,22 @@
+{
+  "name": "aiddata",
+  "version": "0.0.1",
+  "description": "Visualizations for aiddata.org",
+  "keywords": [
+    "aiddata",
+    "financial aid",
+    "analytics",
+    "visualization"
+  ],
+  "homepage": "https://github.com/ilyabo/aiddata",
+  "main": "./app.coffee",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/ilyabo/aiddata.git"
+  },
+  "dependencies": {
+    "eco": "1.1.0-rc-3",
+    "zappa": "0.3.3",
+    "pg": "0.6.16"
+  }
+}
