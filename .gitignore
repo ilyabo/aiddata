@@ -1,0 +1,5 @@
+.DS_Store
+.pgurl
+node_modules/
+static/js/coffee/
+logs/
