@@ -13,7 +13,7 @@ task 'rerun', ->
   now = new Date()
   date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
 
-  if !path.existsSync('logs') then fs.mkdir('logs', 0755)
+  if !path.existsSync('logs') then fs.mkdir('logs', 0o0755)
   run "coffee app.coffee >logs/#{date}.log  2>&1"
   run "tail -f logs/#{date}.log"
     
