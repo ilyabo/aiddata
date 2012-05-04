@@ -4,6 +4,7 @@
 
   @view ffprints: ->
     @page = "aiddata-ffprints"
+    @dataset = "aiddata"
 
 
     div id:"radioset", style:"display:inline-block", ->
@@ -38,9 +39,13 @@
 
   @view bubbles: ->
     @page = "aiddata-bubbles"
+    @dataset = "aiddata"
 
-    script src: "coffee/bubbles-#{@aiddata}.js"
+    script src: "coffee/bubbles-#{@dataset}.js"
 
 
 
-
+  @view flowmap: ->
+  @view crossfilter: ->
+  @view "time-series": ->
+  @view chord: ->

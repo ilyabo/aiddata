@@ -48,28 +48,28 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </a>
-                <a class="brand" href="aiddata-ffprints"><%= @title %></a>
+                <a class="brand" href="ffprints"><%= @title %></a>
 
                 <div class="nav-collapse">
                   <ul class="nav">
 
-                    <li <%=(if @page == "aiddata-ffprints" then 'class=active' else "") %>>
-                      <a href="aiddata-ffprints">Flow fingerprints</a></li>
+                    <li <%=(if @page == "ffprints" then 'class=active' else "") %>>
+                      <a href="ffprints">Flow fingerprints</a></li>
 
-                    <li <%=(if @page == "aiddata-bubbles" then 'class=active' else "") %> >
-                    <a href="aiddata-bubbles">Bubbles</a></li>
+                    <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
+                    <a href="bubbles">Bubbles</a></li>
 
-                    <li <%=(if @page == "aiddata-flowmap" then 'class=active' else "") %> >
-                    <a href="aiddata-flowmap">Flowmap</a></li>
+                    <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
+                    <a href="flowmap">Flowmap</a></li>
 
-                    <li <%=(if @page == "aiddata-crossfilter" then 'class=active' else "") %> >
-                    <a href="aiddata-bubbles">Crossfilter</a></li>
+                    <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
+                    <a href="crossfilter">Crossfilter</a></li>
 
-                    <li <%=(if @page == "aiddata-time-series" then 'class=active' else "") %> >
-                    <a href="aiddata-bubbles">Time series</a></li>
+                    <li <%=(if @page == "time-series" then 'class=active' else "") %> >
+                    <a href="time-series">Time series</a></li>
 
-                    <li <%=(if @page == "aiddata-chord" then 'class=active' else "") %> >
-                    <a href="aiddata-bubbles">Chord</a></li>
+                    <li <%=(if @page == "chord" then 'class=active' else "") %> >
+                    <a href="chord">Chord</a></li>
 
                     <!--<li><a href="refugees-ffprints">Refugees</a></li>-->
                   </ul>
@@ -80,7 +80,7 @@
             </div>
           </div>
 
-          <script src="libs/d3/d3.v2.min.js"></script>
+          <script src="d3.v2.min.js"></script>
           <script src="libs/chroma/chroma.pack.min.js"></script>
           <script src="libs/jquery/jquery-1.7.1.min.js"></script>
           <script src="libs/tipsy-new/javascripts/jquery.tipsy.js"></script>

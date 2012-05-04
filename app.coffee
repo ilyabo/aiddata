@@ -1,10 +1,12 @@
 require('zappa').run 3000, ->
   
- # require("./includes/d3_parts")
 
-  @use 'bodyParser', 'methodOverride', @app.router, 'static': __dirname + '/static'
+  @use 'bodyParser', 'methodOverride', @app.router
+  @use 'static': __dirname + '/static'
+  @use 'static': __dirname + '/node_modules/d3'
 
-  @enable 'default layout' #, 'serve jquery' #, 'minify'
+  #@enable 'default layout'
+  #@enable 'minify'
 
 
   @app.use (err, req, res, next) ->
@@ -16,7 +18,7 @@ require('zappa').run 3000, ->
   @include './layout'
   @include './views'
 
-  utils = @include './app-utils'
+  utils = @include './data-utils'
   pg = @include './pg-sql'
 
   @configure
@@ -27,14 +29,26 @@ require('zappa').run 3000, ->
   @get '/': -> 
     @render ffprints: {layout: 'bootstrap.eco'}
 
-  @get '/aiddata-ffprints': -> 
-    @render ffprints: {layout: 'bootstrap.eco', dataset:"aiddata"}
+  @get '/ffprints': -> 
+    @render ffprints: {layout: 'bootstrap.eco'}
 
-  @get '/aiddata-bubbles': -> 
-    @render bubbles: {layout: 'bootstrap.eco', dataset:"aiddata"}
+  @get '/bubbles': -> 
+    @render bubbles: {layout: 'bootstrap.eco'}
+ 
+  @get '/flowmap': -> 
+    @render flowmap: {layout: 'bootstrap.eco'}
+ 
+  @get '/chord': -> 
+    @render flowmap: {layout: 'bootstrap.eco'}
+ 
+  @get '/crossfilter': -> 
+    @render flowmap: {layout: 'bootstrap.eco'}
+ 
+  @get '/time-series': -> 
+    @render flowmap: {layout: 'bootstrap.eco'}
 
 
-  @get '/refugees-ffprints': -> 
+  @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
 
   ###
