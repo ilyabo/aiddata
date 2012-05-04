@@ -1,4 +1,6 @@
 {spawn, exec} = require 'child_process'
+fs = require 'fs'
+path = require 'path'
 log = console.log
       
 task 'build', ->
@@ -10,6 +12,8 @@ task 'rerun', ->
   run 'PATH=$PATH:/usr/local/bin  && kill -9 `pgrep -f app.coffee`'
   now = new Date()
   date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
+
+  if !path.existsSync('logs') then fs.mkdir('logs', 0755)
   run "coffee app.coffee >logs/#{date}.log  2>&1"
   run "tail -f logs/#{date}.log"
     
