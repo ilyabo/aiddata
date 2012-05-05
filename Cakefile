@@ -22,8 +22,9 @@ task '_start', ->
   date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
 
   if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
-  run "coffee app.coffee >logs/#{date}.log  2>&1"
-  run "tail -f logs/#{date}.log"
+  run "coffee app.coffee"
+  #run "coffee app.coffee >logs/#{date}.log  2>&1"
+  #run "tail -f logs/#{date}.log"
 
 
 
