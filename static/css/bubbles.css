@@ -1,6 +1,6 @@
 #yearSliderOuter {
   margin: 0 auto;
-  width:580px;
+  width:590px;
 }
 
 #yearLabel {
@@ -34,3 +34,5 @@ div.icons div { display: inline-block;}
 .tipsy .sm { font-size:9pt;}
 
 .nodeLabel { cursor:default;}
+
+#play { margin-left:15px; cursor:pointer;}

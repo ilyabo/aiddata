@@ -46,6 +46,7 @@
     div id: "yearSliderOuter", ->
       div id:'yearLabel', -> "Year: "
       div id:'yearSlider'
+      a id:"play", -> "Play"
       #div class:"icons ui-widget ui-helper-clearfix", ->
       #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
       #    span id:"playButton", class: "ui-icon ui-icon-play"

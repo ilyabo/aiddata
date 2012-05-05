@@ -275,3 +275,36 @@ loadData()
         bubbleTooltip(d3.select(this).data()[0])
 
 
+    timer = undefined
+
+    stop = ->
+      clearInterval(timer)
+      timer = undefined
+      $(play).html("Play")
+    
+
+    $("#play").click ->
+      if timer
+        stop()
+      else
+        $(play).html("Stop");
+
+        if state.selAttrIndex == state.magnAttrs().length - 1
+          state.selAttrIndex = 0
+        else
+          state.selAttrIndex++
+
+        $("#yearSlider").slider('value', state.selAttrIndex);
+        update()
+
+        timer = setInterval(->
+          if (state.selAttrIndex >= state.magnAttrs().length - 1) 
+            stop()
+          else
+            state.selAttrIndex++
+            $("#yearSlider").slider('value', state.selAttrIndex)
+            update()
+
+        , 900)
+
+
