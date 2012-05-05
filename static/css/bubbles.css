@@ -32,3 +32,5 @@ div.icons div { display: inline-block;}
   font-size:10pt !important; 
 }
 .tipsy .sm { font-size:9pt;}
+
+.nodeLabel { cursor:default;}

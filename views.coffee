@@ -46,9 +46,9 @@
     div id: "yearSliderOuter", ->
       div id:'yearLabel', -> "Year: "
       div id:'yearSlider'
-      div class:"icons ui-widget ui-helper-clearfix", ->
-        div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
-          span id:"playButton", class: "ui-icon ui-icon-play"
+      #div class:"icons ui-widget ui-helper-clearfix", ->
+      #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
+      #    span id:"playButton", class: "ui-icon ui-icon-play"
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'

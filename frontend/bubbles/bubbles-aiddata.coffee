@@ -1,4 +1,4 @@
-bubblesChartWidth = $(document).width()*0.95
+bubblesChartWidth = $(document).width()
 bubblesChartHeight = $(document).height()*0.9 - 50
 
 svg = d3.select("body")
@@ -89,7 +89,7 @@ loadData()
 
     max = state.totalsMax[state.selMagnAttrGrp]
     rscale = d3.scale.sqrt()
-      .range([0, Math.min(bubblesChartWidth/10, bubblesChartHeight/5)])
+      .range([0, Math.min(bubblesChartWidth/13, bubblesChartHeight/7)])
       .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
 
 
@@ -108,8 +108,12 @@ loadData()
     nodes = nodesWithFlows.map (d) ->
       xy = projectNode(d)
 
+      maxin = d3.max(d.totals[state.selMagnAttrGrp].inbound ? [0])
+      maxout = d3.max(d.totals[state.selMagnAttrGrp].outbound ? [0])
+
       idToNode[d[conf.nodeIdAttr]] =
         data : d
+        max : Math.max(maxin, maxout)
         name: d[conf.nodeLabelAttr] 
         code: d[conf.nodeIdAttr]
         x: xy?[0]
@@ -124,6 +128,7 @@ loadData()
         n.rin = rscale(n.inbound)
         n.rout = rscale(n.outbound)
         n.r = Math.max(n.rin, n.rout)
+        n.maxr = rscale(n.max)
 
 
     updateNodeSizes()
@@ -131,14 +136,14 @@ loadData()
     placeNodesWithoutCoords = (nodes) ->
       totalw = 0
       for n in nodes
-        if not n.x? or not n.y? then totalw += 2 * n.r
+        if not n.x? or not n.y? then totalw += 2 * n.maxr/2
       x = 0
       for n in nodes
         if not n.x? or not n.y?
-          n.x = x + n.r + (bubblesChartWidth - totalw)/2
+          n.x = x + n.maxr/2 + (bubblesChartWidth - totalw)/2
           n.y = bubblesChartHeight - 100
           n.gravity = {x: n.x, y: n.y}
-          x += 2 * n.r
+          x += 2 * n.maxr/2
 
     placeNodesWithoutCoords(nodes)
 
@@ -218,8 +223,9 @@ loadData()
 
     svg.append("text")
       .attr("id", "yearText")
-      .attr("x", 20)
-      .attr("y", bubblesChartHeight - 60)
+      .attr("x", bubblesChartWidth)
+      .attr("y", 100)
+      .attr("text-anchor", "end")
         .text(state.selMagnAttr())
 
     updateYear = (e, ui, noAnim) ->
@@ -229,7 +235,7 @@ loadData()
 
     update = (noAnim) ->
       updateNodeSizes()
-      duration = if noAnim then 0 else 
+      duration = if noAnim then 0 else 200
 
       svg.selectAll("#yearText")
         .text(state.selMagnAttr())
@@ -257,7 +263,7 @@ loadData()
         min: 0
         max: state.magnAttrs().length - 1
         value: state.magnAttrs().length - 1
-        slide: (e, ui) -> updateYear(e, ui, true)
+        slide: (e, ui) -> updateYear(e, ui, false)
         change: (e, ui) -> updateYear(e, ui, false)
 
     #$("#playButton").button()
