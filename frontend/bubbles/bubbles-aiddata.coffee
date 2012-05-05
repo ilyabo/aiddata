@@ -1,5 +1,5 @@
 bubblesChartWidth = $(document).width()*0.95
-bubblesChartHeight = $(document).height()*0.8
+bubblesChartHeight = $(document).height()*0.9 - 50
 
 svg = d3.select("body")
   .append("svg")
@@ -9,9 +9,6 @@ svg = d3.select("body")
 
 
 conf = 
-  code:"code"
-  lat:"Lat"
-  lon:"Lon"
   flowOriginAttr: 'donor'
   flowDestAttr: 'recipient'
   nodeIdAttr: 'code'
@@ -23,10 +20,23 @@ conf =
       attrs: [1947..2011]
       explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
 
-state = 
-  selMagnAttrGrp: "aid"
-  selAttrIndex: 64
+state = null
 
+
+
+
+fmt = d3.format(",.0f")
+bubbleTooltip = (d) ->
+  format = (d) ->
+    if (d >= 1e6)
+      "$#{fmt(d / 1e6)} million"
+    else
+      "$#{fmt(d)}" 
+
+  "<b>#{d.name}</b>" + 
+  " in <b>#{state.selMagnAttr()}</b>" +
+  (if d.outbound > 0 then "<br>donated #{format(d.outbound)}" else "") +
+  (if d.inbound > 0 then "<br>received #{format(d.inbound)}" else "") 
 
 
 mapProj = winkelTripel()
@@ -42,6 +52,13 @@ projectNode = (node) ->
     undefined
 
 
+force = d3.layout.force()
+    .charge(0)
+    .gravity(0)
+    .size([bubblesChartWidth, bubblesChartHeight])
+
+idToNode = {}
+
 
 loadData()
   .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
@@ -52,12 +69,17 @@ loadData()
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
-    fitProjection(mapProj, data.map, [[0,0],[bubblesChartWidth, bubblesChartHeight]], true)
+    fitProjection(mapProj, data.map, [[0,50],[bubblesChartWidth, bubblesChartHeight*0.6]], true)
+
+    state = initFlowData(conf)
+    state.selMagnAttrGrp = "aid"
+    state.selAttrIndex = state.magnAttrs().length - 1
+
 
 
     provideNodesWithTotals(data, conf)
     provideCountryNodesWithCoords(
-      data.nodes, conf,
+      data.nodes, { code: conf.nodeIdAttr, lat: conf.latAttr, lon: conf.lonAttr},
       data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
     )
 
@@ -67,7 +89,7 @@ loadData()
 
     max = state.totalsMax[state.selMagnAttrGrp]
     rscale = d3.scale.sqrt()
-      .range([0, 50])
+      .range([0, Math.min(bubblesChartWidth/10, bubblesChartHeight/5)])
       .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
 
 
@@ -79,101 +101,171 @@ loadData()
       (node) -> hasFlows(node, "inbound") or hasFlows(node, "outbound")
     )
 
-    nodesWithLocation = nodesWithFlows.filter (node) -> projectNode(node)?
+    #nodesWithLocation = nodesWithFlows.filter (node) -> projectNode(node)?
+
+    #nodesWithoutLocationX = 0
+
+    nodes = nodesWithFlows.map (d) ->
+      xy = projectNode(d)
+
+      idToNode[d[conf.nodeIdAttr]] =
+        data : d
+        name: d[conf.nodeLabelAttr] 
+        code: d[conf.nodeIdAttr]
+        x: xy?[0]
+        y: xy?[1]
+        gravity: {x: xy?[0], y: xy?[1]}
+
+    updateNodeSizes = ->
+      for n in nodes
+        d = n.data
+        n.inbound = d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0
+        n.outbound = d.totals[state.selMagnAttrGrp].outbound?[state.selAttrIndex] ? 0
+        n.rin = rscale(n.inbound)
+        n.rout = rscale(n.outbound)
+        n.r = Math.max(n.rin, n.rout)
+
+
+    updateNodeSizes()
+
+    placeNodesWithoutCoords = (nodes) ->
+      totalw = 0
+      for n in nodes
+        if not n.x? or not n.y? then totalw += 2 * n.r
+      x = 0
+      for n in nodes
+        if not n.x? or not n.y?
+          n.x = x + n.r + (bubblesChartWidth - totalw)/2
+          n.y = bubblesChartHeight - 100
+          n.gravity = {x: n.x, y: n.y}
+          x += 2 * n.r
+
+    placeNodesWithoutCoords(nodes)
+
+
+    force
+        .nodes(nodes)
+        #.links(links)
+        .start()
+        .on("tick", (e) -> 
+          
+          k = e.alpha
+          kg = k * .02
+
+
+          nodes.forEach((a, i) ->
+            # Apply gravity forces
+            a.x += (a.gravity.x - a.x) * kg
+            a.y += (a.gravity.y - a.y) * kg
+            nodes.slice(i + 1).forEach((b) -> 
+              # Check for collisions.
+              dx = a.x - b.x
+              dy = a.y - b.y
+              l = Math.sqrt(dx * dx + dy * dy)
+              d = a.r + b.r
+              if (l < d)
+                l = (l - d) / l * k
+                dx *= l
+                dy *= l
+                a.x -= dx
+                a.y -= dy
+                b.x += dx
+                b.y += dy
+            )
+          )
+
+          svg.selectAll("g.bubble")
+            .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+    )
+    svg.append("g")
+      .attr("class", "map")
+      .selectAll('path')
+        .data(data.map.features)
+      .enter().append('path')
+        .attr('d', mapProjPath)
+        .attr("fill", "#f0f0f0")
+
 
 
     bubbles = svg.selectAll("g.bubble")
-        .data(nodesWithLocation)
+        .data(nodes)
       .enter()
         .append("g")
           .attr("class", "bubble")
 
     bubbles.append("circle")
-      .attr("cx", (d) -> projectNode(d)[0])
-      .attr("cy", (d) -> projectNode(d)[1])
-      .attr("r", (d) -> rscale(d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0))
+      .attr("class", "rin")
+      .attr("opacity", 0.5)
       .attr("fill", "#f00")
+      .attr("stroke", "#ccc")
+
+    bubbles.append("circle")
+      .attr("class", "rout")
+      .attr("opacity", 0.5)
+      .attr("fill", "#00f")
+      .attr("stroke", "#ccc")
+
+
+    bubbles.append("text")
+      .attr("class", "nodeLabel")
+      .attr("y", 5)
+      .attr("font-size", 9)
+      .attr("text-anchor", "middle")
+      .text((d)-> if d.code.length < 7 then d.code else d.code.substring(0,5)+".." )
 
 
 
 
+    svg.append("text")
+      .attr("id", "yearText")
+      .attr("x", 20)
+      .attr("y", bubblesChartHeight - 60)
+        .text(state.selMagnAttr())
+
+    updateYear = (e, ui, noAnim) ->
+      unless state.selAttrIndex == ui.value
+        state.selAttrIndex = ui.value
+        update(noAnim)
+
+    update = (noAnim) ->
+      updateNodeSizes()
+      duration = if noAnim then 0 else 
+
+      svg.selectAll("#yearText")
+        .text(state.selMagnAttr())
+
+      bubbles.selectAll("circle.rin")
+        .transition()
+        .duration(duration)
+        .attr("r", (d) -> d.rin)
+      
+      bubbles.selectAll("circle.rout")
+        .transition()
+        .duration(duration)
+        .attr("r", (d) -> d.rout)
+
+      bubbles.selectAll("text.nodeLabel")
+        .attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
+
+      force.start()
+
+    update()
 
 
+    $("#yearSlider")
+      .slider
+        min: 0
+        max: state.magnAttrs().length - 1
+        value: state.magnAttrs().length - 1
+        slide: (e, ui) -> updateYear(e, ui, true)
+        change: (e, ui) -> updateYear(e, ui, false)
 
-###
-color = d3.scale.linear()
-    .domain([d3.min(data), d3.max(data)])
-    .range(["#aad", "#556"]) 
+    #$("#playButton").button()
 
-force = d3.layout.force()
-    .charge(0)
-    .gravity(0)
-    .size([960, 500])
-
-svg = d3.select("#chart").append("svg")
-    .attr("width", 960 + 100)
-    .attr("height", 500 + 100)
-  .append("g")
-    .attr("transform", "translate(50,50)")
-
-d3.json "../data/us-state-centroids.json", (states) ->
-  project = d3.geo.albersUsa()
-  idToNode = {}
-  links = []
-
-  nodes = states.features.map (d) ->
-    xy = project(d.geometry.coordinates)
-    return idToNode[d.id] = {
-      x: xy[0],
-      y: xy[1],
-      gravity: {x: xy[0], y: xy[1]},
-      r: Math.sqrt(data[+d.id] * 5000),
-      value: data[+d.id]
-    }
-  
+    $('g.bubble').tipsy
+      gravity: 'w'
+      html: true
+      title: ->
+        bubbleTooltip(d3.select(this).data()[0])
 
 
-  force
-      .nodes(nodes)
-      .links(links)
-      .start()
-      .on("tick", (e) -> 
-        
-        k = e.alpha
-        kg = k * .02
-
-
-        nodes.forEach((a, i) -> {
-          // Apply gravity forces.
-          a.x += (a.gravity.x - a.x) * kg
-          a.y += (a.gravity.y - a.y) * kg
-          nodes.slice(i + 1).forEach((b) -> {
-            // Check for collisions.
-            dx = a.x - b.x,
-                dy = a.y - b.y,
-                l = Math.sqrt(dx * dx + dy * dy),
-                d = a.r + b.r
-            if (l < d) {
-              l = (l - d) / l * k
-              dx *= l
-              dy *= l
-              a.x -= dx
-              a.y -= dy
-              b.x += dx
-              b.y += dy
-            }
-          })
-        })
-
-        svg.selectAll("circle")
-            .attr("cx", (d) ->  { return d.x })
-            .attr("cy", (d) ->  { return d.y })
-
-  svg.selectAll("circle")
-      .data(nodes)
-    .enter().append("circle")
-      .style("fill", (d) ->  { return color(d.value) })
-      .attr("cx", (d) ->  { return d.x })
-      .attr("cy", (d) ->  { return d.y })
-      .attr("r", (d, i) -> { return d.r })
-###

@@ -14,7 +14,6 @@
           <!-- Le styles -->
           <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet">
           <link href="libs/jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet">
-          <link href="css/ffprints.css" rel="stylesheet">
           <link href="libs/tipsy-new/stylesheets/tipsy.css" rel="stylesheet">
 
           <style>

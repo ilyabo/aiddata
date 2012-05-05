@@ -1,0 +1,34 @@
+#yearSliderOuter {
+  margin: 0 auto;
+  width:580px;
+}
+
+#yearLabel {
+  font-weight:bold;
+  display: inline;
+  padding-right:3px;
+}
+#yearSlider {
+  width:500px;
+  display: inline-block;
+}
+
+#chart {
+
+}
+
+#yearText {
+  fill:#ccc;
+  font-size:60pt;
+  font-weight:bold;
+}
+
+
+div.icons { display: inline; margin:0 0 20px 15px;}
+div.icons div { display: inline-block;}
+
+
+.tipsy { 
+  font-size:10pt !important; 
+}
+.tipsy .sm { font-size:9pt;}

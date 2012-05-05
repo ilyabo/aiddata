@@ -1,5 +1,23 @@
 root = exports ? this
 
+
+root.initFlowData = (conf) ->
+  state = 
+    selMagnAttrGrp : d3.keys(conf.flowMagnAttrs)[0]
+
+  state.magnAttrs = (i) ->
+      magnAttrs = conf.flowMagnAttrs[state.selMagnAttrGrp]
+      if (i?) then magnAttrs.attrs[i] else magnAttrs.attrs
+  
+  state.selMagnAttr = -> state.magnAttrs(state.selAttrIndex)
+
+  state.numMagnAttrs = -> state.magnAttrs().length
+  state.maxTotalMagnitude = -> state.totalsMax[state.selMagnAttrGrp].max
+
+  state
+
+
+
 root.isNumber = (n) ->
     !isNaN(parseFloat(n))  and  isFinite(n)
 

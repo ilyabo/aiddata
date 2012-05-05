@@ -6,7 +6,7 @@
     @page = "aiddata-ffprints"
     @dataset = "aiddata"
 
-
+    style '@import url("css/ffprints.css");'
     div id:"radioset", style:"display:inline-block", ->
       
       span style:"margin-right:10px","Positioning:"
@@ -41,9 +41,20 @@
     @page = "aiddata-bubbles"
     @dataset = "aiddata"
 
+    style '@import url("css/bubbles.css");'
+
+    div id: "yearSliderOuter", ->
+      div id:'yearLabel', -> "Year: "
+      div id:'yearSlider'
+      div class:"icons ui-widget ui-helper-clearfix", ->
+        div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
+          span id:"playButton", class: "ui-icon ui-icon-play"
+
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
     script src: "coffee/bubbles-#{@dataset}.js"
+
+
 
 
     

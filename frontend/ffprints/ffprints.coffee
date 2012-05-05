@@ -1,7 +1,7 @@
 this.ffprintsChart = () ->
 
   conf = {}
-  state = {}
+  state = null
   data = null
   magnitudeColor = colorScaleLimits = null
   flowsTree = null   # fast access to flow values by origin/dest/attrGroup
@@ -857,14 +857,7 @@ this.ffprintsChart = () ->
     ####################### Data preparation #########################
     data = selection.datum()
     
-    state = 
-      selMagnAttrGrp : d3.keys(conf.flowMagnAttrs)[0]
-      magnAttrs : (i) ->
-        magnAttrs = conf.flowMagnAttrs[state.selMagnAttrGrp]
-        if (i?) then magnAttrs.attrs[i] else magnAttrs.attrs
-      numMagnAttrs : -> state.magnAttrs().length
-      maxTotalMagnitude : -> state.totalsMax[state.selMagnAttrGrp].max
-
+    state = initFlowData(conf)
 
     if data.originTotals  and  data.destTotals 
       fromInputDataTotalsToNodeTotals()
