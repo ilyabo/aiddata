@@ -38,16 +38,19 @@ magnitudeFormat = (d) ->
 
 bubbleTooltip = (d) ->
   "<b>#{d.name}</b>" + 
-  " in <b>#{state.selMagnAttr()}</b>" +
+  #" in <b>#{state.selMagnAttr()}</b>" +
   (if d.outbound > 0 then "<br>donated #{magnitudeFormat(d.outbound)}" else "") +
   (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") 
 
 
 flowTooltip = (d) ->
+  recipient = d.target.data[conf.nodeLabelAttr]
+  donor = d.source.data[conf.nodeLabelAttr]
+
   "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b><br>"+
-  "<span class=sm>were donated to <b>#{d.target.data[conf.nodeLabelAttr]}</b></span><br>"+
-  "<span class=sm>by <b>#{d.source.data[conf.nodeLabelAttr]}</b></span> <br>"+
-  "in #{state.selMagnAttr()} <br>"
+  "were donated to <b>#{recipient}</b><br>"+
+  (if donor.length > 20 then "<span class=sm>by <b>#{donor}</b></span>" else "by <b>#{donor}</b>")
+  #" <br> in #{state.selMagnAttr()} <br>"
 
 
 mapProj = winkelTripel()
