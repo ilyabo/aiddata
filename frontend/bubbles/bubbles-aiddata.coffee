@@ -61,7 +61,7 @@ mapProj = winkelTripel()
 mapProjPath = d3.geo.path().projection(mapProj)
 
 
-createTimeSeries = (parent, data, selectedData) ->
+createTimeSeries = (parent, data) ->
   margin = {top: 15, right: 3, bottom: 14, left: 40}
   w = 200 - margin.left - margin.right
   h = 100 - margin.top - margin.bottom
@@ -79,18 +79,16 @@ createTimeSeries = (parent, data, selectedData) ->
     .scale(x)
     .ticks(4)
     .orient("bottom")
-    #.tickSubdivide(0)
     .tickSize(3, 0, 0)
 
   yAxis = d3.svg.axis()
     .ticks(3)
     .scale(y)
     .orient("left")
-    #.tickSubdivide(0)
     .tickFormat(shortMagnitudeFormat)
     .tickSize(-w, 0, 0)
 
-  spark = parent
+  tseries = parent
     .append("svg")
       .datum(data)
       .attr("width", w + margin.left + margin.right)
@@ -98,32 +96,32 @@ createTimeSeries = (parent, data, selectedData) ->
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
-  spark.append("rect")
+  tseries.append("rect")
     .attr("class", "background")
     .attr("x", 0)
     .attr("y", 0)
     .attr("width", w)
     .attr("height", h)
 
-  spark.append("g")
+  tseries.append("g")
     .attr("class", "y axis")
     .call(yAxis)
 
-  spark.append("g")
+  tseries.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + h + ")")
     .call(xAxis)
 
 
-  spark
+  tseries
     .append("path")
     .attr("class", "line")
     .attr("d", line)
 
-  spark.append("circle")
+  tseries.append("circle")
     .attr("class","selAttrValue")
-    .attr("cx", x(new Date(""+selectedData.date)))
-    .attr("cy", y(+selectedData.value))
+    .attr("cx", x(data[state.selAttrIndex].date))
+    .attr("cy", y(data[state.selAttrIndex].value))
     .attr("r", 2)
 
 
@@ -372,11 +370,8 @@ loadData()
               date: new Date(""+attr)
               value: +d.data[attr]
 
-          selectedData =
-            date: state.selMagnAttr()
-            value: d.data[state.selMagnAttr()]
 
-          createTimeSeries(d3.select("#sparkline"), data, selectedData)
+          createTimeSeries(d3.select("#sparkline"), data)
 
           $(tipsy.$tip)
               .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
