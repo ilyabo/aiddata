@@ -40,9 +40,10 @@ shortMagnitudeFormat = (d) -> magnitudeFormat(d).replace(" million", "M")
 
 bubbleTooltip = (d) ->
   "<b>#{d.name}</b>" + 
-  #" in <b>#{state.selMagnAttr()}</b>" +
+  " in <b>#{state.selMagnAttr()}</b>" +
   (if d.outbound > 0 then "<br>donated #{magnitudeFormat(d.outbound)}" else "") +
-  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "")
+  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") +
+  "<div id=tseries></div>"
 
 
 flowTooltip = (d) ->
@@ -53,27 +54,27 @@ flowTooltip = (d) ->
   "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b> "+
   (if donor.length > 20 then "<span class=sm>from <b>#{donor}</b></span>" else "from <b>#{donor}</b>") +
   "  in #{state.selMagnAttr()} <br>"+
-  "<div id=sparkline></div>"
+  "<div id=tseries></div>"
 
 
 
 mapProj = winkelTripel()
 mapProjPath = d3.geo.path().projection(mapProj)
 
-
+# data is expected to be in the following form:
+# [{date:new Date("1978"), inbound:123, outbound:321}, ...]
 createTimeSeries = (parent, data) ->
-  margin = {top: 15, right: 3, bottom: 14, left: 40}
+  margin = {top: 15, right: 3, bottom: 14, left: 46}
   w = 200 - margin.left - margin.right
   h = 100 - margin.top - margin.bottom
 
+  hasIn = data[0]?.inbound?
+  hasOut = data[0]?.outbound?
+
   dates = data.map (d) -> d.date
-  maxVal = d3.max(d3.values(data.map (d) -> d.value))
+  maxVal = d3.max(d3.values(data.map (d) -> Math.max(d.inbound ? 0, d.outbound ? 0)))
   x = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
   y = d3.scale.linear().domain([0, maxVal]).range([h, 0])
-
-  line = d3.svg.line()
-    .x((d) -> x(d.date))
-    .y((d) -> y(d.value))
 
   xAxis = d3.svg.axis()
     .scale(x)
@@ -113,16 +114,41 @@ createTimeSeries = (parent, data) ->
     .call(xAxis)
 
 
-  tseries
-    .append("path")
-    .attr("class", "line")
-    .attr("d", line)
+  if hasIn
+    linein = d3.svg.line()
+      .x((d) -> x(d.date))
+      .y((d) -> y(d.inbound))
+    
+    gin = tseries.append("g").attr("class", "in")
 
-  tseries.append("circle")
-    .attr("class","selAttrValue")
-    .attr("cx", x(data[state.selAttrIndex].date))
-    .attr("cy", y(data[state.selAttrIndex].value))
-    .attr("r", 2)
+    gin.append("path")
+      .attr("class", "line")
+      .attr("d", linein)
+
+    gin.append("circle")
+      .attr("class","selAttrValue")
+      .attr("cx", x(data[state.selAttrIndex].date))
+      .attr("cy", y(data[state.selAttrIndex].inbound))
+      .attr("r", 2)
+
+
+  if hasOut
+    lineout = d3.svg.line()
+      .x((d) -> x(d.date))
+      .y((d) -> y(d.outbound))
+    
+    gout = tseries.append("g").attr("class", "out")
+
+    gout.append("path")
+      .attr("class", "line")
+      .attr("d", lineout)
+
+    gout.append("circle")
+      .attr("class","selAttrValue")
+      .attr("cx", x(data[state.selAttrIndex].date))
+      .attr("cy", y(data[state.selAttrIndex].outbound))
+      .attr("r", 2)
+
 
 
 
@@ -366,12 +392,12 @@ loadData()
           $(this).tipsy("show")
 
 
-          data = state.magnAttrs().map (attr) -> 
+          data = state.magnAttrs().map (attr) => 
               date: new Date(""+attr)
-              value: +d.data[attr]
+              inbound: if d3.select(this).classed("in") then +d.data[attr]
+              outbound: if d3.select(this).classed("out") then +d.data[attr]
 
-
-          createTimeSeries(d3.select("#sparkline"), data)
+          createTimeSeries(d3.select("#tseries"), data)
 
           $(tipsy.$tip)
               .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
@@ -428,9 +454,25 @@ loadData()
             if selectedNode == null
               showFlowsOf this
 
+            $(this).tipsy("show")
+
+            
+
+            data = state.magnAttrs().map (attr, i) => 
+                date: new Date(""+attr)
+                inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
+                outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
+
+            createTimeSeries(d3.select("#tseries"), data)
+
+
+
+
           .on 'mouseout', (d) ->
             if selectedNode == null
               flows.selectAll("line").remove()
+  
+            $(this).tipsy("hide")
 
 
     clearNodeSelection = ->
@@ -520,6 +562,7 @@ loadData()
       gravity: 'w'
       html: true
       opacity: 0.9
+      trigger: "manual"
       title: ->
         bubbleTooltip(d3.select(this).data()[0])
 

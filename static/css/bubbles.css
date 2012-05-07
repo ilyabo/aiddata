@@ -52,41 +52,38 @@ line.out { stroke:#9292ff; }
 line.out:hover { stroke:rgb(166, 164, 255); }
 
 
-#sparkline .line {
-  fill: none;
-  stroke: #9292ff;
-  stroke-width: 1.5px;
-}
+#tseries .line { fill: none; stroke-width: 1.5px; }
+#tseries .in .line { stroke: #f98a8b; }
+#tseries .out .line { stroke: #9292ff; }
 
-#sparkline circle.selAttrValue  {
-  fill:white;
-  stroke:white;
-}
+#tseries circle.selAttrValue  { stroke-width:1.5; stroke:white; }
+#tseries .in circle.selAttrValue  { fill:#f98a8b; }
+#tseries .out circle.selAttrValue  { fill:#9292ff; }
 
-#sparkline rect.background {
+#tseries rect.background {
   fill:black;
   stroke:#aaa;
   stroke-width:1;
   opacity:1.0;
 }
 
-#sparkline .axis path {
+#tseries .axis path {
   fill: none;
   shape-rendering: crispEdges;
 }
 
 
-#sparkline .y.axis line, #sparkline .y.axis path {
+#tseries .y.axis line, #tseries .y.axis path {
   stroke:#333;
   stroke-width:1;
 }
 
-#sparkline .x.axis line {
+#tseries .x.axis line {
   stroke-width:1;
   stroke:#ccc;
 }
 
-#sparkline .axis text {
+#tseries .axis text {
   font-size:9px;
   fill:white;
 }
