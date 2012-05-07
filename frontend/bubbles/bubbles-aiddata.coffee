@@ -57,12 +57,14 @@ flowTooltip = (d) ->
   "<div id=tseries></div>"
 
 
+dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
+
 
 mapProj = winkelTripel()
 mapProjPath = d3.geo.path().projection(mapProj)
 
 # data is expected to be in the following form:
-# [{date:new Date("1978"), inbound:123, outbound:321}, ...]
+# [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
 createTimeSeries = (parent, data) ->
   margin = {top: 15, right: 3, bottom: 14, left: 46}
   w = 200 - margin.left - margin.right
@@ -396,7 +398,7 @@ loadData()
 
 
           data = state.magnAttrs().map (attr) => 
-              date: new Date(""+attr)
+              date: dateFromMagnAttr(attr)
               inbound: if d3.select(this).classed("in") then +d.data[attr]
               outbound: if d3.select(this).classed("out") then +d.data[attr]
 
@@ -462,7 +464,7 @@ loadData()
             
 
             data = state.magnAttrs().map (attr, i) => 
-                date: new Date(""+attr)
+                date: dateFromMagnAttr(attr)
                 inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
                 outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
 

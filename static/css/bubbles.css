@@ -6,12 +6,14 @@
 #yearLabel {
   font-weight:bold;
   display: inline;
-  padding-right:3px;
+  padding-right:7px;
 }
 #yearSlider {
   width:500px;
+  height:5px;
   display: inline-block;
 }
+#yearSlider .ui-slider-handle { top:-.5em;}
 
 #chart {
 
@@ -36,7 +38,7 @@ div.icons div { display: inline-block;}
 
 #play { margin-left:25px; cursor:pointer;}
 
-line { stroke-linecap:round; }
+g.flows line { stroke-linecap:round; }
 
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
