@@ -461,8 +461,6 @@ loadData()
 
             $(this).tipsy("show")
 
-            
-
             data = state.magnAttrs().map (attr, i) => 
                 date: dateFromMagnAttr(attr)
                 inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
@@ -470,6 +468,8 @@ loadData()
 
             createTimeSeries(d3.select("#tseries"), data)
 
+            $(tipsy.$tip)  # fix vertical position
+                .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
 
 
 
