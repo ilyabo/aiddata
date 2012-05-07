@@ -36,11 +36,13 @@ magnitudeFormat = (d) ->
   else
     "$#{fmt(d)}" 
 
+shortMagnitudeFormat = (d) -> magnitudeFormat(d).replace(" million", "M")
+
 bubbleTooltip = (d) ->
   "<b>#{d.name}</b>" + 
   #" in <b>#{state.selMagnAttr()}</b>" +
   (if d.outbound > 0 then "<br>donated #{magnitudeFormat(d.outbound)}" else "") +
-  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") 
+  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "")
 
 
 flowTooltip = (d) ->
@@ -49,12 +51,81 @@ flowTooltip = (d) ->
 
   "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b><br>"+
   "were donated to <b>#{recipient}</b><br>"+
-  (if donor.length > 20 then "<span class=sm>by <b>#{donor}</b></span>" else "by <b>#{donor}</b>")
-  #" <br> in #{state.selMagnAttr()} <br>"
+  (if donor.length > 20 then "<span class=sm>by <b>#{donor}</b></span>" else "by <b>#{donor}</b>") +
+  "  in #{state.selMagnAttr()} <br>"+
+  "<div id=sparkline></div>"
+
 
 
 mapProj = winkelTripel()
 mapProjPath = d3.geo.path().projection(mapProj)
+
+
+createTimeSeries = (parent, data, selectedData) ->
+  margin = {top: 15, right: 3, bottom: 14, left: 40}
+  w = 200 - margin.left - margin.right
+  h = 100 - margin.top - margin.bottom
+
+  dates = data.map (d) -> d.date
+  maxVal = d3.max(d3.values(data.map (d) -> d.value))
+  x = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
+  y = d3.scale.linear().domain([0, maxVal]).range([h, 0])
+
+  line = d3.svg.line()
+    .x((d) -> x(d.date))
+    .y((d) -> y(d.value))
+
+  xAxis = d3.svg.axis()
+    .scale(x)
+    .ticks(4)
+    .orient("bottom")
+    #.tickSubdivide(0)
+    .tickSize(3, 0, 0)
+
+  yAxis = d3.svg.axis()
+    .ticks(3)
+    .scale(y)
+    .orient("left")
+    #.tickSubdivide(0)
+    .tickFormat(shortMagnitudeFormat)
+    .tickSize(-w, 0, 0)
+
+  spark = parent
+    .append("svg")
+      .datum(data)
+      .attr("width", w + margin.left + margin.right)
+      .attr("height", h + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+  spark.append("rect")
+    .attr("class", "background")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", w)
+    .attr("height", h)
+
+  spark.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+
+  spark.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + h + ")")
+    .call(xAxis)
+
+
+  spark
+    .append("path")
+    .attr("class", "line")
+    .attr("d", line)
+
+  spark.append("circle")
+    .attr("class","selAttrValue")
+    .attr("cx", x(new Date(""+selectedData.date)))
+    .attr("cy", y(+selectedData.value))
+    .attr("r", 2)
+
 
 
 projectNode = (node) ->  
@@ -281,11 +352,24 @@ loadData()
         .on "mouseover", (d) ->
           if this.parentNode?
             this.parentNode.appendChild(this)
-          
+
           $(this).tipsy("show")
+
+
+          data = state.magnAttrs().map (attr) -> 
+              date: new Date(""+attr)
+              value: +d.data[attr]
+
+          selectedData =
+            date: state.selMagnAttr()
+            value: d.data[state.selMagnAttr()]
+
+          createTimeSeries(d3.select("#sparkline"), data, selectedData)
+
           $(tipsy.$tip)
               .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
               .css('left', event.pageX + 10)
+
 
         .on "mouseout", (d) ->
           $(this).tipsy("hide")
@@ -307,6 +391,7 @@ loadData()
 
       $('line').tipsy
         gravity: 'w'
+        opacity: 0.9
         html: true
         trigger: "manual"
         title: ->
@@ -421,6 +506,7 @@ loadData()
     $('g.bubble').tipsy
       gravity: 'w'
       html: true
+      opacity: 0.9
       title: ->
         bubbleTooltip(d3.select(this).data()[0])
 

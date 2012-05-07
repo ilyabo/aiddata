@@ -33,6 +33,8 @@ div.icons div { display: inline-block;}
 }
 .tipsy .sm { font-size:8pt;}
 
+.tipsy-inner {background-color:#333;}
+
 .nodeLabel { cursor:default;}
 
 #play { margin-left:25px; cursor:pointer;}
@@ -48,3 +50,43 @@ line.in:hover { stroke:rgb(255, 174, 174); }
 
 line.out { stroke:#9292ff; }
 line.out:hover { stroke:rgb(166, 164, 255); }
+
+
+#sparkline .line {
+  fill: none;
+  stroke: #9292ff;
+  stroke-width: 1.5px;
+}
+
+#sparkline circle.selAttrValue  {
+  fill:white;
+  stroke:white;
+}
+
+#sparkline rect.background {
+  fill:black;
+  stroke:#aaa;
+  stroke-width:1;
+  opacity:1.0;
+}
+
+#sparkline .axis path {
+  fill: none;
+  shape-rendering: crispEdges;
+}
+
+
+#sparkline .y.axis line, #sparkline .y.axis path {
+  stroke:#333;
+  stroke-width:1;
+}
+
+#sparkline .x.axis line {
+  stroke-width:1;
+  stroke:#ccc;
+}
+
+#sparkline .axis text {
+  font-size:9px;
+  fill:white;
+}
