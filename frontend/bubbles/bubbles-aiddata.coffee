@@ -218,6 +218,9 @@ loadData()
       .range([0,  maxr *2])
       .domain([0, maxTotalMagnitude])
 
+    #timescale = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
+  
+
     hasFlows = (node, flowDirection) -> 
       totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
       (if totals? then d3.max(totals) > 0 else 0)
@@ -507,6 +510,7 @@ loadData()
 
     svg.append("text")
       .attr("id", "yearText")
+      .attr("font-size", bubblesChartWidth/15)
       .attr("x", bubblesChartWidth - 20)
       .attr("y", 100)
       .attr("text-anchor", "end")

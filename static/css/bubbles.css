@@ -19,7 +19,6 @@
 
 #yearText {
   fill:#ccc;
-  font-size:60pt;
   font-weight:bold;
 }
 
@@ -28,12 +27,10 @@ div.icons { display: inline; margin:0 0 20px 15px;}
 div.icons div { display: inline-block;}
 
 
-.tipsy { 
-  font-size:9pt !important; 
-}
+.tipsy { font-size:9pt !important; }
 .tipsy .sm { font-size:8pt;}
-
-.tipsy-inner {background-color:#333;}
+.tipsy-inner { background-color:#333; }
+.tipsy-arrow { border-color:#333; }
 
 .nodeLabel { cursor:default;}
 
