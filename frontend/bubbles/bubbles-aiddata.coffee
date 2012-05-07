@@ -254,6 +254,7 @@ loadData()
             .attr("x2", (d) -> d.target.x )
             .attr("y2", (d) -> d.target.y )
             .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+            .attr("visibility", (d) -> v(d) > 0)
             .attr("stroke", outboundColor)
             #.attr("opacity", 0.5)
 
@@ -268,6 +269,7 @@ loadData()
             .attr("x2", (d) -> d.target.x )
             .attr("y2", (d) -> d.target.y )
             .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+            .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
             .attr("stroke", inboundColor)
             #.attr("opacity",0.5)
 
@@ -360,6 +362,7 @@ loadData()
         .transition()
         .duration(duration)
         .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+        .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
 
       force.start()
 

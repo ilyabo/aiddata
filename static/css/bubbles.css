@@ -41,4 +41,4 @@ line { stroke-linecap:round; }
 
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
-g.bubble circle.selected { stroke:#ec7b03; stroke-width:2;}
+g.bubble circle.selected { stroke:#ecb903; stroke-width:2;}
