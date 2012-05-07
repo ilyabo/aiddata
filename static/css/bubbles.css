@@ -36,3 +36,9 @@ div.icons div { display: inline-block;}
 .nodeLabel { cursor:default;}
 
 #play { margin-left:25px; cursor:pointer;}
+
+line { stroke-linecap:round; }
+
+
+g.bubble circle { stroke:#ccc; stroke-width:1; }
+g.bubble circle.selected { stroke:#ec7b03; stroke-width:2;}

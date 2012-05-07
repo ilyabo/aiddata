@@ -1,11 +1,15 @@
 bubblesChartWidth = $(document).width()
 bubblesChartHeight = $(document).height()*0.9 - 50
 
+
+inboundColor = "#f98a8b"
+outboundColor = "#9292ff"
+
 svg = d3.select("body")
   .append("svg")
     .attr("width", bubblesChartWidth)
     .attr("height", bubblesChartHeight)
-    .attr("class", "bubbles")
+    .attr("class", "bubble")
 
 
 conf = 
@@ -69,7 +73,7 @@ loadData()
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
-    fitProjection(mapProj, data.map, [[0,50],[bubblesChartWidth, bubblesChartHeight*0.6]], true)
+    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight*0.8]], true)
 
     state = initFlowData(conf)
     state.selMagnAttrGrp = "aid"
@@ -89,9 +93,14 @@ loadData()
 
     max = state.totalsMax[state.selMagnAttrGrp]
     rscale = d3.scale.sqrt()
-      .range([0, Math.min(bubblesChartWidth/13, bubblesChartHeight/7)])
+      .range([0, Math.min(bubblesChartWidth/15, bubblesChartHeight/7)])
       .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
 
+    ###
+    fwscale = d3.scale.linear()
+      .range([0, rscale.range()[1]*2])
+      .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
+    ###
 
     hasFlows = (node, flowDirection) -> 
       totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
@@ -141,17 +150,39 @@ loadData()
       for n in nodes
         if not n.x? or not n.y?
           n.x = x + n.maxr/2 + (bubblesChartWidth - totalw)/2
-          n.y = bubblesChartHeight - 100
+          n.y = bubblesChartHeight - 75
           n.gravity = {x: n.x, y: n.y}
           x += 2 * n.maxr/2
 
     placeNodesWithoutCoords(nodes)
 
 
+    nodeById = (id) ->
+      #if not idToNode[id]? then console.log "Warning: No node by id '#{id}' found"
+      idToNode[id]
+
+    links = []
+    data.flows.forEach (f) ->
+      src = nodeById(f[conf.flowOriginAttr])
+      target = nodeById(f[conf.flowDestAttr])
+      if src? and target?
+        link = 
+          source: src
+          target: target
+          data: f 
+        
+        (src.outlinks ?= []).push link
+        (target.inlinks ?= []).push link
+        links.push link
+
+    v = (d) -> +d.data[state.selMagnAttr()]
+
     force
         .nodes(nodes)
         #.links(links)
-        .start()
+        #.linkStrength(0)
+        #.linkDistance(1)
+        #.start()
         .on("tick", (e) -> 
           
           k = e.alpha
@@ -181,7 +212,15 @@ loadData()
 
           svg.selectAll("g.bubble")
             .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+
+          flows.selectAll("line")
+            .attr("x1", (d) -> d.source.x )
+            .attr("y1", (d) -> d.source.y )
+            .attr("x2", (d) -> d.target.x )
+            .attr("y2", (d) -> d.target.y )
     )
+
+
     svg.append("g")
       .attr("class", "map")
       .selectAll('path')
@@ -190,28 +229,92 @@ loadData()
         .attr('d', mapProjPath)
         .attr("fill", "#f0f0f0")
 
+    flows = svg.append("g")
+      .attr("class", "flows")
 
 
-    bubbles = svg.selectAll("g.bubble")
+
+    selectedNode = null
+
+    showFlowsOf = (bbl) ->
+      d = d3.select(bbl).data()?[0]
+      ###
+      ffwscale = d3.scale.linear()
+        .range([0, rscale.range()[1]/2])
+        .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
+      ###
+
+      if (d.outlinks?)
+        flows.selectAll("line.out")
+            .data(d.outlinks) #.filter (d) -> v(d) > 0)
+          .enter().append("svg:line")
+            .attr("class", "out")
+            .attr("x1", (d) -> d.source.x )
+            .attr("y1", (d) -> d.source.y )
+            .attr("x2", (d) -> d.target.x )
+            .attr("y2", (d) -> d.target.y )
+            .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+            .attr("stroke", outboundColor)
+            #.attr("opacity", 0.5)
+
+
+      if (d.inlinks?)
+        flows.selectAll("line.in")
+            .data(d.inlinks) #.filter (d) -> v(d) > 0)
+          .enter().append("svg:line")
+            .attr("class", "in")
+            .attr("x1", (d) -> d.source.x )
+            .attr("y1", (d) -> d.source.y )
+            .attr("x2", (d) -> d.target.x )
+            .attr("y2", (d) -> d.target.y )
+            .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+            .attr("stroke", inboundColor)
+            #.attr("opacity",0.5)
+
+
+    bubble = svg.selectAll("g.bubble")
         .data(nodes)
       .enter()
         .append("g")
           .attr("class", "bubble")
+          .on 'click', (d) ->
 
-    bubbles.append("circle")
+            if selectedNode == this
+              selectedNode = null
+              d3.select(this).selectAll("circle").classed("selected", false)
+            else 
+              if selectedNode != null
+                d3.select(selectedNode).selectAll("circle").classed("selected", false)
+                flows.selectAll("line").remove()
+              selectedNode = this
+              d3.select(this).selectAll("circle").classed("selected", true)
+              showFlowsOf this
+
+
+          .on 'mouseover', (d) ->
+            if selectedNode == null
+              showFlowsOf this
+
+          .on 'mouseout', (d) ->
+            if selectedNode == null
+              flows.selectAll("line").remove()
+
+
+            
+
+
+    bubble.append("circle")
       .attr("class", "rin")
       .attr("opacity", 0.5)
       .attr("fill", "#f00")
-      .attr("stroke", "#ccc")
 
-    bubbles.append("circle")
+    bubble.append("circle")
       .attr("class", "rout")
       .attr("opacity", 0.5)
       .attr("fill", "#00f")
-      .attr("stroke", "#ccc")
 
 
-    bubbles.append("text")
+    bubble.append("text")
       .attr("class", "nodeLabel")
       .attr("y", 5)
       .attr("font-size", 9)
@@ -223,7 +326,7 @@ loadData()
 
     svg.append("text")
       .attr("id", "yearText")
-      .attr("x", bubblesChartWidth)
+      .attr("x", bubblesChartWidth - 20)
       .attr("y", 100)
       .attr("text-anchor", "end")
         .text(state.selMagnAttr())
@@ -240,18 +343,23 @@ loadData()
       svg.selectAll("#yearText")
         .text(state.selMagnAttr())
 
-      bubbles.selectAll("circle.rin")
+      bubble.selectAll("circle.rin")
         .transition()
         .duration(duration)
         .attr("r", (d) -> d.rin)
       
-      bubbles.selectAll("circle.rout")
+      bubble.selectAll("circle.rout")
         .transition()
         .duration(duration)
         .attr("r", (d) -> d.rout)
 
-      bubbles.selectAll("text.nodeLabel")
+      bubble.selectAll("text.nodeLabel")
         .attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
+
+      flows.selectAll("line")
+        .transition()
+        .duration(duration)
+        .attr("stroke-width", (d) -> 2 * rscale(v(d)))
 
       force.start()
 

@@ -79,7 +79,7 @@
             </div>
           </div>
 
-          <script src="d3.v2.min.js"></script>
+          <script src="d3.v2.js"></script>
           <script src="libs/chroma/chroma.pack.min.js"></script>
           <script src="libs/jquery/jquery-1.7.1.min.js"></script>
           <script src="libs/tipsy-new/javascripts/jquery.tipsy.js"></script>
