@@ -154,6 +154,16 @@ loadData()
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
+
+    svg.append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", bubblesChartWidth)
+      .attr("height", bubblesChartHeight)
+      .attr("fill", "white")
+      .on 'click', (d) -> clearNodeSelection()
+
+
     fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight*0.8]], true)
 
     state = initFlowData(conf)
@@ -310,6 +320,7 @@ loadData()
       .enter().append('path')
         .attr('d', mapProjPath)
         .attr("fill", "#f0f0f0")
+        .on 'click', (d) -> clearNodeSelection()
 
     flows = svg.append("g")
       .attr("class", "flows")
@@ -427,7 +438,13 @@ loadData()
               flows.selectAll("line").remove()
 
 
-            
+    clearNodeSelection = ->
+      if selectedNode != null
+        d3.select(selectedNode).selectAll("circle").classed("selected", false)
+        flows.selectAll("line").remove()
+        selectedNode = null
+
+    $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
 
     bubble.append("circle")
