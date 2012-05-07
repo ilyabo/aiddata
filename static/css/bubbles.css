@@ -29,9 +29,9 @@ div.icons div { display: inline-block;}
 
 
 .tipsy { 
-  font-size:10pt !important; 
+  font-size:9pt !important; 
 }
-.tipsy .sm { font-size:9pt;}
+.tipsy .sm { font-size:8pt;}
 
 .nodeLabel { cursor:default;}
 
@@ -42,3 +42,9 @@ line { stroke-linecap:round; }
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
 g.bubble circle.selected { stroke:#ecb903; stroke-width:2;}
+
+line.in { stroke:#f98a8b; }
+line.in:hover { stroke:rgb(255, 174, 174); }
+
+line.out { stroke:#9292ff; }
+line.out:hover { stroke:rgb(166, 164, 255); }

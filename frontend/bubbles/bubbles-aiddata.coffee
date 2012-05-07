@@ -30,17 +30,24 @@ state = null
 
 
 fmt = d3.format(",.0f")
-bubbleTooltip = (d) ->
-  format = (d) ->
-    if (d >= 1e6)
-      "$#{fmt(d / 1e6)} million"
-    else
-      "$#{fmt(d)}" 
+magnitudeFormat = (d) ->
+  if (d >= 1e6)
+    "$#{fmt(d / 1e6)} million"
+  else
+    "$#{fmt(d)}" 
 
+bubbleTooltip = (d) ->
   "<b>#{d.name}</b>" + 
   " in <b>#{state.selMagnAttr()}</b>" +
-  (if d.outbound > 0 then "<br>donated #{format(d.outbound)}" else "") +
-  (if d.inbound > 0 then "<br>received #{format(d.inbound)}" else "") 
+  (if d.outbound > 0 then "<br>donated #{magnitudeFormat(d.outbound)}" else "") +
+  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") 
+
+
+flowTooltip = (d) ->
+  "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b><br>"+
+  "<span class=sm>were donated to <b>#{d.target.data[conf.nodeLabelAttr]}</b></span><br>"+
+  "<span class=sm>by <b>#{d.source.data[conf.nodeLabelAttr]}</b></span> <br>"+
+  "in #{state.selMagnAttr()} <br>"
 
 
 mapProj = winkelTripel()
@@ -249,13 +256,7 @@ loadData()
             .data(d.outlinks) #.filter (d) -> v(d) > 0)
           .enter().append("svg:line")
             .attr("class", "out")
-            .attr("x1", (d) -> d.source.x )
-            .attr("y1", (d) -> d.source.y )
-            .attr("x2", (d) -> d.target.x )
-            .attr("y2", (d) -> d.target.y )
-            .attr("stroke-width", (d) -> 2 * rscale(v(d)))
-            .attr("visibility", (d) -> v(d) > 0)
-            .attr("stroke", outboundColor)
+            #.attr("stroke", outboundColor)
             #.attr("opacity", 0.5)
 
 
@@ -264,14 +265,49 @@ loadData()
             .data(d.inlinks) #.filter (d) -> v(d) > 0)
           .enter().append("svg:line")
             .attr("class", "in")
-            .attr("x1", (d) -> d.source.x )
-            .attr("y1", (d) -> d.source.y )
-            .attr("x2", (d) -> d.target.x )
-            .attr("y2", (d) -> d.target.y )
-            .attr("stroke-width", (d) -> 2 * rscale(v(d)))
-            .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
-            .attr("stroke", inboundColor)
+            #.attr("stroke", inboundColor)
             #.attr("opacity",0.5)
+
+      flows.selectAll("line")
+        .attr("x1", (d) -> d.source.x )
+        .attr("y1", (d) -> d.source.y )
+        .attr("x2", (d) -> d.target.x )
+        .attr("y2", (d) -> d.target.y )
+        .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+        .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
+        .on "mouseover", (d) ->
+          if this.parentNode?
+            this.parentNode.appendChild(this)
+          
+          $(this).tipsy("show")
+          $(tipsy.$tip)
+              .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
+              .css('left', event.pageX + 10)
+
+        .on "mouseout", (d) ->
+          $(this).tipsy("hide")
+
+        ###
+        .on "mouseover", (d) ->
+          d3.select(this)
+            .transition()
+            .duration(100)
+            .attr("stroke", 
+              d3.rgb(if d3.select(this).classed("in") then inboundColor else outboundColor).brighter(0.5))
+
+        .on "mouseout", (d) ->
+          d3.select(this)
+            .transition()
+            .duration(100)
+            .attr("stroke", if d3.select(this).classed("in") then inboundColor else outboundColor)
+        ###
+
+      $('line').tipsy
+        gravity: 'w'
+        html: true
+        trigger: "manual"
+        title: ->
+          flowTooltip(d3.select(this).data()[0])
 
 
     bubble = svg.selectAll("g.bubble")
@@ -384,6 +420,7 @@ loadData()
       html: true
       title: ->
         bubbleTooltip(d3.select(this).data()[0])
+
 
 
     timer = undefined
