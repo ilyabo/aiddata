@@ -172,16 +172,17 @@ loadData()
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
-    max = state.totalsMax[state.selMagnAttrGrp]
+    maxTotalMagnitudes = state.totalsMax[state.selMagnAttrGrp]
+    maxTotalMagnitude = Math.max(d3.max(maxTotalMagnitudes.inbound), d3.max(maxTotalMagnitudes.outbound))
+
     rscale = d3.scale.sqrt()
       .range([0, Math.min(bubblesChartWidth/15, bubblesChartHeight/7)])
-      .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
+      .domain([0, maxTotalMagnitude])
+    maxr = rscale.range()[1]
 
-    ###
-    fwscale = d3.scale.linear()
-      .range([0, rscale.range()[1]*2])
-      .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
-    ###
+    fwscale = d3.scale.sqrt() #.linear()
+      .range([0,  maxr *2])
+      .domain([0, maxTotalMagnitude])
 
     hasFlows = (node, flowDirection) -> 
       totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
@@ -347,7 +348,7 @@ loadData()
         .attr("y1", (d) -> d.source.y )
         .attr("x2", (d) -> d.target.x )
         .attr("y2", (d) -> d.target.y )
-        .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+        .attr("stroke-width", (d) -> fwscale(v(d)))
         .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
         .on "mouseover", (d) ->
           if this.parentNode?
@@ -485,7 +486,7 @@ loadData()
       flows.selectAll("line")
         .transition()
         .duration(duration)
-        .attr("stroke-width", (d) -> 2 * rscale(v(d)))
+        .attr("stroke-width", (d) -> fwscale(v(d)))
         .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
 
       force.start()
