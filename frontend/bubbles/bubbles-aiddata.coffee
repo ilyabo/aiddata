@@ -49,9 +49,9 @@ flowTooltip = (d) ->
   recipient = d.target.data[conf.nodeLabelAttr]
   donor = d.source.data[conf.nodeLabelAttr]
 
-  "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b><br>"+
-  "were donated to <b>#{recipient}</b><br>"+
-  (if donor.length > 20 then "<span class=sm>by <b>#{donor}</b></span>" else "by <b>#{donor}</b>") +
+  "<b>#{recipient}</b> received<br>"+
+  "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b> "+
+  (if donor.length > 20 then "<span class=sm>from <b>#{donor}</b></span>" else "from <b>#{donor}</b>") +
   "  in #{state.selMagnAttr()} <br>"+
   "<div id=sparkline></div>"
 
