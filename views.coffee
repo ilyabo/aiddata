@@ -44,8 +44,8 @@
     style '@import url("css/bubbles.css");'
 
     div id: "yearSliderOuter", ->
-      div id:'yearLabel', -> "Year: "
       div id:'yearSlider'
+      div id:'yearTicks'
       a id:"play", -> "Play"
       #div class:"icons ui-widget ui-helper-clearfix", ->
       #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->

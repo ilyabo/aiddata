@@ -2,6 +2,9 @@ bubblesChartWidth = $(document).width()
 bubblesChartHeight = $(document).height()*0.9 - 50
 
 
+yearTicksWidth = bubblesChartWidth * 0.6
+playButtonWidth = 50
+
 lightVersionMode = $.browser.mozilla
 if lightVersionMode
   dontUseForceLayout = true
@@ -11,6 +14,7 @@ else
   dontUseForceLayout = false
   noAnimation = false
   flowMagnitudeThreshold = 0
+
 
 
 #inboundColor = "#f98a8b"
@@ -68,11 +72,58 @@ flowTooltip = (d) ->
   "<div id=tseries></div>"
 
 
-dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
-
 
 mapProj = winkelTripel()
 mapProjPath = d3.geo.path().projection(mapProj)
+
+
+dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
+
+
+
+createYearTicks = ->
+
+  dates = state.magnAttrs().map (attr) -> dateFromMagnAttr(attr)
+
+  x = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, yearTicksWidth])          
+
+  ticksSvg = d3.select("#yearTicks")
+    .append("svg")
+      .attr("width", yearTicksWidth + playButtonWidth)
+      .attr("height", 50)
+
+  ###
+  ticksSvg.append("rect")
+    .attr("fill", "#eee")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", yearTicksWidth)
+    .attr("height", 50)
+  ###
+
+  xAxis = d3.svg.axis()
+    .scale(x)
+    .ticks(12)
+    .orient("bottom")
+    .tickSize(8, 4, 0)
+    .tickSubdivide(4)
+
+
+  ticksSvg.append("g")
+    .attr("class", "x axis")
+    .call(xAxis)
+
+  $("#yearSlider").css("width", yearTicksWidth)
+
+
+  $("#yearSliderOuter")
+    .css("width", yearTicksWidth + playButtonWidth)
+    .show()
+
+  $("g.x.axis text").click ->
+    $("#yearSlider").slider('value', state.magnAttrs().indexOf( + $(this).text()))
+    
+
 
 # data is expected to be in the following form:
 # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
@@ -191,22 +242,6 @@ loadData()
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
-    svg.append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", bubblesChartWidth)
-      .attr("height", bubblesChartHeight)
-      .attr("fill", "white")
-      .on 'click', (d) -> clearNodeSelection()
-
-
-    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight*0.8]], true)
-
-    state = initFlowData(conf)
-    state.selMagnAttrGrp = "aid"
-    state.selAttrIndex = state.magnAttrs().length - 1
-
-
 
     provideNodesWithTotals(data, conf)
     provideCountryNodesWithCoords(
@@ -214,9 +249,10 @@ loadData()
       data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
     )
 
-
+    state = initFlowData(conf)
+    state.selMagnAttrGrp = "aid"
+    state.selAttrIndex = state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
-
 
     maxTotalMagnitudes = state.totalsMax[state.selMagnAttrGrp]
     maxTotalMagnitude = Math.max(d3.max(maxTotalMagnitudes.inbound), d3.max(maxTotalMagnitudes.outbound))
@@ -232,6 +268,26 @@ loadData()
 
     #timescale = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
   
+
+
+    createYearTicks()
+
+    svg.append("rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", bubblesChartWidth)
+      .attr("height", bubblesChartHeight)
+      .attr("fill", "white")
+      .on 'click', (d) -> clearNodeSelection()
+
+
+    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight*0.8]], true)
+
+
+
+
+
+
 
     hasFlows = (node, flowDirection) -> 
       totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
@@ -605,7 +661,7 @@ loadData()
         else
           state.selAttrIndex++
 
-        $("#yearSlider").slider('value', state.selAttrIndex);
+        $("#yearSlider").slider('value', state.selAttrIndex)
         update()
 
         timer = setInterval(->
