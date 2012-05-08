@@ -59,6 +59,9 @@ line.out:hover { stroke:rgb(166, 164, 255); }
 #tseries .in circle.selAttrValue  { fill:#f98a8b; }
 #tseries .out circle.selAttrValue  { fill:#9292ff; }
 
+circle.rin { fill:#f00; }
+circle.rout { fill:#00f;}
+
 #tseries rect.background {
   fill:black;
   stroke:#aaa;

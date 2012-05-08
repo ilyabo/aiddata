@@ -2,8 +2,19 @@ bubblesChartWidth = $(document).width()
 bubblesChartHeight = $(document).height()*0.9 - 50
 
 
-inboundColor = "#f98a8b"
-outboundColor = "#9292ff"
+lightVersionMode = $.browser.mozilla
+if lightVersionMode
+  dontUseForceLayout = true
+  noAnimation = true
+  flowMagnitudeThreshold = 1000*1e6-1
+else
+  dontUseForceLayout = false
+  noAnimation = false
+  flowMagnitudeThreshold = 0
+
+
+#inboundColor = "#f98a8b"
+#outboundColor = "#9292ff"
 
 svg = d3.select("body")
   .append("svg")
@@ -180,7 +191,6 @@ loadData()
   .csv('countries', "data/aiddata-countries.csv")
   .onload (data) ->
 
-
     svg.append("rect")
       .attr("x", 0)
       .attr("y", 0)
@@ -225,7 +235,7 @@ loadData()
 
     hasFlows = (node, flowDirection) -> 
       totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
-      (if totals? then d3.max(totals) > 0 else 0)
+      (if totals? then d3.max(totals) > flowMagnitudeThreshold else false)
 
     nodesWithFlows = data.nodes.filter(
       (node) -> hasFlows(node, "inbound") or hasFlows(node, "outbound")
@@ -405,8 +415,8 @@ loadData()
           createTimeSeries(d3.select("#tseries"), data)
 
           $(tipsy.$tip)
-              .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
-              .css('left', event.pageX + 10)
+              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+              .css('left', d3.event.pageX + 10)
 
 
         .on "mouseout", (d) ->
@@ -441,6 +451,7 @@ loadData()
       .enter()
         .append("g")
           .attr("class", "bubble")
+          .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
           .on 'click', (d) ->
 
             if selectedNode == this
@@ -469,7 +480,7 @@ loadData()
             createTimeSeries(d3.select("#tseries"), data)
 
             $(tipsy.$tip)  # fix vertical position
-                .css('top', event.pageY-($(tipsy.$tip).outerHeight()/2))
+                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
 
 
 
@@ -492,12 +503,12 @@ loadData()
     bubble.append("circle")
       .attr("class", "rin")
       .attr("opacity", 0.5)
-      .attr("fill", "#f00")
+      #.attr("fill", "#f00")
 
     bubble.append("circle")
       .attr("class", "rout")
       .attr("opacity", 0.5)
-      .attr("fill", "#00f")
+      #.attr("fill", "#00f")
 
 
     bubble.append("text")
@@ -525,7 +536,7 @@ loadData()
 
     update = (noAnim) ->
       updateNodeSizes()
-      duration = if noAnim then 0 else 200
+      duration = if noAnim or noAnimation then 0 else 200
 
       svg.selectAll("#yearText")
         .text(state.selMagnAttr())
@@ -549,7 +560,8 @@ loadData()
         .attr("stroke-width", (d) -> fwscale(v(d)))
         .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
 
-      force.start()
+      unless dontUseForceLayout
+       force.start()
 
     update()
 
@@ -579,14 +591,14 @@ loadData()
     stop = ->
       clearInterval(timer)
       timer = undefined
-      $(play).html("Play")
+      $("#play").html("Play")
     
 
     $("#play").click ->
       if timer
         stop()
       else
-        $(play).html("Stop");
+        $("#play").html("Stop");
 
         if state.selAttrIndex == state.magnAttrs().length - 1
           state.selAttrIndex = 0
