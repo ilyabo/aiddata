@@ -1,33 +1,35 @@
 #yearSliderOuter {
   margin: 0 auto;
   display:none;
+ vertical-align: top;
 }
 
+#yearSliderInner { float:left;}
+
 #yearSlider { display: inline-block; }
-#yearTicks { padding:1px}
+#yearTicks { padding:1px; display: inline-block; }
 
 
 #yearTicks .x.axis line.tick { stroke:#333; stroke-width:.5; }
 #yearTicks .x.axis line.tick.minor { stroke:#999; stroke-width:.5; }
 #yearTicks path.domain { fill:none; }
 
-#yearTicks .x.axis text { cursor:pointer; }
+#yearTicks .x.axis text { cursor:pointer;  }
 
-#play { }
+#play { 
+ margin-left:0;
+ float:left;
+ cursor:pointer;
+ }
 
 #chart {
 
 }
 
-#yearText {
-  fill:#ccc;
-  font-weight:bold;
-}
+#yearText {  fill:#ccc;  font-weight:bold; }
 
 
-div.icons { display: inline; margin:0 0 20px 15px;}
-div.icons div { display: inline-block;}
-
+#play { padding:4px; display: inline-block;}
 
 .tipsy { font-size:9pt !important; }
 .tipsy .sm { font-size:8pt;}
@@ -36,7 +38,6 @@ div.icons div { display: inline-block;}
 
 .nodeLabel { cursor:default;}
 
-#play { margin-left:25px; cursor:pointer;}
 
 g.flows line { stroke-linecap:round; }
 

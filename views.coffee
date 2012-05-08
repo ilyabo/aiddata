@@ -44,12 +44,17 @@
     style '@import url("css/bubbles.css");'
 
     div id: "yearSliderOuter", ->
-      div id:'yearSlider'
-      div id:'yearTicks'
-      a id:"play", -> "Play"
-      #div class:"icons ui-widget ui-helper-clearfix", ->
-      #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
-      #    span id:"playButton", class: "ui-icon ui-icon-play"
+
+      div id:"play", class:"ui-state-default ui-corner-all", ->
+          span class:"ui-icon ui-icon-play"
+
+      div id:'yearSliderInner', ->
+        div id:'yearSlider'
+        #a id:"play", -> "Play"
+        div id:'yearTicks'
+        #div class:"icons ui-widget ui-helper-clearfix", ->
+        #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
+        #    span id:"playButton", class: "ui-icon ui-icon-play"
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'

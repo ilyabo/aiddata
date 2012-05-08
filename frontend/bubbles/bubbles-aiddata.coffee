@@ -3,7 +3,8 @@ bubblesChartHeight = $(document).height()*0.9 - 50
 
 
 yearTicksWidth = bubblesChartWidth * 0.6
-playButtonWidth = 50
+yearTicksLeft = yearTicksRight = 10
+playButtonWidth = 70
 
 lightVersionMode = $.browser.mozilla
 if lightVersionMode
@@ -89,8 +90,10 @@ createYearTicks = ->
 
   ticksSvg = d3.select("#yearTicks")
     .append("svg")
-      .attr("width", yearTicksWidth + playButtonWidth)
+      .attr("width", yearTicksWidth + yearTicksLeft + yearTicksRight)
       .attr("height", 50)
+    .append("g")
+      .attr("transform", "translate(#{yearTicksLeft})")
 
   ###
   ticksSvg.append("rect")
@@ -113,16 +116,28 @@ createYearTicks = ->
     .attr("class", "x axis")
     .call(xAxis)
 
-  $("#yearSlider").css("width", yearTicksWidth)
 
+  $("#yearSlider")
+    .css("width", yearTicksWidth)
+    .css("margin-left", yearTicksLeft)
+
+
+  $("#yearSliderInner")
+    .css("width", yearTicksWidth + yearTicksLeft + yearTicksRight)
 
   $("#yearSliderOuter")
-    .css("width", yearTicksWidth + playButtonWidth)
+    .css("width", yearTicksWidth + yearTicksLeft + yearTicksRight + playButtonWidth)
     .show()
 
   $("g.x.axis text").click ->
     $("#yearSlider").slider('value', state.magnAttrs().indexOf( + $(this).text()))
-    
+
+  $("#play").hover(
+    () -> $(this).addClass('ui-state-hover')
+    ,
+    () -> $(this).removeClass('ui-state-hover')
+  )
+  
 
 
 # data is expected to be in the following form:
@@ -647,14 +662,18 @@ loadData()
     stop = ->
       clearInterval(timer)
       timer = undefined
-      $("#play").html("Play")
-    
+      $("#play span")
+        .removeClass("ui-icon-pause")
+        .addClass("ui-icon-play")
+
 
     $("#play").click ->
       if timer
         stop()
       else
-        $("#play").html("Stop");
+        $("#play span")
+          .removeClass("ui-icon-play")
+          .addClass("ui-icon-pause")
 
         if state.selAttrIndex == state.magnAttrs().length - 1
           state.selAttrIndex = 0
