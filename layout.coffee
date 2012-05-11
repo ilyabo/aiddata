@@ -53,7 +53,7 @@
                   <ul class="nav">
 
                     <li <%=(if @page == "ffprints" then 'class=active' else "") %>>
-                      <a href="ffprints">Flow fingerprints</a></li>
+                      <a href="ffprints">Flowprints</a></li>
 
                     <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
                     <a href="bubbles">Bubbles</a></li>
