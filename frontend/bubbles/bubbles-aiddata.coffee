@@ -1,5 +1,5 @@
 bubblesChartWidth = $(document).width()
-bubblesChartHeight = $(document).height()*0.9 - 50
+bubblesChartHeight = $(document).height() - 300
 
 
 yearTicksWidth = bubblesChartWidth * 0.6

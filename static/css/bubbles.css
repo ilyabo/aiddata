@@ -43,25 +43,26 @@ g.flows line { stroke-linecap:round; }
 
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
-g.bubble circle.selected { stroke:#ecb903; stroke-width:2;}
+g.bubble circle.selected { stroke:#FEE090; stroke-width:2;}
 
-line.in { stroke:#f98a8b; }
+line.in { stroke:#da969f; }
 line.in:hover { stroke:rgb(255, 174, 174); }
 
-line.out { stroke:#9292ff; }
-line.out:hover { stroke:rgb(166, 164, 255); }
+line.out { stroke:#a1c0de; }
+line.out:hover { stroke:#bbdeff; }
 
 
 #tseries .line { fill: none; stroke-width: 1.5px; }
-#tseries .in .line { stroke: #f98a8b; }
-#tseries .out .line { stroke: #9292ff; }
+#tseries .in .line { stroke: #a1c0de; }
+#tseries .out .line { stroke: #da969f; }
 
 #tseries circle.selAttrValue  { stroke-width:1.5; stroke:white; }
-#tseries .in circle.selAttrValue  { fill:#f98a8b; }
-#tseries .out circle.selAttrValue  { fill:#9292ff; }
+#tseries .in circle.selAttrValue  { fill:#a1c0de; }
+#tseries .out circle.selAttrValue  { fill:#da969f; }
 
-circle.rin { fill:#f00; }
-circle.rout { fill:#00f;}
+circle.rin { fill:#B2182B; }
+
+circle.rout { fill:#2166AC;}
 
 #tseries rect.background {
   fill:black;
