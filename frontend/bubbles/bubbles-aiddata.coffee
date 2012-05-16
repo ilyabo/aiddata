@@ -1,10 +1,11 @@
-bubblesChartWidth = $(document).width()
-bubblesChartHeight = $(document).height() - 300
+bubblesChartWidth = $(document).width() * 0.95
+bubblesChartHeight = $(document).height() - 200
+nodesWithoutCoordsMarginBottom = 90
 
 
 yearTicksWidth = bubblesChartWidth * 0.6
 yearTicksLeft = yearTicksRight = 10
-playButtonWidth = 70
+playButtonWidth = 40
 
 lightVersionMode = $.browser.mozilla
 if lightVersionMode
@@ -18,10 +19,8 @@ else
 
 
 
-#inboundColor = "#f98a8b"
-#outboundColor = "#9292ff"
 
-svg = d3.select("body")
+svg = d3.select("#bubblesChart")
   .append("svg")
     .attr("width", bubblesChartWidth)
     .attr("height", bubblesChartHeight)
@@ -55,11 +54,11 @@ magnitudeFormat = (d) ->
 shortMagnitudeFormat = (d) -> magnitudeFormat(d).replace(" million", "M")
 
 bubbleTooltip = (d) ->
-  "<b>#{d.name}</b>" + 
+  "<b>#{d[conf.nodeLabelAttr]}</b>" + 
   " in <b>#{state.selMagnAttr()}</b>" +
   (if d.outbound > 0 then "<br>donated #{magnitudeFormat(d.outbound)}" else "") +
-  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") +
-  "<div id=tseries></div>"
+  (if d.inbound > 0 then "<br>received #{magnitudeFormat(d.inbound)}" else "") 
+  #"<div id=tseries></div>"
 
 
 flowTooltip = (d) ->
@@ -69,8 +68,8 @@ flowTooltip = (d) ->
   "<b>#{recipient}</b> received<br>"+
   "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b> "+
   (if donor.length > 20 then "<span class=sm>from <b>#{donor}</b></span>" else "from <b>#{donor}</b>") +
-  "  in #{state.selMagnAttr()} <br>"+
-  "<div id=tseries></div>"
+  "  in #{state.selMagnAttr()} <br>"
+  #"<div id=tseries></div>"
 
 
 
@@ -142,10 +141,10 @@ createYearTicks = ->
 
 # data is expected to be in the following form:
 # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
-createTimeSeries = (parent, data) ->
-  margin = {top: 15, right: 3, bottom: 14, left: 46}
-  w = 200 - margin.left - margin.right
-  h = 100 - margin.top - margin.bottom
+createTimeSeries = (parent, data, title) ->
+  margin = {top: 28, right: 3, bottom: 14, left: 46}
+  w = 300 - margin.left - margin.right
+  h = 200 - margin.top - margin.bottom
 
   hasIn = data[0]?.inbound?
   hasOut = data[0]?.outbound?
@@ -168,12 +167,20 @@ createTimeSeries = (parent, data) ->
     .tickFormat(shortMagnitudeFormat)
     .tickSize(-w, 0, 0)
 
-  tseries = parent
+  tsvg = parent
     .append("svg")
       .datum(data)
       .attr("width", w + margin.left + margin.right)
       .attr("height", h + margin.top + margin.bottom)
-    .append("g")
+  
+  tsvg.append("text")  
+    .attr("class", "title")
+    .attr("x",  margin.left + w/2)
+    .attr("y", 20)
+    .attr("text-anchor", "middle")
+    .text(if title.length < 50 then title else title.substr(0, 47)+"..")
+
+  tseries = tsvg.append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
   tseries.append("rect")
@@ -352,7 +359,7 @@ loadData()
       for n in nodes
         if not n.x? or not n.y?
           n.x = x + n.maxr/2 + (bubblesChartWidth - totalw)/2
-          n.y = bubblesChartHeight - 75
+          n.y = bubblesChartHeight - nodesWithoutCoordsMarginBottom
           n.gravity = {x: n.x, y: n.y}
           x += 2 * n.maxr/2
 
@@ -476,6 +483,7 @@ loadData()
             this.parentNode.appendChild(this)
 
           $(this).tipsy("show")
+          $("#tseriesPanel").add('<div id="tseries"></div>')
 
 
           data = state.magnAttrs().map (attr) => 
@@ -492,6 +500,7 @@ loadData()
 
         .on "mouseout", (d) ->
           $(this).tipsy("hide")
+          $("#tseries").remove()
 
         ###
         .on "mouseover", (d) ->
@@ -523,10 +532,11 @@ loadData()
         .append("g")
           .attr("class", "bubble")
           .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
-          .on 'click', (d) ->
+          .on 'click', (d, i) ->
 
             if selectedNode == this
               selectedNode = null
+              $("#tseriesNode#{i}").remove()
               d3.select(this).selectAll("circle").classed("selected", false)
             else 
               if selectedNode != null
@@ -537,27 +547,33 @@ loadData()
               showFlowsOf this
 
 
-          .on 'mouseover', (d) ->
+          .on 'mouseover', (d, i) ->
             if selectedNode == null
               showFlowsOf this
 
             $(this).tipsy("show")
+            
 
             data = state.magnAttrs().map (attr, i) => 
                 date: dateFromMagnAttr(attr)
                 inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
                 outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
 
-            createTimeSeries(d3.select("#tseries"), data)
+            if $("#tseriesNode#{i}").length == 0
+              $("#tseriesPanel").append('<div id="tseriesNode' + i + '" class="tseries"></div>')
+              createTimeSeries(d3.select("#tseriesNode#{i}"), data, d3.select(this).data()[0][conf.nodeLabelAttr])
 
             $(tipsy.$tip)  # fix vertical position
                 .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
 
 
 
-          .on 'mouseout', (d) ->
+          .on 'mouseout', (d, i) ->
             if selectedNode == null
               flows.selectAll("line").remove()
+
+            if selectedNode != this
+              $("#tseriesNode#{i}").remove()
   
             $(this).tipsy("hide")
 
@@ -573,12 +589,12 @@ loadData()
 
     bubble.append("circle")
       .attr("class", "rin")
-      .attr("opacity", 0.5)
+      #.attr("opacity", 0.5)
       #.attr("fill", "#f00")
 
     bubble.append("circle")
       .attr("class", "rout")
-      .attr("opacity", 0.5)
+      #.attr("opacity", 0.5)
       #.attr("fill", "#00f")
 
 
