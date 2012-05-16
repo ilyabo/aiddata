@@ -34,6 +34,7 @@ conf =
   nodeLabelAttr: 'name'
   latAttr: 'Lat'
   lonAttr: 'Lon'
+
   flowMagnAttrs:
     aid:
       attrs: [1947..2011]
@@ -273,14 +274,15 @@ loadData()
 
     state = initFlowData(conf)
     state.selMagnAttrGrp = "aid"
-    state.selAttrIndex = state.magnAttrs().length - 1
+    state.selAttrIndex =  state.magnAttrs().length - 3  # state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
+
 
     maxTotalMagnitudes = state.totalsMax[state.selMagnAttrGrp]
     maxTotalMagnitude = Math.max(d3.max(maxTotalMagnitudes.inbound), d3.max(maxTotalMagnitudes.outbound))
 
     rscale = d3.scale.sqrt()
-      .range([0, Math.min(bubblesChartWidth/15, bubblesChartHeight/7)])
+      .range([0, Math.min(bubblesChartWidth/20, bubblesChartHeight/10)])
       .domain([0, maxTotalMagnitude])
     maxr = rscale.range()[1]
 
@@ -526,6 +528,33 @@ loadData()
           flowTooltip(d3.select(this).data()[0])
 
 
+    TimeSeries = 
+      id: (type, i) -> 'tseries'+ type + i
+
+      exists: (type, i) -> $("#" + TimeSeries.id(type, i)).length > 0
+
+      create: (type, i) ->
+        id = TimeSeries.id(type, i)
+        $("#tseriesPanel").append('<div id="'+id+'" class="tseries"></div>')
+        return $("#"+id).get(0)
+
+      remove: (type, i) -> $("#"+TimeSeries.id(type, i)).remove()
+
+      removeAllExcept: (type, i) ->  $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
+
+
+    createNodeTimeSeries = (node, d, i) ->
+      data = state.magnAttrs().map (attr, i) -> 
+          date: dateFromMagnAttr(attr)
+          inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
+          outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
+
+      if not TimeSeries.exists("node", i)
+        tseries = TimeSeries.create("node", i)
+        nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
+        createTimeSeries(d3.select(tseries), data, nodeLabel)
+
+
     bubble = svg.selectAll("g.bubble")
         .data(nodes)
       .enter()
@@ -535,13 +564,16 @@ loadData()
           .on 'click', (d, i) ->
 
             if selectedNode == this
+              TimeSeries.remove("node", i)
               selectedNode = null
-              $("#tseriesNode#{i}").remove()
               d3.select(this).selectAll("circle").classed("selected", false)
             else 
               if selectedNode != null
+                TimeSeries.removeAllExcept("node", i)
                 d3.select(selectedNode).selectAll("circle").classed("selected", false)
                 flows.selectAll("line").remove()
+              else
+                createNodeTimeSeries(this, d, i)  
               selectedNode = this
               d3.select(this).selectAll("circle").classed("selected", true)
               showFlowsOf this
@@ -551,18 +583,9 @@ loadData()
             if selectedNode == null
               showFlowsOf this
 
+            createNodeTimeSeries(this, d, i)
+
             $(this).tipsy("show")
-            
-
-            data = state.magnAttrs().map (attr, i) => 
-                date: dateFromMagnAttr(attr)
-                inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
-                outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
-
-            if $("#tseriesNode#{i}").length == 0
-              $("#tseriesPanel").append('<div id="tseriesNode' + i + '" class="tseries"></div>')
-              createTimeSeries(d3.select("#tseriesNode#{i}"), data, d3.select(this).data()[0][conf.nodeLabelAttr])
-
             $(tipsy.$tip)  # fix vertical position
                 .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
 
@@ -573,7 +596,7 @@ loadData()
               flows.selectAll("line").remove()
 
             if selectedNode != this
-              $("#tseriesNode#{i}").remove()
+              TimeSeries.remove("node", i)
   
             $(this).tipsy("hide")
 
@@ -657,9 +680,10 @@ loadData()
       .slider
         min: 0
         max: state.magnAttrs().length - 1
-        value: state.magnAttrs().length - 1
+        value: state.selAttrIndex
         slide: (e, ui) -> updateYear(e, ui, false)
         change: (e, ui) -> updateYear(e, ui, false)
+    $("#yearSlider").focus()
 
     #$("#playButton").button()
 
