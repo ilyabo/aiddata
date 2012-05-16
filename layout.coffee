@@ -58,11 +58,15 @@
                     <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
                     <a href="bubbles">Bubbles</a></li>
 
+                    <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
+                    <a href="crossfilter">Crossfilter</a></li>
+
+                    <li <%=(if @page == "horizon" then 'class=active' else "") %> >
+                    <a href="bubbles">Horizon</a></li>
+
                     <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
                     <a href="flowmap">Flowmap</a></li>
 
-                    <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
-                    <a href="crossfilter">Crossfilter</a></li>
 
                     <li <%=(if @page == "time-series" then 'class=active' else "") %> >
                     <a href="time-series">Time series</a></li>
