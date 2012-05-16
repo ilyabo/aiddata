@@ -47,8 +47,3 @@ svg.ffprints g.fingerprint rect.fp {
 
 
 
-.container,
-.navbar-fixed-top .container,
-.navbar-fixed-bottom .container {
-  width: 95% !important;
-}

@@ -1,10 +1,16 @@
 #yearSliderOuter {
   margin: 0 auto;
   display:none;
- vertical-align: top;
+  vertical-align: top;
+  height:35px;
+  background-color:#eee; 
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
 }
 
-#yearSliderInner { float:left;}
+#yearSliderInner { float:left; height:40px; }
 
 #yearSlider { display: inline-block; }
 #yearTicks { padding:1px; display: inline-block; }
@@ -22,8 +28,8 @@
  cursor:pointer;
  }
 
-#chart {
-
+#bubblesChart {
+text-align:center;
 }
 
 #yearText {  fill:#ccc;  font-weight:bold; }
@@ -38,12 +44,17 @@
 
 .nodeLabel { cursor:default;}
 
+#tseriesPanel { position: absolute; top:100px; left:20px;}
 
 g.flows line { stroke-linecap:round; }
 
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
+g.bubble circle:hover { stroke:#fff; }
 g.bubble circle.selected { stroke:#FEE090; stroke-width:2;}
+
+g.bubble circle.rin { fill:#B2182B; opacity:.5; }
+g.bubble circle.rout { fill:#2166AC; opacity:.5; }
 
 line.in { stroke:#da969f; }
 line.in:hover { stroke:rgb(255, 174, 174); }
@@ -52,42 +63,45 @@ line.out { stroke:#a1c0de; }
 line.out:hover { stroke:#bbdeff; }
 
 
-#tseries .line { fill: none; stroke-width: 1.5px; }
-#tseries .in .line { stroke: #a1c0de; }
-#tseries .out .line { stroke: #da969f; }
 
-#tseries circle.selAttrValue  { stroke-width:1.5; stroke:white; }
-#tseries .in circle.selAttrValue  { fill:#a1c0de; }
-#tseries .out circle.selAttrValue  { fill:#da969f; }
 
-circle.rin { fill:#B2182B; }
 
-circle.rout { fill:#2166AC;}
+/* Time-series */
+.tseries .title { fill:#666; font-size:10px; font-weight:normal;}
+.tseries .line { fill: none; stroke-width: 1.5px; }
+.tseries .in .line { stroke: #B2182B; opacity:.5; }
+.tseries .out .line { stroke: #2166AC; opacity:.5;}
 
-#tseries rect.background {
-  fill:black;
-  stroke:#aaa;
+.tseries circle.selAttrValue  { stroke-width:1.5; stroke:#666; }
+.tseries .in circle.selAttrValue  { fill:#da969f; }
+.tseries .out circle.selAttrValue  { fill:#a1c0de; }
+
+
+
+.tseries rect.background {
+  fill:white;
+  stroke:#eee;
   stroke-width:1;
-  opacity:1.0;
+  opacity:0.7;
 }
 
-#tseries .axis path {
+.tseries .axis path {
   fill: none;
   shape-rendering: crispEdges;
 }
 
 
-#tseries .y.axis line, #tseries .y.axis path {
-  stroke:#333;
+.tseries .y.axis line, #tseries .y.axis path {
+  stroke:#eee;
   stroke-width:1;
 }
 
-#tseries .x.axis line {
+.tseries .x.axis line {
   stroke-width:1;
-  stroke:#ccc;
+  stroke:#eee;
 }
 
-#tseries .axis text {
+.tseries .axis text {
   font-size:9px;
-  fill:white;
+  fill:gray;
 }

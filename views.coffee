@@ -43,6 +43,8 @@
 
     style '@import url("css/bubbles.css");'
 
+    div id:"bubblesChart"
+
     div id: "yearSliderOuter", ->
 
       div id:"play", class:"ui-state-default ui-corner-all", ->
@@ -55,6 +57,9 @@
         #div class:"icons ui-widget ui-helper-clearfix", ->
         #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
         #    span id:"playButton", class: "ui-icon ui-icon-play"
+
+
+    div id:"tseriesPanel"
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
