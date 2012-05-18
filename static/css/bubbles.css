@@ -98,7 +98,7 @@ line.out:hover { stroke:#bbdeff; }
 
 .tseries .x.axis line {
   stroke-width:1;
-  stroke:#eee;
+  stroke:#ccc;
 }
 
 .tseries .axis text {

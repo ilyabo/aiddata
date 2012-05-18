@@ -139,13 +139,19 @@ createYearTicks = ->
   )
   
 
+shortenLabel = (labelText, maxLength) ->
+  if labelText.length < maxLength
+    labelText
+  else
+    labelText.substr(0, maxLength - 2) + ".."
+
 
 # data is expected to be in the following form:
 # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
 createTimeSeries = (parent, data, title) ->
-  margin = {top: 28, right: 3, bottom: 14, left: 46}
-  w = 300 - margin.left - margin.right
-  h = 200 - margin.top - margin.bottom
+  margin = {top: 28, right: 8, bottom: 14, left: 46}
+  w = 250 - margin.left - margin.right
+  h = 150 - margin.top - margin.bottom
 
   hasIn = data[0]?.inbound?
   hasOut = data[0]?.outbound?
@@ -157,12 +163,12 @@ createTimeSeries = (parent, data, title) ->
 
   xAxis = d3.svg.axis()
     .scale(x)
-    .ticks(4)
+    .ticks(5)
     .orient("bottom")
     .tickSize(3, 0, 0)
 
   yAxis = d3.svg.axis()
-    .ticks(3)
+    .ticks(4)
     .scale(y)
     .orient("left")
     .tickFormat(shortMagnitudeFormat)
@@ -179,7 +185,7 @@ createTimeSeries = (parent, data, title) ->
     .attr("x",  margin.left + w/2)
     .attr("y", 20)
     .attr("text-anchor", "middle")
-    .text(if title.length < 50 then title else title.substr(0, 47)+"..")
+    .text(title)
 
   tseries = tsvg.append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -236,6 +242,20 @@ createTimeSeries = (parent, data, title) ->
       .attr("cy", y(data[state.selAttrIndex].outbound))
       .attr("r", 2)
 
+
+TimeSeries = 
+  id: (type, i) -> 'tseries'+ type + i
+
+  exists: (type, i) -> $("#" + TimeSeries.id(type, i)).length > 0
+
+  create: (type, i) ->
+    id = TimeSeries.id(type, i)
+    $("#tseriesPanel").append('<div id="'+id+'" class="tseries"></div>')
+    return $("#"+id).get(0)
+
+  remove: (type, i) -> $("#"+TimeSeries.id(type, i)).remove()
+
+  removeAllExcept: (type, i) ->  $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
 
 
 
@@ -473,51 +493,46 @@ loadData()
             #.attr("stroke", inboundColor)
             #.attr("opacity",0.5)
 
+      createFlowTimeSeries = (flow, d, i) ->
+        data = state.magnAttrs().map (attr) => 
+            date: dateFromMagnAttr(attr)
+            inbound: if d3.select(flow).classed("in") then +d.data[attr]
+            outbound: if d3.select(flow).classed("out") then +d.data[attr]
+
+        if not TimeSeries.exists("flow", i)
+          tseries = TimeSeries.create("flow", i)
+          recipient = d.target.data[conf.nodeLabelAttr]
+          donor = d.source.data[conf.nodeLabelAttr]
+
+          flowLabel = shortenLabel(donor, 25) + " -> " + shortenLabel(recipient, 25)
+          createTimeSeries(d3.select(tseries), data, flowLabel)
+
+
       flows.selectAll("line")
-        .attr("x1", (d) -> d.source.x )
-        .attr("y1", (d) -> d.source.y )
-        .attr("x2", (d) -> d.target.x )
-        .attr("y2", (d) -> d.target.y )
+        .attr("x1", (d) -> d.source.x)
+        .attr("y1", (d) -> d.source.y)
+        .attr("x2", (d) -> d.target.x)
+        .attr("y2", (d) -> d.target.y)
         .attr("stroke-width", (d) -> fwscale(v(d)))
         .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
-        .on "mouseover", (d) ->
+        .on "mouseover", (d, i) ->
           if this.parentNode?
             this.parentNode.appendChild(this)
 
           $(this).tipsy("show")
           $("#tseriesPanel").add('<div id="tseries"></div>')
 
-
-          data = state.magnAttrs().map (attr) => 
-              date: dateFromMagnAttr(attr)
-              inbound: if d3.select(this).classed("in") then +d.data[attr]
-              outbound: if d3.select(this).classed("out") then +d.data[attr]
-
-          createTimeSeries(d3.select("#tseries"), data)
+          createFlowTimeSeries(this, d, i)
 
           $(tipsy.$tip)
               .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
               .css('left', d3.event.pageX + 10)
 
 
-        .on "mouseout", (d) ->
+        .on "mouseout", (d, i) ->
           $(this).tipsy("hide")
-          $("#tseries").remove()
+          TimeSeries.remove("flow", i)
 
-        ###
-        .on "mouseover", (d) ->
-          d3.select(this)
-            .transition()
-            .duration(100)
-            .attr("stroke", 
-              d3.rgb(if d3.select(this).classed("in") then inboundColor else outboundColor).brighter(0.5))
-
-        .on "mouseout", (d) ->
-          d3.select(this)
-            .transition()
-            .duration(100)
-            .attr("stroke", if d3.select(this).classed("in") then inboundColor else outboundColor)
-        ###
 
       $('line').tipsy
         gravity: 'w'
@@ -527,20 +542,6 @@ loadData()
         title: ->
           flowTooltip(d3.select(this).data()[0])
 
-
-    TimeSeries = 
-      id: (type, i) -> 'tseries'+ type + i
-
-      exists: (type, i) -> $("#" + TimeSeries.id(type, i)).length > 0
-
-      create: (type, i) ->
-        id = TimeSeries.id(type, i)
-        $("#tseriesPanel").append('<div id="'+id+'" class="tseries"></div>')
-        return $("#"+id).get(0)
-
-      remove: (type, i) -> $("#"+TimeSeries.id(type, i)).remove()
-
-      removeAllExcept: (type, i) ->  $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
 
 
     createNodeTimeSeries = (node, d, i) ->
@@ -552,7 +553,7 @@ loadData()
       if not TimeSeries.exists("node", i)
         tseries = TimeSeries.create("node", i)
         nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-        createTimeSeries(d3.select(tseries), data, nodeLabel)
+        createTimeSeries(d3.select(tseries), data, shortenLabel(nodeLabel, 50))
 
 
     bubble = svg.selectAll("g.bubble")
