@@ -220,11 +220,13 @@ createTimeSeries = (parent, data, title) ->
       .attr("class", "line")
       .attr("d", linein)
 
+    ###
     gin.append("circle")
       .attr("class","selAttrValue")
       .attr("cx", x(data[state.selAttrIndex].date))
       .attr("cy", y(data[state.selAttrIndex].inbound))
       .attr("r", 2)
+    ###
 
 
   if hasOut
@@ -238,11 +240,13 @@ createTimeSeries = (parent, data, title) ->
       .attr("class", "line")
       .attr("d", lineout)
 
+    ###
     gout.append("circle")
       .attr("class","selAttrValue")
       .attr("cx", x(data[state.selAttrIndex].date))
       .attr("cy", y(data[state.selAttrIndex].outbound))
       .attr("r", 2)
+    ###
 
 
 TimeSeries = 
@@ -584,6 +588,7 @@ loadData()
 
 
           .on 'mouseover', (d, i) ->
+            d3.select(this).classed("highlighted", true)
             if selectedNode == null
               showFlowsOf this
 
@@ -596,6 +601,8 @@ loadData()
 
 
           .on 'mouseout', (d, i) ->
+            d3.select(this).classed("highlighted", false)
+
             if selectedNode == null
               flows.selectAll("line").remove()
 
