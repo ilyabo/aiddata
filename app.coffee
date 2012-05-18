@@ -29,7 +29,7 @@ require('zappa').run 3000, ->
 
 
   @get '/': -> 
-    @render ffprints: {layout: 'bootstrap.eco'}
+    @render 'bubbles': {layout: 'bootstrap.eco'}
 
   @get '/ffprints': -> 
     @render ffprints: {layout: 'bootstrap.eco'}
