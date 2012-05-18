@@ -92,6 +92,7 @@ line.out:hover { stroke:#bbdeff; }
   shape-rendering: crispEdges;
 }
 
+.tseries line.selDate { stroke:#000; opacity:.3; }
 
 .tseries .y.axis line, #tseries .y.axis path {
   stroke:#eee;

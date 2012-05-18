@@ -189,24 +189,37 @@ createTimeSeries = (parent, data, title) ->
     .attr("text-anchor", "middle")
     .text(title)
 
-  tseries = tsvg.append("g")
+  tg = tsvg.append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
-  tseries.append("rect")
+  tg.append("rect")
     .attr("class", "background")
     .attr("x", 0)
     .attr("y", 0)
     .attr("width", w)
     .attr("height", h)
 
-  tseries.append("g")
+  tg.append("g")
     .attr("class", "y axis")
     .call(yAxis)
 
-  tseries.append("g")
+  tg.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + h + ")")
     .call(xAxis)
+
+  selDateLine = tg.append("line")
+    .attr("class", "selDate")
+    .attr("y1", -3)
+    .attr("y2", h + 6)
+
+  updateYear = ->
+    tg.selectAll("line.selDate")
+      .attr("x1", x(data[state.selAttrIndex].date))
+      .attr("x2", x(data[state.selAttrIndex].date))
+
+  updateYear()
+  $(selDateLine[0]).bind("updateYear", updateYear)
 
 
   if hasIn
@@ -214,7 +227,7 @@ createTimeSeries = (parent, data, title) ->
       .x((d) -> x(d.date))
       .y((d) -> y(d.inbound))
     
-    gin = tseries.append("g").attr("class", "in")
+    gin = tg.append("g").attr("class", "in")
 
     gin.append("path")
       .attr("class", "line")
@@ -234,7 +247,7 @@ createTimeSeries = (parent, data, title) ->
       .x((d) -> x(d.date))
       .y((d) -> y(d.outbound))
     
-    gout = tseries.append("g").attr("class", "out")
+    gout = tg.append("g").attr("class", "out")
 
     gout.append("path")
       .attr("class", "line")
@@ -654,6 +667,7 @@ loadData()
       unless state.selAttrIndex == ui.value
         state.selAttrIndex = ui.value
         update(noAnim)
+        $(".tseries line.selDate").trigger("updateYear")
 
     update = (noAnim) ->
       updateNodeSizes()
@@ -733,6 +747,7 @@ loadData()
           state.selAttrIndex++
 
         $("#yearSlider").slider('value', state.selAttrIndex)
+        $(".tseries line.selDate").trigger("updateYear")
         update()
 
         timer = setInterval(->
@@ -741,6 +756,7 @@ loadData()
           else
             state.selAttrIndex++
             $("#yearSlider").slider('value', state.selAttrIndex)
+            $(".tseries line.selDate").trigger("updateYear")
             update()
 
         , 900)
