@@ -153,7 +153,7 @@ shortenLabel = (labelText, maxLength) ->
 createTimeSeries = (parent, data, title) ->
   margin = {top: 28, right: 8, bottom: 14, left: 46}
   w = 250 - margin.left - margin.right
-  h = 150 - margin.top - margin.bottom
+  h = 120 - margin.top - margin.bottom
 
   hasIn = data[0]?.inbound?
   hasOut = data[0]?.outbound?
