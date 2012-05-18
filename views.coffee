@@ -2,6 +2,19 @@
 
   
 
+  @view horizon: ->
+    @page = "horizon"
+    
+    div id:'horizonChart'
+
+    style '@import url("css/cubism.css");'
+    script src: 'cubism.v1.js'
+    script src: 'js/cubism-aiddata.js'
+
+
+
+
+
   @view ffprints: ->
     @page = "ffprints"
     @dataset = "aiddata"

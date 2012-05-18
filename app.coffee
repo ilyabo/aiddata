@@ -5,6 +5,7 @@ require('zappa').run 3000, ->
   @use 'static': __dirname + '/static'
   @use 'static': __dirname + '/node_modules/d3'
   @use 'static': __dirname + '/node_modules/crossfilter'
+  @use 'static': __dirname + '/node_modules/cubism'
 
   #@enable 'default layout'
   #@enable 'minify'
@@ -35,6 +36,9 @@ require('zappa').run 3000, ->
 
   @get '/bubbles': -> 
     @render bubbles: {layout: 'bootstrap.eco'}
+
+  @get '/horizon': -> 
+    @render horizon: {layout: 'bootstrap.eco'}
  
   @get '/flowmap': -> 
     @render flowmap: {layout: 'bootstrap.eco'}
@@ -126,7 +130,7 @@ require('zappa').run 3000, ->
               to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
                 AS sum_amount_usd_constant, 
               COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
-         FROM aiddata2  --limit 50
+         FROM aiddata2  --limit 5
       """, (err, data) =>
         unless err?
           numNodes = 0
@@ -140,8 +144,6 @@ require('zappa').run 3000, ->
           data.rows.forEach (r) -> 
             r.donorcode = nodeId(r.donorcode)
             r.recipientcode = nodeId(r.recipientcode)
-
-          console.log utils.objListToCsv(nodeToId)
           
           @send utils.objListToCsv(data.rows)
 
