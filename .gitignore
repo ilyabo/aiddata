@@ -3,4 +3,3 @@
 node_modules/
 static/coffee/
 logs/
-static/data/cached/flows.csv
