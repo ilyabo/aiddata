@@ -40,8 +40,9 @@ conf =
       attrs: [1947..2011]
       explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
 
-state = null
 
+state = null
+stopAnimation = null
 
 
 
@@ -130,6 +131,7 @@ createYearTicks = ->
     .show()
 
   $("g.x.axis text").click ->
+    stopAnimation()
     $("#yearSlider").slider('value', state.magnAttrs().indexOf( + $(this).text()))
 
   $("#play").hover(
@@ -294,7 +296,7 @@ loadData()
 
     state = initFlowData(conf)
     state.selMagnAttrGrp = "aid"
-    state.selAttrIndex =  state.magnAttrs().length - 3  # state.magnAttrs().length - 1
+    state.selAttrIndex =  state.magnAttrs().length - 7  # state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
@@ -374,16 +376,17 @@ loadData()
     updateNodeSizes()
 
     placeNodesWithoutCoords = (nodes) ->
+      squeezeFactor = 0.75
       totalw = 0
       for n in nodes
-        if not n.x? or not n.y? then totalw += 2 * n.maxr/2
+        if not n.x? or not n.y? then totalw += 2 * n.maxr * squeezeFactor
       x = 0
       for n in nodes
         if not n.x? or not n.y?
-          n.x = x + n.maxr/2 + (bubblesChartWidth - totalw)/2
+          n.x = x + n.maxr * squeezeFactor + (bubblesChartWidth - totalw)/2
           n.y = bubblesChartHeight - nodesWithoutCoordsMarginBottom
           n.gravity = {x: n.x, y: n.y}
-          x += 2 * n.maxr/2
+          x += 2 * n.maxr * squeezeFactor
 
     placeNodesWithoutCoords(nodes)
 
@@ -504,7 +507,7 @@ loadData()
           recipient = d.target.data[conf.nodeLabelAttr]
           donor = d.source.data[conf.nodeLabelAttr]
 
-          flowLabel = shortenLabel(donor, 25) + " -> " + shortenLabel(recipient, 25)
+          flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
           createTimeSeries(d3.select(tseries), data, flowLabel)
 
 
@@ -553,7 +556,7 @@ loadData()
       if not TimeSeries.exists("node", i)
         tseries = TimeSeries.create("node", i)
         nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-        createTimeSeries(d3.select(tseries), data, shortenLabel(nodeLabel, 50))
+        createTimeSeries(d3.select(tseries), data, shortenLabel(nodeLabel, 40))
 
 
     bubble = svg.selectAll("g.bubble")
@@ -682,8 +685,9 @@ loadData()
         min: 0
         max: state.magnAttrs().length - 1
         value: state.selAttrIndex
-        slide: (e, ui) -> updateYear(e, ui, false)
+        slide: (e, ui) -> stopAnimation(); updateYear(e, ui, false)
         change: (e, ui) -> updateYear(e, ui, false)
+
     $("#yearSlider").focus()
 
     #$("#playButton").button()
@@ -700,7 +704,7 @@ loadData()
 
     timer = undefined
 
-    stop = ->
+    stopAnimation = ->
       clearInterval(timer)
       timer = undefined
       $("#play span")
@@ -710,7 +714,7 @@ loadData()
 
     $("#play").click ->
       if timer
-        stop()
+        stopAnimation()
       else
         $("#play span")
           .removeClass("ui-icon-play")
@@ -726,7 +730,7 @@ loadData()
 
         timer = setInterval(->
           if (state.selAttrIndex >= state.magnAttrs().length - 1) 
-            stop()
+            stopAnimation()
           else
             state.selAttrIndex++
             $("#yearSlider").slider('value', state.selAttrIndex)
