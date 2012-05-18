@@ -2,6 +2,8 @@
 fs = require 'fs'
 path = require 'path'
 log = console.log
+
+cachedPath = 'static/data/cached'
       
 
 task 'build', ->
@@ -52,13 +54,14 @@ task 'refresh-views', ->
     
 
 task 'refresh-cached', ->
+  fs.mkdirSync(cachedPath, parseInt('0755', 8))
+
   files = [
     "aiddata-donor-totals.csv",  "aiddata-recipient-totals.csv", "flows.csv",
     "aiddata-nodes.csv", "aiddata-totals-d-r-y.csv"]
   for file in files
     console.log "Refreshing file #{file}"
-    run  "wget http://localhost:3000/#{file} -O static/data/cached/#{file}"
-
+    run  "wget http://localhost:3000/#{file} -O #{cachedPath}/#{file}"
 
 run = (args...) ->
   for a in args
