@@ -22,6 +22,7 @@ require('zappa').run 3000, ->
 
   utils = @include './data-utils'
   pg = @include './pg-sql'
+  d3 = require "d3"
 
   @configure
     development: => @use errorHandler: {dumpExceptions: on}
@@ -111,12 +112,15 @@ require('zappa').run 3000, ->
         else
           @next(err)
 
+  ###
 
   @get '/flows.csv': ->
     pg.sql """
        SELECT 
               --aiddata2.year, 
-              to_char(COALESCE(commitment_date,  start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYYMM') as date,
+              to_char(COALESCE(commitment_date,  
+                      start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY'  --'YYYYMM' 
+              ) as date,
               COALESCE(
               CASE aiddata2.donorcode
                   WHEN '' THEN aiddata2.donor
@@ -149,6 +153,52 @@ require('zappa').run 3000, ->
 
         else
           @next(err)
+  ###
+
+
+
+
+  @get '/flows.json': ->
+    pg.sql """
+       SELECT 
+              --aiddata2.year, 
+              to_char(COALESCE(commitment_date,  
+                      start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY'  --'YYYYMM' 
+              ) as date,
+              COALESCE(
+              CASE aiddata2.donorcode
+                  WHEN '' THEN aiddata2.donor
+                  ELSE aiddata2.donorcode
+              END, "substring"(aiddata2.donor, "position"(aiddata2.donor, '('))) AS donorcode, 
+              COALESCE(
+              CASE aiddata2.recipientcode
+                  WHEN '' THEN aiddata2.recipient
+                  ELSE aiddata2.recipientcode
+              END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipientcode, 
+              to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
+                AS sum_amount_usd_constant, 
+              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
+         FROM aiddata2  --limit 50
+      """, (err, data) =>
+        unless err?
+
+          flows = d3.nest()
+            .key((r) -> r.donorcode)
+            .key((r) -> r.recipientcode)
+            .key((r) -> +r.date)
+            .key((r) -> r.purpose_code)
+            .rollup((list) -> 
+                if list.length == 1
+                  +list[0].sum_amount_usd_constant
+                else
+                  list.map (r) -> +r.sum_amount_usd_constant
+            )
+            .map(data.rows)
+          @send flows
+
+        else
+          @next(err)
+
 
 
 
