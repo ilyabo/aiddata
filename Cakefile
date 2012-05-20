@@ -54,7 +54,7 @@ task 'refresh-views', ->
     
 
 task 'refresh-cached', ->
-  fs.mkdirSync(cachedPath, parseInt('0755', 8))
+  if !path.existsSync(cachedPath) then fs.mkdirSync(cachedPath, parseInt('0755', 8))
 
   files = [
     "aiddata-donor-totals.csv",  "aiddata-recipient-totals.csv", "flows.csv",
