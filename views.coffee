@@ -11,7 +11,7 @@
 
     style '@import url("css/horizon.css");'
     script src: 'queue.min.js'
-    script src: 'cubism.v1.js'
+    script src: 'js/cubism.v1.my.js'
     script src: 'coffee/utils.js'
     #script src: 'js/cubism-aiddata.js'
     script src: 'coffee/horizon-aiddata.js'

@@ -17,7 +17,7 @@ createContext = ->
     .step(1000 * 60 * 60 * 24 * 30 * monthsInCell)
     .size(width)
     #.size(500)
-    .serverDelay(new Date(2011, 1, 1) - Date.now())
+    #.serverDelay(new Date(2012, 1, 1) - Date.now())
 
 
 colorsBetween = (min, max, numColors) ->
@@ -44,9 +44,17 @@ render = (selection, nodes, getdata, maxValue, context) ->
       .attr("class", (d) ->
         d + " axis"
       ).each (d) ->
-        d3.select(this).call context.axis().ticks(12).orient(d)
+        d3.select(this).call(
+          context.axis()
+            .ticks(12)
+            .orient(d)
+        )
 
-  selection.append("div").attr("class", "rule").call context.rule()
+  selection.append("div")
+    .attr("class", "rule")
+    .call(
+      context.rule()
+    )
 
   selection.selectAll(".horizon")
     .data(nodes.map((n) -> getdata(n, context)))
@@ -57,6 +65,7 @@ render = (selection, nodes, getdata, maxValue, context) ->
         .extent([ 0, if useLogScale then log10(maxValue) else maxValue  ])
         .height(20)
         .colors(colors)
+        # .format(d3.format("+,.2p")) # show percentage values
 
   context.on "focus", (i) ->
     d3.selectAll(".value")
