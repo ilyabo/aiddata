@@ -1,8 +1,33 @@
-#horizonChart {
+body { padding-top:40px; }
+
+#loading { position:absolute; left:30px; top:60px;}
+
+#horizonParent {  
+  text-align:center;
+  margin: 0px auto; position: relative; 
+}
+.horizonChart {
+  vertical-align: top;
+  margin:0px;  
   font-family: "Helvetica Neue", Helvetica, sans-serif;
-  margin: 30px auto;
-  width: 1280px;
-  position: relative;
+  /*margin: 30px auto; position: relative; width: 500px; position: relative;*/
+  display:inline-block;
+  padding:0px 20px;
+}
+
+.horizonChart .content {
+  margin-top:70px;
+}
+
+.horizonChart  .viewTitle {
+  font: bold 22px sans-serif;
+  position: fixed;
+  padding:10px 0px 5px 0px;
+  width:inherit;
+  text-align:center;
+  z-index:4;
+  background-color:white;
+  height:25px;
 }
 
 header {
@@ -18,10 +43,10 @@ header {
   font: 10px sans-serif;
   position: fixed;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
-.axis.top { margin-top:35px;}
+.axis.top { margin-top:75px; }
 
 .axis text {
   -webkit-transition: fill-opacity 250ms linear;
@@ -57,14 +82,10 @@ header {
 }
 
 .horizon {
-  border-bottom: solid 1px #000;
-  overflow: hidden;
+  border-bottom: solid 1px #999;
+  border-top: solid 1px #999;
+  /*overflow: hidden;*/
   position: relative;
-}
-
-.horizon {
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
 }
 
 .horizon + .horizon {
@@ -75,23 +96,18 @@ header {
   display: block;
 }
 
+
 .horizon .title,
 .horizon .value {
+  font-size:8pt;
   bottom: 0;
-  line-height: 30px;
+  line-height: 20px;
   margin: 0 6px;
   position: absolute;
   text-shadow: 0 1px 0 rgba(255,255,255,.5);
   white-space: nowrap;
 }
 
-.horizon .title {
-  left: 0;
-}
-
-.horizon .value {
-  right: 0;
-}
 
 .line {
   background: #000;

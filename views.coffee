@@ -5,15 +5,18 @@
   @view horizon: ->
     @page = "horizon"
     
-    div id:'horizonChart'
+    div id:'horizonParent', ->
+      div id:'originsChart',class:'horizonChart'
+      div id:'destsChart',class:'horizonChart'
 
-    style '@import url("css/cubism.css");'
+    style '@import url("css/horizon.css");'
     script src: 'queue.min.js'
     script src: 'cubism.v1.js'
     script src: 'coffee/utils.js'
     #script src: 'js/cubism-aiddata.js'
     script src: 'coffee/horizon-aiddata.js'
-    
+    script src: 'libs/chroma/chroma.min.js'
+
 
 
 

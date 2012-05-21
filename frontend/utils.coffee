@@ -24,6 +24,11 @@ root.isNumber = (n) ->
 root.asNumber = (str) ->
       if (not str?) or (str.trim() == "") then NaN else Number(str)
 
+root.log10 = (->
+  l10 = Math.log(10)
+  (x) -> Math.log(x) / l10
+)()
+
 
 ## These functions might not be needed anymore in the next d3 release
 ## see https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ
