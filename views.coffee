@@ -9,7 +9,8 @@
 
     style '@import url("css/cubism.css");'
     script src: 'cubism.v1.js'
-    script src: 'js/cubism-aiddata.js'
+    #script src: 'js/cubism-aiddata.js'
+    script src: 'coffee/horizon-aiddata.js'
 
 
 
