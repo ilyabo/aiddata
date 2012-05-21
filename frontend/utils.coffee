@@ -25,6 +25,16 @@ root.asNumber = (str) ->
       if (not str?) or (str.trim() == "") then NaN else Number(str)
 
 
+## These functions might not be needed anymore in the next d3 release
+## see https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ
+root.loadCsv = (path, callback) ->
+  d3.csv(path, (csv) -> if csv then callback(null, csv) else callback("error", null))
+
+root.loadJson = (path, callback) ->
+  d3.json(path, (json) -> if json then callback(null, json) else callback("error", null))
+
+
+
 root.loadData = ->
   
   loadedCallback = null

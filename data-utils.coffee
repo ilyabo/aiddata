@@ -3,6 +3,7 @@
   _ = require "underscore"
 
 
+
   ##
   # Creates a pivot table out of a list of objects
   # returns [table, columns] 

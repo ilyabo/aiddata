@@ -8,9 +8,12 @@
     div id:'horizonChart'
 
     style '@import url("css/cubism.css");'
+    script src: 'queue.min.js'
     script src: 'cubism.v1.js'
+    script src: 'coffee/utils.js'
     #script src: 'js/cubism-aiddata.js'
     script src: 'coffee/horizon-aiddata.js'
+    
 
 
 
