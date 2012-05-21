@@ -113,6 +113,7 @@
 
     script src: 'crossfilter.js'
     script src: 'js/crossfilter-ex.js'
+    script src: 'js/crossfilter-barchart.js'
 
 
 
