@@ -1,5 +1,5 @@
 var context = cubism.context()
-    .step(1.6e9)
+    .step(1.6e9)  //365 * 24 * 60 * 60 * 1000 ) //1.6e9)
     .size(1280);
 
 d3.select("#horizonChart").selectAll(".axis")
@@ -11,6 +11,7 @@ d3.select("#horizonChart").selectAll(".axis")
 d3.select("#horizonChart").append("div")
     .attr("class", "rule")
     .call(context.rule());
+
 
 d3.select("#horizonChart").selectAll(".horizon")
     .data(d3.range(1, 50).map(random))
