@@ -13,6 +13,8 @@ require('zappa').run 3000, ->
       @use log4js.connectLogger logger, 
         level: log4js.levels.DEBUG
         format: ':method :url :status :response-time'
+      @use errorHandler: {dumpExceptions: on}
+      logger.info "Starting in development mode"
 
     production: => 
       log4js.configure('log4js-production.json')
@@ -20,6 +22,10 @@ require('zappa').run 3000, ->
       @use log4js.connectLogger logger, 
         level: log4js.levels.INFO
         format: ':method :url :status :response-time'
+      @use 'errorHandler'
+      logger.info "Starting in production mode"
+
+
 
 
   
@@ -43,9 +49,3 @@ require('zappa').run 3000, ->
   @include './layout'
   @include './views'
   @include './queries'
-
-
-  @configure
-    development: => @use errorHandler: {dumpExceptions: on}
-    production: => @use 'errorHandler'
-

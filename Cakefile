@@ -14,16 +14,35 @@ task 'build', ->
                 'frontend/*.coffee frontend/*/*.coffee'
 
 
+# See: http://stackoverflow.com/questions/7259232/how-to-deploy-node-js-in-cloud-for-high-availability
+
 
 task 'restart', 'Build, kill existing app.coffee processes and run app.coffee again', (options) ->
   options.environment or= 'production'
   invoke 'build'
-  run 'PATH=/usr/bin:/usr/local/bin  && kill -9 `pgrep -f app.coffee`'
-  now = new Date()
-  date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
+  run 'PATH=/usr/bin:/usr/local/bin  && kill -9 `pgrep -f "coffee app.coffee"`'
 
-  if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
   run "NODE_ENV=#{options.environment} coffee app.coffee"
+
+
+forever = (action, options) ->
+  invoke 'build'
+  options.environment or= 'production'
+  #if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
+  run "NODE_ENV=#{options.environment} " +
+      "forever #{action} -c coffee " +
+      " --sourceDir ./" +
+      " -l aiddata.log "+
+      #" -o logs/aiddata.out "+
+      #" -e logs/aiddata.err "+
+      " -a" +   # append logs
+      " app.coffee"
+
+
+task 'forever-restart', (options) -> forever 'restart', options
+task 'forever-start', (options) -> forever 'start', options
+task 'forever-stop', (options) -> run "forever stop -c coffee app.coffee"
+task 'forever-list', (options) -> run "forever list"
 
 
 

@@ -44,7 +44,7 @@
 
 
   @get '/aiddata-nodes.csv': ->
-    pg.sql "Xselect donor as Name,donorcode as Code from totals_for_donor_ma
+    pg.sql "select donor as Name,donorcode as Code from totals_for_donor_ma
         UNION 
         select recipient as Name,recipientcode as Code from totals_for_recipient_ma",
       (err, data) =>
