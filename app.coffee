@@ -1,6 +1,28 @@
 require('zappa').run 3000, ->
   
 
+  express = require('zappa/node_modules/express')
+  
+  log4js = require('log4js')
+  logger = null
+
+  @configure
+    development: => 
+      log4js.addAppender(log4js.consoleAppender())
+      logger = log4js.getLogger('app')
+      @use log4js.connectLogger logger, 
+        level: log4js.levels.DEBUG
+        format: ':method :url :status :response-time'
+
+    production: => 
+      log4js.configure('log4js-production.json')
+      logger = log4js.getLogger('app')
+      @use log4js.connectLogger logger, 
+        level: log4js.levels.INFO
+        format: ':method :url :status :response-time'
+
+
+  
   @use 'bodyParser', 'methodOverride', @app.router
   @use 'static': __dirname + '/static'
   @use 'static': __dirname + '/node_modules/d3'

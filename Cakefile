@@ -4,32 +4,27 @@ path = require 'path'
 log = console.log
 
 cachedPath = 'static/data/cached'
-      
+
+
+option '-e', '--environment [ENVIRONMENT_NAME]', 'set the environment for `restart`'
+
 
 task 'build', ->
   run 'coffee -o static/coffee -c ' +
                 'frontend/*.coffee frontend/*/*.coffee'
 
 
-task 'restart', ->
+
+task 'restart', 'Build, kill existing app.coffee processes and run app.coffee again', (options) ->
+  options.environment or= 'production'
   invoke 'build'
   run 'PATH=/usr/bin:/usr/local/bin  && kill -9 `pgrep -f app.coffee`'
-  invoke '_start'
-    
-
-
-task 'start', ->
-  invoke 'build'
-  invoke '_start'
-
-task '_start', ->
   now = new Date()
   date = "#{now.getFullYear()}-#{now.getMonth()+1}-#{now.getDate()}"
 
   if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
-  run "coffee app.coffee"
-  #run "coffee app.coffee >logs/#{date}.log  2>&1"
-  #run "tail -f logs/#{date}.log"
+  run "NODE_ENV=#{options.environment} coffee app.coffee"
+
 
 
 task 'refresh-views', ->
@@ -53,6 +48,7 @@ task 'refresh-views', ->
           console.log "Refreshing #{v} failed", err
     
 
+
 task 'refresh-cached', ->
   if !path.existsSync(cachedPath) then fs.mkdirSync(cachedPath, parseInt('0755', 8))
 
@@ -65,6 +61,8 @@ task 'refresh-cached', ->
   for file in files
     console.log "Refreshing file #{file}"
     run  "wget http://localhost:3000/#{file} -O #{cachedPath}/#{file}"
+
+
 
 run = (args...) ->
   for a in args

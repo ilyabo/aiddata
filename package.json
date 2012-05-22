@@ -22,6 +22,7 @@
     "d3": "2.9.1",
     "crossfilter": "1.0.3",
     "cubism": "1.0.1",
-    "queue-async": "0.0.2"
+    "queue-async": "0.0.2",
+    "log4js": "0.4.3"
   }
 }
