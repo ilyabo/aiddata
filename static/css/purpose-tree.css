@@ -1,7 +1,12 @@
 .node circle {
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+  /*fill: #fff;*/
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+
+.node.leaf circle {
+  stroke-width: 0.7px;
+  stroke: #ccc;
 }
 
 .node {

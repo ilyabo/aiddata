@@ -46,14 +46,6 @@ stopAnimation = null
 
 
 
-fmt = d3.format(",.0f")
-magnitudeFormat = (d) ->
-  if (d >= 1e6)
-    "$#{fmt(d / 1e6)} million"
-  else
-    "$#{fmt(d)}" 
-
-shortMagnitudeFormat = (d) -> magnitudeFormat(d).replace(" million", "M")
 
 bubbleTooltip = (d) ->
   "<b>#{d[conf.nodeLabelAttr]}</b>" + 

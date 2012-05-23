@@ -184,50 +184,62 @@
 
 
 
+  # For most purposes several different names exist
+  # so we have to group them together
+  groupPurposesByCode = (purposes) ->
+    nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
+    unique = {}
+    for r in purposes
+      r.name = r.name.trim()
+      uname = r.name.toUpperCase()
+      
+      if not(_.has(unique, r.code))
+        unique[r.code] = r
+      else
+        oldname = unique[r.code].name
+        # prefer not to use capitalized or shortened versions
+        if oldname == oldname.toUpperCase() or nopunct(r.name).length > nopunct(oldname).length
+          old = unique[r.code] 
+          old.name = r.name
+          if old.total_amount?
+            old.total_amount += r.total_amount
+          if old.total_num?
+            old.total_num += r.total_num
 
+    _.values(unique)
 
 
   @get '/aiddata-purposes.csv': ->
-    pg.sql "select distinct(purpose_code) as code,purpose_name as Name
+    pg.sql "select distinct(purpose_code) as code,purpose_name as name
               from donor_recipient_year_purpose_ma 
             where purpose_code is not null
             order by purpose_name
           ",
       (err, data) =>
         unless err?
-          nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
-          unique = {}
-          for r in data.rows
-            r.name = r.name.trim()
-            uname = r.name.toUpperCase()
-            
-            if not(_.has(unique, r.code))
-              unique[r.code] = r
-            else
-              oldname = unique[r.code].name
-              # prefer lower-case   or     longer names
-              if oldname == oldname.toUpperCase() or nopunct(r.name).length > nopunct(oldname).length
-                unique[r.code] = r
+          @send utils.objListToCsv purposes.provideWithPurposeCategories(groupPurposesByCode(data.rows))
+        else
+          @next(err)
 
-          purposeList = _.values(unique)
-          purposeList.sort (a,b) -> a.code - b.code  
-          purposes.provideWithPurposeCategories(purposeList)
 
-          @send utils.objListToCsv purposeList
-          ###
-          nestedByCategory = d3.nest()
-            .key((p) -> p.category)
-            .key((p) -> p.subcategory)
-            .key((p) -> p.subsubcategory)
-            #.key((p) -> p.name)
-            .rollup((ps) -> 
-              #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
-              ps.map (p) -> { "key": p.code +  " " + p.name }
-            )
-            .entries(purposeList)
 
-          @send nestedByCategory
-          ###
+
+
+
+  @get '/aiddata-purposes-with-totals.csv': ->
+    pg.sql "select
+              purpose_code as code,
+              purpose_name as name,
+              SUM(num_commitments) as total_num,
+              SUM(to_number(sum_amount_usd_constant, 'FM99999999999999999999')) as total_amount
+            from donor_recipient_year_purpose_ma 
+            where purpose_code is not null
+            group by purpose_code, purpose_name
+            order by purpose_name
+          ",
+      (err, data) =>
+        unless err?
+          @send utils.objListToCsv purposes.provideWithPurposeCategories(groupPurposesByCode(data.rows))
         else
           @next(err)
 
