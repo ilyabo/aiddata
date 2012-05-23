@@ -16,7 +16,7 @@ vis = d3.select("#purposeTree").append("svg")
     .attr("transform", "translate(40, 0)")
 
 
-d3.csv "/aiddata-purposes.csv", (csv) ->
+d3.csv "aiddata-purposes.csv", (csv) ->
 
 
   purposesNested = d3.nest()
