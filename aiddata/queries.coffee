@@ -190,6 +190,9 @@
     nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
     unique = {}
     for r in purposes
+      if not r.code? then r.code = "00000"
+      if not r.name? then r.name = "Unknown"
+
       r.name = r.name.trim()
       uname = r.name.toUpperCase()
       
@@ -209,6 +212,7 @@
     _.values(unique)
 
 
+  # Returns a list of the known purposes
   @get '/aiddata-purposes.csv': ->
     pg.sql "select distinct(purpose_code) as code,purpose_name as name
               from donor_recipient_year_purpose_ma 
@@ -226,6 +230,8 @@
 
 
 
+  # Returns a list of the purposes used in the database (including NULLS)
+  # along with the total amounts and numbers of commitments
   @get '/aiddata-purposes-with-totals.csv': ->
     pg.sql "select
               purpose_code as code,
@@ -233,7 +239,7 @@
               SUM(num_commitments) as total_num,
               SUM(to_number(sum_amount_usd_constant, 'FM99999999999999999999')) as total_amount
             from donor_recipient_year_purpose_ma 
-            where purpose_code is not null
+            
             group by purpose_code, purpose_name
             order by purpose_name
           ",
