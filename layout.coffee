@@ -66,7 +66,7 @@
                     <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
                     <a href="crossfilter">Crossfilter</a></li>
 
-
+                    <!--
                     <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
                     <a href="flowmap">Flowmap</a></li>
 
@@ -76,6 +76,7 @@
 
                     <li <%=(if @page == "chord" then 'class=active' else "") %> >
                     <a href="chord">Chord</a></li>
+                    -->
 
                     <!--<li><a href="refugees-ffprints">Refugees</a></li>-->
                   </ul>

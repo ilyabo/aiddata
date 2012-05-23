@@ -1,8 +1,11 @@
 @include = ->
 
+  _ = require "underscore"
+
   utils = @include './data-utils'
   pg = @include './pg-sql'
   d3 = require "d3"
+  purposes = @include './aiddata/purposes'
 
 
   @get '/': -> 
@@ -41,6 +44,16 @@
   ###
 
   #@get '/data.js/:id': ->
+
+
+
+
+
+
+
+
+
+
 
 
   @get '/aiddata-nodes.csv': ->
@@ -175,6 +188,36 @@
         else
           @next(err)
 
+
+
+
+
+
+
+  @get '/aiddata-purposes.csv': ->
+    pg.sql "select distinct(purpose_code) as code,purpose_name as Name
+              from donor_recipient_year_purpose_ma 
+            where purpose_code is not null
+            order by purpose_name
+          ",
+      (err, data) =>
+        unless err?
+          unique = {}
+          for r in data.rows
+            r.name = r.name.trim()
+            uname = r.name.toUpperCase()
+            
+                                          # prefer lower-case   or     longer names
+            if not(_.has(unique, r.code))  or (r.name != uname)  or (r.name.length > uname.length)
+              unique[r.code] = r
+
+          purposeList = _.values(unique)
+          purposeList.sort (a,b) -> a.code - b.code  
+          purposes.provideWithPurposeCategories(purposeList)
+
+          @send utils.objListToCsv purposeList
+        else
+          @next(err)
 
 
 

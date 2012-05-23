@@ -2,13 +2,17 @@ require('zappa').run 3000, ->
   
 
   express = require('zappa/node_modules/express')
-  
+  @include './layout'
+  @include './views'
+  @include './aiddata/queries'
+
+
   log4js = require('log4js')
   logger = null
 
   @configure
     development: => 
-      log4js.addAppender(log4js.consoleAppender())
+      #log4js.addAppender(log4js.consoleAppender())
       logger = log4js.getLogger('app')
       @use log4js.connectLogger logger, 
         level: log4js.levels.DEBUG
@@ -44,8 +48,3 @@ require('zappa').run 3000, ->
     console.error err
     res.status = 
     res.send "Something went wrong..."
-
-
-  @include './layout'
-  @include './views'
-  @include './queries'
