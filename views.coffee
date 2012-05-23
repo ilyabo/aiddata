@@ -2,6 +2,42 @@
 
   
 
+  @view bubbles: ->
+    @page = "bubbles"
+    @dataset = "aiddata"
+
+    style '@import url("css/bubbles.css");'
+
+    div id:"bubblesChart"
+
+    div id: "yearSliderOuter", ->
+
+      div id:"play", class:"ui-state-default ui-corner-all", ->
+          span class:"ui-icon ui-icon-play"
+
+      div id:'yearSliderInner', ->
+        div id:'yearSlider'
+        #a id:"play", -> "Play"
+        div id:'yearTicks'
+        #div class:"icons ui-widget ui-helper-clearfix", ->
+        #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
+        #    span id:"playButton", class: "ui-icon ui-icon-play"
+
+
+    div id:"tseriesPanel"
+
+    script src: 'js/fit-projection.js'
+    script src: 'coffee/utils.js'
+    script src: "coffee/bubbles-#{@dataset}.js"
+
+
+
+
+
+
+
+
+
   @view horizon: ->
     @page = "horizon"
     
@@ -57,34 +93,6 @@
 
 
 
-  @view bubbles: ->
-    @page = "bubbles"
-    @dataset = "aiddata"
-
-    style '@import url("css/bubbles.css");'
-
-    div id:"bubblesChart"
-
-    div id: "yearSliderOuter", ->
-
-      div id:"play", class:"ui-state-default ui-corner-all", ->
-          span class:"ui-icon ui-icon-play"
-
-      div id:'yearSliderInner', ->
-        div id:'yearSlider'
-        #a id:"play", -> "Play"
-        div id:'yearTicks'
-        #div class:"icons ui-widget ui-helper-clearfix", ->
-        #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
-        #    span id:"playButton", class: "ui-icon ui-icon-play"
-
-
-    div id:"tseriesPanel"
-
-    script src: 'js/fit-projection.js'
-    script src: 'coffee/utils.js'
-    script src: "coffee/bubbles-#{@dataset}.js"
-
 
 
 
@@ -119,14 +127,18 @@
 
 
     script src: 'crossfilter.js'
-    script src: 'js/crossfilter-ex.js'
-    script src: 'js/crossfilter-barchart.js'
+    script src: 'coffee/crossfilter-aiddata.js'
+    script src: 'coffee/crossfilter-barchart.js'
 
 
 
 
-  @view flowmap: ->
-  
 
-  @view "time-series": ->
-  @view chord: ->
+  @view purposeTree: ->
+    @page = "purposeTree"
+
+    style '@import url("css/purpose-tree.css");'
+    div id:"purposeTree"
+
+    script src: "coffee/purpose-tree.js"
+

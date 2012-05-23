@@ -8,30 +8,23 @@
   purposes = @include './aiddata/purposes'
 
 
-  @get '/': -> 
-    @render 'bubbles': {layout: 'bootstrap.eco'}
+  @get '/': -> @render 'bubbles': {layout: 'bootstrap.eco'}
 
-  @get '/ffprints': -> 
-    @render ffprints: {layout: 'bootstrap.eco'}
+  @get '/ffprints': -> @render ffprints: {layout: 'bootstrap.eco'}
 
-  @get '/bubbles': -> 
-    @render bubbles: {layout: 'bootstrap.eco'}
+  @get '/bubbles': -> @render bubbles: {layout: 'bootstrap.eco'}
 
-  @get '/horizon': -> 
-    @render horizon: {layout: 'bootstrap.eco'}
+  @get '/horizon': -> @render horizon: {layout: 'bootstrap.eco'}
  
-  @get '/flowmap': -> 
-    @render flowmap: {layout: 'bootstrap.eco'}
+  @get '/flowmap': -> @render flowmap: {layout: 'bootstrap.eco'}
  
-  @get '/chord': -> 
-    @render chord: {layout: 'bootstrap.eco'}
+  @get '/chord': -> @render chord: {layout: 'bootstrap.eco'}
  
-  @get '/crossfilter': -> 
-    @render crossfilter: {layout: 'bootstrap.eco'}
+  @get '/crossfilter': -> @render crossfilter: {layout: 'bootstrap.eco'}
  
-  @get '/time-series': -> 
-    @render tseries: {layout: 'bootstrap.eco'}
+  @get '/time-series': -> @render tseries: {layout: 'bootstrap.eco'}
 
+  @get '/purpose-tree': -> @render purposeTree: {layout: 'bootstrap.eco'}
 
   @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
@@ -202,20 +195,39 @@
           ",
       (err, data) =>
         unless err?
+          nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
           unique = {}
           for r in data.rows
             r.name = r.name.trim()
             uname = r.name.toUpperCase()
             
-                                          # prefer lower-case   or     longer names
-            if not(_.has(unique, r.code))  or (r.name != uname)  or (r.name.length > uname.length)
+            if not(_.has(unique, r.code))
               unique[r.code] = r
+            else
+              oldname = unique[r.code].name
+              # prefer lower-case   or     longer names
+              if oldname == oldname.toUpperCase() or nopunct(r.name).length > nopunct(oldname).length
+                unique[r.code] = r
 
           purposeList = _.values(unique)
           purposeList.sort (a,b) -> a.code - b.code  
           purposes.provideWithPurposeCategories(purposeList)
 
           @send utils.objListToCsv purposeList
+          ###
+          nestedByCategory = d3.nest()
+            .key((p) -> p.category)
+            .key((p) -> p.subcategory)
+            .key((p) -> p.subsubcategory)
+            #.key((p) -> p.name)
+            .rollup((ps) -> 
+              #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
+              ps.map (p) -> { "key": p.code +  " " + p.name }
+            )
+            .entries(purposeList)
+
+          @send nestedByCategory
+          ###
         else
           @next(err)
 

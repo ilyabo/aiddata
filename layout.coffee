@@ -66,6 +66,10 @@
                     <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
                     <a href="crossfilter">Crossfilter</a></li>
 
+
+                    <li <%=(if @page == "purposeTree" then 'class=active' else "") %> >
+                    <a href="purpose-tree">Purposes</a></li>
+
                     <!--
                     <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
                     <a href="flowmap">Flowmap</a></li>

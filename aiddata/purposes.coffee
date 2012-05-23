@@ -2,8 +2,18 @@
 
   provideWithPurposeCategories : (purposes) ->
     for p in purposes
-      p.category = switch p.code.substring(0, 2)
-        # ?
+      p.category = switch p.code.substring(0, 1)
+        when "1" then "Social Infrastructure and Services"
+        when "2" then "Economic Infrastructure and Services"
+        when "3" then "Production Sectors"
+        when "4" then "Multi-Sector/Cross-Cutting"
+        when "5" then "Commodity Aid And General Program Assistance"
+        when "6" then "Action Relating to Debt"
+        when "7" then "Humanitarian Aid"
+        when "9" then "Other"
+
+      p.subcategory = switch p.code.substring(0, 2)
+        # ? Social Infrastructure and Services
         when "11" then "Education"
         when "12" then "Health"
         when "13" then "Population Policies/Programs and Reproductive Health"
@@ -33,7 +43,8 @@
         when "53" then "Other Commodity Assistance"
 
         # Action Relating to Debt
-        when "60" then "Action Relating to Debt"
+        # Parent is the same
+        #when "60" then "Action Relating to Debt"
 
         # Humanitarian Aid
         when "72" then "Emergency Response"
@@ -47,8 +58,14 @@
         when "99" then "Unallocated/Unspecified"
 
 
+      # Should be subsubcategories, but they have no parent
+      switch p.code.substring(0, 3)
+        when "331" then p.subcategory = "Trade policy and regulations"
+        when "332" then p.subcategory = "Tourism"
 
-      p.subcategory = switch p.code.substring(0, 3)
+
+
+      p.subsubcategory = switch p.code.substring(0, 3)
         when "111" then "Education, level unspecified"
         when "112" then "Basic education"
         when "113" then "Secondary education"
@@ -69,7 +86,7 @@
         when "323" then "Construction"
 
         # No parent?
-        when "331" then "Trade policy and regulations"
-        when "332" then "Tourism"
+        #when "331" then "Trade policy and regulations"
+        #when "332" then "Tourism"
 
     return purposes
