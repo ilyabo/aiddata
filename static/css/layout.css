@@ -3,3 +3,23 @@
 .navbar-fixed-bottom .container {
   width: 95% !important;
 }
+
+
+.navbar-inner { background-color:#172136;}
+
+.navbar-inner {
+  background-color: #172136;
+  background-image: -moz-linear-gradient(top, #163057, #172136);
+  background-image: -ms-linear-gradient(top, #163057, #172136);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#163057), to(#172136));
+  background-image: -webkit-linear-gradient(top, #163057, #172136);
+  background-image: -o-linear-gradient(top, #163057, #172136);
+  background-image: linear-gradient(top, #163057, #172136);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#163057', endColorstr='#172136', GradientType=0);
+}
+
+
+.navbar .nav .active > a, .navbar .nav .active > a:hover {
+background-color: #172136;
+}
