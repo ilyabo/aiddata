@@ -160,7 +160,10 @@
               to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
                 AS sum_amount_usd_constant, 
               COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
-         FROM aiddata2  --limit 50
+         FROM aiddata2  
+         
+         --limit 50
+
       """, (err, data) =>
         unless err?
 

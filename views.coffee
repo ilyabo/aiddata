@@ -103,33 +103,32 @@
     @dataset = "aiddata"
     #script src: 'coffee/utils.js'
 
+    style '@import url("css/crossfilter.css");'
+
 
     div id: "charts", ->
-      div id: "hour-chart", class: "chart", ->
-        div class: "title", -> "Time of Day"
+
+      div id: "amount-chart", class: "chart", ->
+        div class: "title", -> "Amount ($ million)"
       
-      div id: "delay-chart", class: "chart", ->
-        div class: "title", -> "Arrival Delay (min.)"
-      
-      div id: "distance-chart", class: "chart", ->
-        div class: "title", -> "Distance (mi.)"
-      
-      div id: "date-chart", class: "chart", ->
-        div class: "title", -> "Date"
+      div id: "year-chart", class: "chart", ->
+        div class: "title", -> "Year"
     
       aside id:"totals", ->
         span id:"active", -> "-"
         " of "
         span id:"total", -> "-"
-        " flights selected."
+        " commitments selected."
 
       div id:"lists", ->
-        div id:"flight-list", class:"list"
+        div id:"flow-list", class:"list"
 
 
     script src: 'crossfilter.js'
-    script src: 'coffee/crossfilter-aiddata.js'
+    script src: 'underscore.js'
+    script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/crossfilter-barchart.js'
+    script src: 'coffee/crossfilter-aiddata.js'
 
 
 

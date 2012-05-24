@@ -19,29 +19,6 @@ crossfilter.barChart = ->
   round = undefined
 
 
-  barPath = (groups) ->
-    path = []
-    i = -1
-    n = groups.length
-    d = undefined
-    while ++i < n
-      d = groups[i]
-      path.push "M", x(d.key), ",", height, "V", y(d.value), "h9V", height
-    path.join ""
-
-  resizePath = (d) ->
-    e = +(d is "e")
-    x = (if e then 1 else -1)
-    y = height / 3
-    "M" + (.5 * x) + "," + y +
-    "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6) +
-    "V" + (2 * y - 6) +
-    "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y) +
-    "Z" +
-    "M" + (2.5 * x) + "," + (y + 8) +
-    "V" + (2 * y - 8) +
-    "M" + (4.5 * x) + "," + (y + 8) +
-    "V" + (2 * y - 8)
 
   chart = (div) ->
 
@@ -49,6 +26,33 @@ crossfilter.barChart = ->
     height = y.range()[0]
     y.domain [ 0, group.top(1)[0].value ]
 
+
+
+    barPath = (groups) ->
+      path = []
+      i = -1
+      n = groups.length
+      d = undefined
+      while ++i < n
+        d = groups[i]
+        path.push "M", x(d.key), ",", height, "V", y(d.value), "h9V", height
+      path.join ""
+
+    resizePath = (d) ->
+      e = +(d is "e")
+      cx = (if e then 1 else -1)
+      cy = height / 3
+      "M" + (.5 * cx) + "," + cy +
+      "A6,6 0 0 " + e + " " + (6.5 * cx) + "," + (cy + 6) +
+      "V" + (2 * cy - 6) +
+      "A6,6 0 0 " + e + " " + (.5 * cx) + "," + (2 * cy) +
+      "Z" +
+      "M" + (2.5 * cx) + "," + (cy + 8) +
+      "V" + (2 * cy - 8) +
+      "M" + (4.5 * cx) + "," + (cy + 8) +
+      "V" + (2 * cy - 8)
+
+    
     div.each ->
       div = d3.select(this)
       g = div.select("g")

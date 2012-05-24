@@ -1,7 +1,7 @@
 @include = ->
 
   @view 'bootstrap.eco': '''
-    <% @title = "Aiddata" %>
+    <% @title = "AidData" %>
     <!DOCTYPE html>
       <html lang="en">
         <head>
