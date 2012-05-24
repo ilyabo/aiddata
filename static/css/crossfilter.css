@@ -1,4 +1,9 @@
+
+#loading { position:absolute; left:30px; top:60px;}
+
+
 #charts {
+  display: none;
   padding: 10px 0;
 }
 

@@ -108,15 +108,16 @@
 
     div id: "charts", ->
 
-      div id: "amount-chart", class: "chart", ->
-        div class: "title", -> "Amount ($ million)"
       
       div id: "year-chart", class: "chart", ->
-        div class: "title", -> "Year"
+        div class: "title", -> "Num of commitments by Year"
+
+      div id: "amount-chart", class: "chart", ->
+        div class: "title", -> "Commitment amounts"
     
       aside id:"totals", ->
         span id:"active", -> "-"
-        " of "
+        span " of "
         span id:"total", -> "-"
         " commitments selected."
 
