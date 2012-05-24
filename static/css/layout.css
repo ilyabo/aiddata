@@ -19,7 +19,11 @@
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#163057', endColorstr='#172136', GradientType=0);
 }
 
-
+.navbar .nav > li > a {
+  color:#bbb;
+}
 .navbar .nav .active > a, .navbar .nav .active > a:hover {
 background-color: #172136;
 }
+
+.navbar .brand { font-weight:400; }
