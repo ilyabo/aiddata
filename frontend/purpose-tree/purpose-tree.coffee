@@ -16,6 +16,9 @@ vis = d3.select("#purposeTree").append("svg")
     .attr("transform", "translate(40, 0)")
 
 
+
+
+
 d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
   
   scaleTransform = (x) -> x  # log10
@@ -43,11 +46,15 @@ d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
     )
     .entries(csv)
 
-
-
-  nodes = tree.nodes
+  data =
     key : "AidData"
     values : purposesNested
+  removeSingleChildNodes(data)
+  provideWithTotalAmount(data)
+
+  nodes = tree.nodes(data)
+
+
 
 
   link = vis.selectAll("path.link")
@@ -74,7 +81,7 @@ d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
       else 
         "#fff"
     )
-    .attr("visibility", (d) -> if d.key != "" and d.key != "undefined" then "visible" else "hidden")
+    #.attr("visibility", (d) -> if d.key != "" and d.key != "undefined" then "visible" else "hidden")
 
 
   node.append("text")
@@ -94,4 +101,12 @@ d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
       d = d3.select(this).data()[0]
       magnitudeFormat(d.amount) + "<br>" + d.num + " commitments"
 
+
+  $('g.node').not('.leaf').tipsy
+    gravity: 's'
+    opacity: 0.9
+    html: true
+    title: ->
+      d = d3.select(this).data()[0]
+      magnitudeFormat(d.amount)
 

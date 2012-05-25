@@ -10,6 +10,7 @@
 
     div id:"bubblesChart"
 
+    
     div id: "yearSliderOuter", ->
 
       div id:"play", class:"ui-state-default ui-corner-all", ->
@@ -17,11 +18,7 @@
 
       div id:'yearSliderInner', ->
         div id:'yearSlider'
-        #a id:"play", -> "Play"
         div id:'yearTicks'
-        #div class:"icons ui-widget ui-helper-clearfix", ->
-        #  div class:"ui-state-default ui-corner-all", title:".ui-icon-play",->
-        #    span id:"playButton", class: "ui-icon ui-icon-play"
 
 
     div id:"tseriesPanel"
@@ -29,6 +26,7 @@
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
+    script src: "coffee/time-slider.js"
     script src: "coffee/bubbles-#{@dataset}.js"
 
 
@@ -144,5 +142,20 @@
     script src: 'libs/chroma/chroma.min.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
+    script src: 'coffee/utils-purpose.js'
     script src: "coffee/purpose-tree.js"
+
+
+
+
+  @view purposePack: ->
+    @page = "purposePack"
+
+    style '@import url("css/purpose-pack.css");'
+    div id:"purposePack"
+
+    script src: 'coffee/utils.js'
+    script src: 'coffee/utils-aiddata.js'
+    script src: 'coffee/utils-purpose.js'
+    script src: "coffee/purpose-pack.js"
 

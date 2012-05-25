@@ -99,7 +99,7 @@ d3.json "data/cached/flows.json", (data) ->
     #console.log flowsByDate
 
     flowsByDate = [
-      key : "Top selected commitments"
+      key : "Top 40 of the selected commitments"
       values: amount.top(40)
     ]
 

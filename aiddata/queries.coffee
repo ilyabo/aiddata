@@ -26,6 +26,8 @@
 
   @get '/purpose-tree': -> @render purposeTree: {layout: 'bootstrap.eco'}
 
+  @get '/purpose-pack': -> @render purposePack: {layout: 'bootstrap.eco'}
+
   @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
 
@@ -233,8 +235,6 @@
 
 
 
-  # Returns a list of the purposes used in the database (including NULLS)
-  # along with the total amounts and numbers of commitments
   @get '/aiddata-purposes-with-totals.csv': ->
     pg.sql "select
               purpose_code as code,
@@ -242,7 +242,34 @@
               SUM(num_commitments) as total_num,
               SUM(to_number(sum_amount_usd_constant, 'FM99999999999999999999')) as total_amount
             from donor_recipient_year_purpose_ma 
-            
+            group by purpose_code, purpose_name
+            order by purpose_name
+          ",
+      (err, data) =>
+        unless err?
+          @send utils.objListToCsv purposes.provideWithPurposeCategories(groupPurposesByCode(data.rows))
+        else
+          @next(err)
+
+          
+
+  # Returns a list of the purposes used in the database (including NULLS)
+  # along with the total amounts and numbers of commitments
+  @get '/aiddata-purposes-with-totals.csv/:year': ->
+
+    if !/^[0-9]{4}$/.test(@params.year)
+      @send "Something went wrong with this request URL"
+      return
+
+    year = parseInt(@params.year)
+
+    pg.sql "select
+              purpose_code as code,
+              purpose_name as name,
+              SUM(num_commitments) as total_num,
+              SUM(to_number(sum_amount_usd_constant, 'FM99999999999999999999')) as total_amount
+            from donor_recipient_year_purpose_ma 
+            where year='#{year}'
             group by purpose_code, purpose_name
             order by purpose_name
           ",
