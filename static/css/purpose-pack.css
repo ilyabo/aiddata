@@ -9,6 +9,9 @@ body {
   margin:0;
 }
 
+
+.selectedDate {  font-size:60pt; color:#ccc;  font-weight:bold;  position:absolute; right:20px; top:100px;}
+
 a:link, a:visited {
   color: #E00;
   text-decoration: none;

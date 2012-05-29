@@ -77,6 +77,7 @@ d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
 
 
 
+selectedDate = 2011
 r = Math.min($(window).width()*0.7, $(window).height()*0.7)
 x = d3.scale.linear().range([ 0, r ])
 y = d3.scale.linear().range([ 0, r ])
@@ -94,6 +95,11 @@ vis = d3.select("body").select("#purposePack")
     .attr("width", $(window).width())
     .attr("height", $(window).height())
   .append("svg:g")
+
+
+d3.select("body").append("div")
+  .attr("class", "selectedDate")
+  .text(selectedDate)
 
 $(window).resize(->
   w = $(window).width()
@@ -117,7 +123,7 @@ formatPercent = d3.format(".2%")
 
 
 
-d3.csv "aiddata-purposes-with-totals.csv/2005", (csv) ->
+d3.csv "aiddata-purposes-with-totals.csv/#{selectedDate}", (csv) ->
 
   unless csv?
     $("body").prepend('<span class="alert alert-error">Data could not be loaded</span>')
