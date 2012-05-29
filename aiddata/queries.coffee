@@ -28,6 +28,8 @@
 
   @get '/purpose-pack': -> @render purposePack: {layout: 'bootstrap.eco'}
 
+  @get '/purpose-bars': -> @render purposeBars: {layout: 'bootstrap.eco'}
+
   @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
 
@@ -251,7 +253,7 @@
         else
           @next(err)
 
-          
+
 
   # Returns a list of the purposes used in the database (including NULLS)
   # along with the total amounts and numbers of commitments

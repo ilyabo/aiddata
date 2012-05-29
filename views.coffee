@@ -10,7 +10,7 @@
 
     div id:"bubblesChart"
 
-    
+
     div id: "yearSliderOuter", ->
 
       div id:"play", class:"ui-state-default ui-corner-all", ->
@@ -158,4 +158,17 @@
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils-purpose.js'
     script src: "coffee/purpose-pack.js"
+
+
+
+  @view purposeBars: ->
+    @page = "purposeBars"
+
+    style '@import url("css/purpose-bars.css");'
+    div id:"purposeBars"
+
+    script src: 'coffee/utils.js'
+    script src: 'coffee/utils-aiddata.js'
+    script src: 'coffee/utils-purpose.js'
+    script src: "coffee/purpose-bars.js"
 

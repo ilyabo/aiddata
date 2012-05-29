@@ -1,6 +1,12 @@
+body {
+  margin:0;
+}
 
 #purposePack {
-  font: 400 36px "Helvetica Neue";
+  font: 400 36px "Helvetica Neue", Helvetica, arial;
+  position:absolute;
+  top:0px; left:0px;
+  margin:0;
 }
 
 a:link, a:visited {
@@ -17,7 +23,7 @@ a:hover {
 
 #tooltip {
   font-size:12px;
-  font-family:"Helvetica Neue", Helvetica;
+  font-family:"Helvetica Neue", Helvetica, arial;
   position:absolute;
   padding:5px;
   z-index:100000;

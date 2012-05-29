@@ -2,6 +2,25 @@ root = exports ? this
 
 
 
+root.nestPurposeDataByCategories = (csv) ->
+  purposesNested = d3.nest()
+    .key((p) -> p.category)
+    .key((p) -> p.subcategory)
+    .key((p) -> p.subsubcategory)
+    #.key((p) -> p.name)
+    .rollup((ps) -> 
+      #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
+      ps.map (p) ->
+        key : "#{p.name} - #{p.code}"
+        num : +p.total_num
+        amount : +p.total_amount
+    )
+    .entries(csv)
+  data =
+    key : "AidData"
+    values : purposesNested
+
+
 root.removeSingleChildNodes = (tree) ->
   if not tree.values?
     return tree

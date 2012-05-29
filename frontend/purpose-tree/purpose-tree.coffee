@@ -49,7 +49,7 @@ d3.csv "aiddata-purposes-with-totals.csv", (csv) ->
   data =
     key : "AidData"
     values : purposesNested
-  removeSingleChildNodes(data)
+  #removeSingleChildNodes(data)
   provideWithTotalAmount(data)
 
   nodes = tree.nodes(data)
