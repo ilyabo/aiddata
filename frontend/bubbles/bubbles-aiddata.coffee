@@ -193,8 +193,6 @@ createTimeSeries = (parent, data, title) ->
     .attr("y", 0)
     .attr("width", w)
     .attr("height", h)
-    .on 'mousemove', (d) ->
-      parent.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
 
   tg.append("g")
     .attr("class", "y axis")
@@ -257,6 +255,15 @@ createTimeSeries = (parent, data, title) ->
       .attr("cy", y(data[state.selAttrIndex].outbound))
       .attr("r", 2)
     ###
+
+  tg.append("rect")
+    .attr("class", "foreground")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", w)
+    .attr("height", h)
+    .on 'mousemove', (d) ->
+      parent.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
 
 
 TimeSeries = 

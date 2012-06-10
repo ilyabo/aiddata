@@ -87,6 +87,12 @@ line.out:hover { stroke:#bbdeff; }
   opacity:0.7;
 }
 
+.tseries rect.foreground {
+  fill:white;
+  opacity:0;
+  stroke:none;
+}
+
 .tseries .axis path {
   fill: none;
   shape-rendering: crispEdges;
