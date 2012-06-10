@@ -261,7 +261,7 @@ createTimeSeries = (parent, data, title) ->
     .attr("x", 0)
     .attr("y", 0)
     .attr("width", w)
-    .attr("height", h)
+    .attr("height", h + margin.bottom)
     .on 'mousemove', (d) ->
       parent.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
 
@@ -683,6 +683,7 @@ loadData()
         state.selAttrIndex = newSelAttr
         update(noAnim)
         $(".tseries line.selDate").trigger("updateYear")
+        $("#yearSlider").slider('value', state.selAttrIndex)
 
     update = (noAnim) ->
       updateNodeSizes()
@@ -762,7 +763,7 @@ loadData()
           state.selAttrIndex++
 
         $("#yearSlider").slider('value', state.selAttrIndex)
-        $(".tseries line.selDate").trigger("updateYear", "hello")
+        $(".tseries line.selDate").trigger("updateYear")
         update()
 
         timer = setInterval(->
