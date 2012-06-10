@@ -44,7 +44,7 @@ text-align:center;
 
 .nodeLabel { cursor:default;}
 
-#tseriesPanel { position: absolute; top:100px; left:20px;}
+#tseriesPanel { position: absolute; top:50px; left:5px;}
 
 g.flows line { stroke-linecap:round; }
 

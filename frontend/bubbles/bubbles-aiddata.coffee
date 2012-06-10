@@ -61,7 +61,10 @@ flowTooltip = (d) ->
 
   "<b>#{recipient}</b> received<br>"+
   "<b>#{magnitudeFormat(d.data[state.selMagnAttr()])}</b> "+
-  (if donor.length > 20 then "<span class=sm>from <b>#{donor}</b></span>" else "from <b>#{donor}</b>") +
+  (if donor.length > 20
+     "<span class=sm>from <b>#{donor}</b></span>"
+   else
+     "from <b>#{donor}</b>") +
   "  in #{state.selMagnAttr()} <br>"
   #"<div id=tseries></div>"
 
@@ -144,8 +147,8 @@ shortenLabel = (labelText, maxLength) ->
 # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
 createTimeSeries = (parent, data, title) ->
   margin = {top: 28, right: 8, bottom: 14, left: 46}
-  w = 250 - margin.left - margin.right
-  h = 120 - margin.top - margin.bottom
+  w = bubblesChartWidth*0.25 - margin.left - margin.right
+  h = bubblesChartHeight*0.21 - margin.top - margin.bottom
 
   hasIn = data[0]?.inbound?
   hasOut = data[0]?.outbound?
@@ -157,12 +160,12 @@ createTimeSeries = (parent, data, title) ->
 
   xAxis = d3.svg.axis()
     .scale(x)
-    .ticks(5)
+    .ticks(Math.max(1, Math.round(w/30)))
     .orient("bottom")
     .tickSize(3, 0, 0)
 
   yAxis = d3.svg.axis()
-    .ticks(4)
+    .ticks(Math.max(1, Math.round(h/18)))
     .scale(y)
     .orient("left")
     .tickFormat(shortMagnitudeFormat)
@@ -190,6 +193,8 @@ createTimeSeries = (parent, data, title) ->
     .attr("y", 0)
     .attr("width", w)
     .attr("height", h)
+    .on 'mousemove', (d) ->
+      parent.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
 
   tg.append("g")
     .attr("class", "y axis")
@@ -266,7 +271,8 @@ TimeSeries =
 
   remove: (type, i) -> $("#"+TimeSeries.id(type, i)).remove()
 
-  removeAllExcept: (type, i) ->  $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
+  removeAllExcept: (type, i) ->  
+    $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
 
 
 
@@ -310,7 +316,9 @@ loadData()
 
 
     maxTotalMagnitudes = state.totalsMax[state.selMagnAttrGrp]
-    maxTotalMagnitude = Math.max(d3.max(maxTotalMagnitudes.inbound), d3.max(maxTotalMagnitudes.outbound))
+    maxTotalMagnitude = Math.max(
+          d3.max(maxTotalMagnitudes.inbound), 
+          d3.max(maxTotalMagnitudes.outbound))
 
     rscale = d3.scale.sqrt()
       .range([0, Math.min(bubblesChartWidth/20, bubblesChartHeight/10)])
@@ -565,7 +573,9 @@ loadData()
       if not TimeSeries.exists("node", i)
         tseries = TimeSeries.create("node", i)
         nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-        createTimeSeries(d3.select(tseries), data, shortenLabel(nodeLabel, 40))
+        parent = d3.select(tseries)
+        parent.setSelDateTo = setSelDateTo
+        createTimeSeries(parent, data, shortenLabel(nodeLabel, 40))
 
 
     bubble = svg.selectAll("g.bubble")
@@ -655,9 +665,15 @@ loadData()
       .attr("text-anchor", "end")
         .text(state.selMagnAttr())
 
-    updateYear = (e, ui, noAnim) ->
-      unless state.selAttrIndex == ui.value
-        state.selAttrIndex = ui.value
+    setSelDateTo = (date, noAnim) ->
+      idx = state.magnAttrs().indexOf(d3.time.year(date).getFullYear())
+      if idx >= 0
+        setSelAttrIndexTo(idx, noAnim)
+        
+
+    setSelAttrIndexTo = (newSelAttr, noAnim) ->
+      unless state.selAttrIndex == newSelAttr
+        state.selAttrIndex = newSelAttr
         update(noAnim)
         $(".tseries line.selDate").trigger("updateYear")
 
@@ -698,8 +714,8 @@ loadData()
         min: 0
         max: state.magnAttrs().length - 1
         value: state.selAttrIndex
-        slide: (e, ui) -> stopAnimation(); updateYear(e, ui, false)
-        change: (e, ui) -> updateYear(e, ui, false)
+        slide: (e, ui) -> stopAnimation(); setSelAttrIndexTo(ui.value, false)
+        change: (e, ui) -> setSelAttrIndexTo(ui.value, false)
 
     $("#yearSlider").focus()
 
@@ -739,7 +755,7 @@ loadData()
           state.selAttrIndex++
 
         $("#yearSlider").slider('value', state.selAttrIndex)
-        $(".tseries line.selDate").trigger("updateYear")
+        $(".tseries line.selDate").trigger("updateYear", "hello")
         update()
 
         timer = setInterval(->
