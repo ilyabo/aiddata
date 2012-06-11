@@ -26,7 +26,7 @@
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
-    script src: "coffee/time-slider.js"
+    #script src: "coffee/time-slider.js"
     script src: "coffee/bubbles-#{@dataset}.js"
 
 

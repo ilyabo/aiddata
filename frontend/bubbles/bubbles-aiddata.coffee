@@ -1,5 +1,5 @@
 bubblesChartWidth = $(document).width() * 0.95
-bubblesChartHeight = $(document).height() - 200
+bubblesChartHeight = $(document).height() - 140
 nodesWithoutCoordsMarginBottom = 90
 
 
@@ -148,7 +148,7 @@ shortenLabel = (labelText, maxLength) ->
 createTimeSeries = (parent, data, title) ->
   margin = {top: 28, right: 8, bottom: 14, left: 46}
   w = bubblesChartWidth*0.25 - margin.left - margin.right
-  h = bubblesChartHeight*0.21 - margin.top - margin.bottom
+  h = bubblesChartHeight*0.18 - margin.top - margin.bottom
 
   hasIn = data[0]?.inbound?
   hasOut = data[0]?.outbound?
