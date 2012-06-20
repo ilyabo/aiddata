@@ -165,7 +165,9 @@
     @page = "purposeBars"
 
     style '@import url("css/purpose-bars.css");'
-    div id:"purposeBars"
+
+    div id:"purposeBars", ->
+      ul class:"breadcrumb"
 
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'

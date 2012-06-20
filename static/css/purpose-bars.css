@@ -1,5 +1,5 @@
 text {
-  font: 10px sans-serif;
+  font-size: 10px;
 }
 
 rect.background {
@@ -12,5 +12,18 @@ rect.background {
 
 .axis path, .axis line {
   fill: none;
-  stroke: #000;
+  stroke: #999;
+}
+
+#purposeBars rect.bar {
+  fill:#a1c0de;
+}
+#purposeBars rect.bar.hasChildren {
+  fill:#a1c0de;
+  stroke-width:0.5;
+  stroke:black;
+}
+#purposeBars rect.bar.hasChildren:hover {
+  stroke:#B2182B; 
+
 }
