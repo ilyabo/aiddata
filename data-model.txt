@@ -118,8 +118,16 @@ TO EXPLORE
 
 
 
+ANOTHER
+=======
+Use WorldBank API 
+http://data.worldbank.org/querybuilder
 
+e.g. 
+http://api.worldbank.org/countries/NAM/indicators/AG.FRST.PROD.CHAR?format=json
 
+Hierarchy of all indicators:
+http://api.worldbank.org/indicator?format=json
 
 
 

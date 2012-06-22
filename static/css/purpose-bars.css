@@ -25,5 +25,7 @@ rect.background {
 }
 #purposeBars rect.bar.hasChildren:hover {
   stroke:#B2182B; 
-
 }
+
+#purposeBars .breadcrumb { font-size:10px; padding:.2em .6em; }
+#purposeBars .breadcrumb li.title { margin-right:.5em; }

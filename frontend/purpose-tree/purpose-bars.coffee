@@ -77,6 +77,8 @@ down = (d, i) ->
   svg.select(".background").data([ d ]).transition().duration(end)
   d.index = i
 
+  updateBreadcrumb(d)
+
 
 
 
@@ -128,6 +130,8 @@ up = (d) ->
 
   exit.transition().duration(end).remove()
   svg.select(".background").data([ d.parent ]).transition().duration end
+
+  updateBreadcrumb(d.parent)
 
 
 bar = (d) ->
@@ -184,21 +188,30 @@ svg.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
 
-bc = d3.select("#purposeBars .breadcrumb")
+updateBreadcrumb = (d) ->
+  console.log d[nameAttr]
+  bc = d3.select("#purposeBars .breadcrumb")
+  
+  bc.append("li")
+    .attr("class", "title")
+    .text("Filter by purpose:")
 
-li = bc.append("li")
-li.append("a")
-      .attr("href", "#")
-      .text("Commodity Aid And General Program Assistance")
-li.append("span")
-      .attr("class", "divider")
-      .text("/")
+  li = bc.append("li")
+
+  li.append("a")
+        .attr("href", "#")
+        .text("Commodity Aid And General Program Assistance")
+  li.append("span")
+        .attr("class", "divider")
+        .text("/")
 
 
-bc.append("li")
-    .append("a")
-      .attr("href", "#")
-      .text("Food aid/Food security programmes - 52010")
+  bc.append("li")
+      .append("a")
+        .attr("href", "#")
+        .text("Food aid/Food security programmes - 52010")
+
+
 
 ###
   <li>
@@ -234,6 +247,7 @@ d3.csv "aiddata-purposes-with-totals.csv/2009", (csv) ->
   hierarchy.nodes(data)
   x.domain([ 0, data[valueAttr] ]).nice()
   down data, 0
+
 
 
 
