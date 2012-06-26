@@ -20,8 +20,8 @@ rect.background {
 }
 #purposeBars rect.bar.hasChildren {
   fill:#a1c0de;
-  stroke-width:0.5;
-  stroke:black;
+  stroke-width:1;
+  stroke:#999;
 }
 #purposeBars rect.bar.hasChildren:hover {
   stroke:#B2182B; 

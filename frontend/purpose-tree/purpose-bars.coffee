@@ -29,6 +29,11 @@ xAxis = d3.svg.axis().scale(x)
   .tickFormat(formatMagnitude)
 
 
+breadcrumb = d3.select("#purposeBars")
+  .append("ul")
+    .attr("class", "breadcrumb")
+
+
 
 barClass = (d) -> if d.children? then "bar hasChildren" else "bar"
 
@@ -134,6 +139,7 @@ up = (d) ->
   updateBreadcrumb(d.parent)
 
 
+
 bar = (d) ->
   b = svg.insert("g", ".y.axis")
       .attr("class", "enter")
@@ -155,6 +161,7 @@ bar = (d) ->
     .text (d) -> d[nameAttr]
 
   b.append("rect")
+    .attr("x", 1)
     .attr("width", (d) -> x(d[valueAttr]))
     .attr("height", barHeight)
 
@@ -188,10 +195,53 @@ svg.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
 
-updateBreadcrumb = (d) ->
-  console.log d[nameAttr]
-  bc = d3.select("#purposeBars .breadcrumb")
+breadcrumbPath = (currentNode) ->
+  path = []
+  cur = currentNode
+  while cur?
+    path.push cur
+    cur = cur.parent 
+  path.reverse()
+
+
   
+
+
+updateBreadcrumb = (currentNode) ->
+  # enter
+  li = breadcrumb.selectAll("li")
+    .data(breadcrumbPath currentNode)
+
+  lil = li.enter().append("li")
+
+  lil.append("a")
+      .attr("href", "#")
+      .text((d) -> d[nameAttr])
+  lil.append("span").attr("class", "divider").text("/")
+
+  # update
+  breadcrumb.selectAll("li a")
+    .attr("href", "#")
+    .text((d) -> d[nameAttr])
+
+  # remove
+  li.exit().remove()
+
+
+
+  console.log d3.selectAll("#purposeBars ul.breadcrumb li")
+
+  ###
+  bc = d3.select("#purposeBars .breadcrumb")
+  d3.enter() 
+  ###    
+
+  
+
+  
+
+
+  ###
   bc.append("li")
     .attr("class", "title")
     .text("Filter by purpose:")
@@ -210,8 +260,7 @@ updateBreadcrumb = (d) ->
       .append("a")
         .attr("href", "#")
         .text("Food aid/Food security programmes - 52010")
-
-
+  ###
 
 ###
   <li>
@@ -243,7 +292,6 @@ d3.csv "aiddata-purposes-with-totals.csv/2009", (csv) ->
   removeSingleChildNodes(data)
   provideWithTotalAmount(data)
 
-  #console.log data
   hierarchy.nodes(data)
   x.domain([ 0, data[valueAttr] ]).nice()
   down data, 0
