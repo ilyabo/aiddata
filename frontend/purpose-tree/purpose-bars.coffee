@@ -1,21 +1,25 @@
+root = d3.select("#purposeBars")
 
 nameAttr = "key"
 childrenAttr = "values"
 valueAttr = "amount"
+valueFormat = formatMagnitude
 
 margin =
   top: 20
   right: 20
   bottom: 20
-  left: 240
+  left: 300
 
-width = 500 - margin.right - margin.left
+width = 550 - margin.right - margin.left
 height = 300 - margin.top - margin.bottom
 x = d3.scale.linear().range([ 0, width ])
-barHeight = 15
+barHeight = 12
 #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
 duration = 300
 delay = 25
+
+percentageFormat = d3.format(",.2%")
 
 hierarchy = d3.layout.partition()
   .value((d) -> d[valueAttr])
@@ -26,16 +30,15 @@ hierarchy = d3.layout.partition()
 xAxis = d3.svg.axis().scale(x)
   .orient("top")
   .ticks(3)
-  .tickFormat(formatMagnitude)
+  .tickFormat(valueFormat)
 
+data = null
 
-breadcrumb = d3.select("#purposeBars")
-  .append("ul")
-    .attr("class", "breadcrumb")
+leafNodeClass = (d, nodeClass, leafClass) ->
+  if d.children? then nodeClass else leafClass
 
-
-
-barClass = (d) -> if d.children? then "bar hasChildren" else "bar"
+barClass = (d) -> leafNodeClass(d, "bar hasChildren", "bar")
+labelClass = (d) -> leafNodeClass(d, "label hasChildren", "label")
 
 
 down = (d, i) ->
@@ -61,6 +64,7 @@ down = (d, i) ->
   ).attr("transform", (d, i) -> "translate(0," + barHeight * i * 1.2 + ")" )
 
   enterTransition.select("text")
+    .attr("class", labelClass)
     .style("fill-opacity", 1)
 
   enterTransition.select("rect")
@@ -83,6 +87,7 @@ down = (d, i) ->
   d.index = i
 
   updateBreadcrumb(d)
+  svg.attr("height", d.children.length * barHeight + margin.to + margin.bottom)
 
 
 
@@ -137,6 +142,8 @@ up = (d) ->
   svg.select(".background").data([ d.parent ]).transition().duration end
 
   updateBreadcrumb(d.parent)
+  #  d3.select("").attr("height", 20) #d.children.length * barHeight + margin.to + margin.bottom)
+
 
 
 
@@ -148,9 +155,12 @@ bar = (d) ->
       .data(d.children)
         .enter()
         .append("g")
-    .style("cursor", (d) ->
-      (if not d.children then null else "pointer")
-    ).on("click", down)
+      .on("click", down)
+      ###
+      .style("cursor", (d) ->
+        (if not d.children then null else "pointer")
+      )
+      ###
 
 
   b.append("text")
@@ -158,6 +168,7 @@ bar = (d) ->
     .attr("y", barHeight / 2)
     .attr("dy", ".35em")
     .attr("text-anchor", "end")
+    .attr("class", labelClass)
     .text (d) -> d[nameAttr]
 
   b.append("rect")
@@ -177,7 +188,89 @@ stack = (i) ->
 
 
 
-svg = d3.select("#purposeBars")
+
+
+breadcrumbPath = (currentNode) ->
+  path = []
+  cur = currentNode
+  while cur?
+    path.push cur
+    cur = cur.parent 
+  path.reverse()
+
+
+  
+
+
+updateBreadcrumb = (currentNode) ->
+  
+  path = breadcrumbPath currentNode
+
+  # enter
+  li = breadcrumbList.selectAll("li")
+    .data(path)
+  
+  lie = li.enter()
+
+  newli = lie.append("li")
+    .attr("class", "node")
+
+  newli.append("span")
+    .attr("class", "divider")
+    .text((d, i) -> if (i > 0) then "/" else "")
+  newli.append("a")
+    .attr("href", "#")
+
+  ###
+  lie.append("li")
+    .attr("class", "total")
+  ###
+
+  # update
+  breadcrumbList.selectAll("li.node a")
+    .attr("href", "#")
+    .classed("sel", (d) -> d == currentNode)
+    .text((d) -> d[nameAttr])
+    .on "click", (d, i) ->  
+      if (d != currentNode) then up(d.children[0])
+
+  ###
+  li.selectAll("li.total")
+  ###
+  #breadcrumbCaption.select("div.title")
+  #  .text(currentNode[nameAttr])
+
+  breadcrumbCaption.select("div.total")
+    .text(
+      valueFormat(currentNode[valueAttr]) + " or " + 
+      percentageFormat(currentNode[valueAttr] / data[valueAttr]) + " of total"
+    )
+
+
+  # remove
+  li.exit().remove()
+
+
+
+barHierarchy = root.append("div")
+  .attr("class", "barHierarchy")
+
+breadcrumb = barHierarchy
+  .append("div")
+    .attr("class", "breadcrumb")
+
+breadcrumbList = breadcrumb
+  .append("ul")
+
+breadcrumbCaption = barHierarchy
+  .append("div")
+    .attr("class", "caption")
+
+breadcrumbCaption.append("div").attr("class", "title")
+breadcrumbCaption.append("div").attr("class", "total")
+
+
+svg = barHierarchy
   .append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
@@ -195,95 +288,6 @@ svg.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
 
-breadcrumbPath = (currentNode) ->
-  path = []
-  cur = currentNode
-  while cur?
-    path.push cur
-    cur = cur.parent 
-  path.reverse()
-
-
-  
-
-
-updateBreadcrumb = (currentNode) ->
-  # enter
-  li = breadcrumb.selectAll("li")
-    .data(breadcrumbPath currentNode)
-
-  lil = li.enter().append("li")
-
-  lil.append("a")
-      .attr("href", "#")
-      .text((d) -> d[nameAttr])
-  lil.append("span").attr("class", "divider").text("/")
-
-  # update
-  breadcrumb.selectAll("li a")
-    .attr("href", "#")
-    .text((d) -> d[nameAttr])
-
-  # remove
-  li.exit().remove()
-
-
-
-  console.log d3.selectAll("#purposeBars ul.breadcrumb li")
-
-  ###
-  bc = d3.select("#purposeBars .breadcrumb")
-  d3.enter() 
-  ###    
-
-  
-
-  
-
-
-  ###
-  bc.append("li")
-    .attr("class", "title")
-    .text("Filter by purpose:")
-
-  li = bc.append("li")
-
-  li.append("a")
-        .attr("href", "#")
-        .text("Commodity Aid And General Program Assistance")
-  li.append("span")
-        .attr("class", "divider")
-        .text("/")
-
-
-  bc.append("li")
-      .append("a")
-        .attr("href", "#")
-        .text("Food aid/Food security programmes - 52010")
-  ###
-
-###
-  <li>
-    <a href="#">Home</a> <span class="divider">/</span>
-  </li>
-  <li>
-    <a href="#">Library</a> <span class="divider">/</span>
-  </li>
-  <li class="active">Data</li>
-<
-###
-
-###
-$("#purposeBars .breadcrumb").append("""
-  <li>
-    <a href="#">Home</a> <span class="divider">/</span>
-  </li>
-  <li>
-    <a href="#">Library</a> <span class="divider">/</span>
-  </li>
-  <li class="active">Data</li>"""
-)
-###
 
 
 d3.csv "aiddata-purposes-with-totals.csv/2009", (csv) ->
