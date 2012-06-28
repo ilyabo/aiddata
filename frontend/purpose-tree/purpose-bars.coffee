@@ -4,6 +4,12 @@ nameAttr = "key"
 childrenAttr = "values"
 valueAttr = "amount"
 valueFormat = formatMagnitude
+#valueFormatLong = formatMagnitudeLong
+
+selectionTotalText = (data, selectedNode) ->
+  valueFormat(selectedNode[valueAttr]) + " (" + 
+  percentageFormat(selectedNode[valueAttr] / data[valueAttr]) + " of total)"
+
 
 margin =
   top: 20
@@ -15,6 +21,7 @@ width = 550 - margin.right - margin.left
 height = 300 - margin.top - margin.bottom
 x = d3.scale.linear().range([ 0, width ])
 barHeight = 12
+barSpacing = barHeight * 0.2
 #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
 duration = 300
 delay = 25
@@ -39,12 +46,13 @@ leafNodeClass = (d, nodeClass, leafClass) ->
 
 barClass = (d) -> leafNodeClass(d, "bar hasChildren", "bar")
 labelClass = (d) -> leafNodeClass(d, "label hasChildren", "label")
+barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
 
 
 down = (d, i) ->
   return  if not d.children or @__transition__
   end = duration + d.children.length * delay
-  exit = svg.selectAll(".enter").attr("class", "exit")
+  exit = vis.selectAll(".enter").attr("class", "exit")
   
   exit.selectAll("rect").filter((p) -> p is d ).style "fill-opacity", 1e-6
 
@@ -57,11 +65,11 @@ down = (d, i) ->
 
   x.domain([ 0, d3.max(d.children, (d) -> d[valueAttr] ) ]).nice()
 
-  svg.selectAll(".x.axis").transition().duration(duration).call xAxis
+  vis.selectAll(".x.axis").transition().duration(duration).call xAxis
 
   enterTransition = enter.transition().duration(duration).delay((d, i) ->
     i * delay
-  ).attr("transform", (d, i) -> "translate(0," + barHeight * i * 1.2 + ")" )
+  ).attr("transform", barTranslate)
 
   enterTransition.select("text")
     .attr("class", labelClass)
@@ -83,11 +91,12 @@ down = (d, i) ->
   exitTransition.selectAll("rect")
     .attr("width", (d) -> x(d[valueAttr]))
 
-  svg.select(".background").data([ d ]).transition().duration(end)
+  vis.select(".background").data([ d ]).transition().duration(end)
   d.index = i
 
   updateBreadcrumb(d)
-  svg.attr("height", d.children.length * barHeight + margin.to + margin.bottom)
+  updateVisHeight(d)
+
 
 
 
@@ -97,10 +106,10 @@ up = (d) ->
   return  if not d.parent or @__transition__
   
   end = duration + d.children.length * delay
-  exit = svg.selectAll(".enter").attr("class", "exit")
+  exit = vis.selectAll(".enter").attr("class", "exit")
   
   enter = bar(d.parent)
-    .attr("transform", (d, i) -> "translate(0," + barHeight * i * 1.2 + ")")
+    .attr("transform", barTranslate)
     .style("opacity", 1e-6)
 
 
@@ -114,7 +123,7 @@ up = (d) ->
 
 
 
-  svg.selectAll(".x.axis").transition().duration(duration).call xAxis
+  vis.selectAll(".x.axis").transition().duration(duration).call xAxis
   enterTransition = enter.transition().duration(end).style("opacity", 1)
 
   enterTransition.select("rect").attr("width", (d) ->
@@ -139,16 +148,16 @@ up = (d) ->
 
 
   exit.transition().duration(end).remove()
-  svg.select(".background").data([ d.parent ]).transition().duration end
+  vis.select(".background").data([ d.parent ]).transition().duration end
 
   updateBreadcrumb(d.parent)
-  #  d3.select("").attr("height", 20) #d.children.length * barHeight + margin.to + margin.bottom)
+  updateVisHeight(d.parent)
 
 
 
 
 bar = (d) ->
-  b = svg.insert("g", ".y.axis")
+  b = vis.insert("g", ".y.axis")
       .attr("class", "enter")
       .attr("transform", "translate(0,5)")
     .selectAll("g")
@@ -182,7 +191,7 @@ bar = (d) ->
 stack = (i) ->
   x0 = 0
   (d) ->
-    tx = "translate(" + x0 + "," + barHeight * i * 1.2 + ")"
+    tx = barTranslate(d, i)
     x0 += x(d[valueAttr])
     tx
 
@@ -241,10 +250,7 @@ updateBreadcrumb = (currentNode) ->
   #  .text(currentNode[nameAttr])
 
   breadcrumbCaption.select("div.total")
-    .text(
-      valueFormat(currentNode[valueAttr]) + " or " + 
-      percentageFormat(currentNode[valueAttr] / data[valueAttr]) + " of total"
-    )
+    .text(selectionTotalText(data, currentNode))
 
 
   # remove
@@ -274,23 +280,30 @@ svg = barHierarchy
   .append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+
+vis = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
-svg.append("rect")
+vis.append("rect")
   .attr("class", "background")
   .attr("width", width)
   .attr("height", height)
   .on("click", up)
 
-svg.append("g").attr "class", "x axis"
-svg.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
+vis.append("g").attr "class", "x axis"
+vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
+
+
+updateVisHeight = (d) ->
+  h = d.children.length * (barHeight + barSpacing) + margin.top + margin.bottom
+  svg.transition()
+    .duration(duration)
+    .attr("height", h)
 
 
 
 
-
-d3.csv "aiddata-purposes-with-totals.csv/2009", (csv) ->
+d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
 
   data = nestPurposeDataByCategories(csv)
   removeSingleChildNodes(data)

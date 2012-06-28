@@ -3,6 +3,8 @@ root = exports ? this
 
 fmt = d3.format(",.0f")
 
+root.formatMagnitudeLong = (d) -> "$#{fmt(d)}"
+
 root.formatMagnitude = root.magnitudeFormat = (d) ->
   if (d >= 1e15)
     "$#{fmt(d / 1e15)}P"
