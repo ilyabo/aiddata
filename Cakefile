@@ -8,10 +8,15 @@ cachedPath = 'static/data/cached'
 
 option '-e', '--environment [ENVIRONMENT_NAME]', 'set the environment for `restart`'
 
+mkdir = (dir) -> if !path.existsSync(dir) then fs.mkdirSync(dir, parseInt('0755', 8))
 
 task 'build', ->
-  run 'coffee -o static/coffee -c ' +
-                'frontend/*.coffee frontend/*/*.coffee'
+  mkdir "static"
+  mkdir "static/coffee"
+  mkdir "static/coffee/vis"
+
+  run 'coffee -o static/coffee -c frontend/*.coffee frontend/*/*.coffee'
+  run 'coffee -o static/coffee/vis -c vis/*.coffee'
 
 
 # See: http://stackoverflow.com/questions/7259232/how-to-deploy-node-js-in-cloud-for-high-availability
@@ -69,7 +74,7 @@ task 'refresh-views', ->
 
 
 task 'refresh-cached', ->
-  if !path.existsSync(cachedPath) then fs.mkdirSync(cachedPath, parseInt('0755', 8))
+  mkdir cachedPath
 
   files = [
     "aiddata-donor-totals.csv",  

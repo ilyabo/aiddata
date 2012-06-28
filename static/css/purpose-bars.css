@@ -38,12 +38,12 @@
 
 
 .barHierarchy .breadcrumb { font-size:11px; padding:.2em 0; margin:0 0 5px 0; }
-.barHierarchy .breadcrumb ul { padding:0; margin:0; }
+.barHierarchy .breadcrumb ul { padding:0; margin:0; display:inline; }
 .barHierarchy .breadcrumb li.title { margin-right:.5em; }
 
 .barHierarchy .breadcrumb a { text-decoration: underline; }
 .barHierarchy .breadcrumb a.sel { color:#333; text-decoration:none; cursor:default;}
 
-.barHierarchy .caption { padding:0px 10px;}
+.barHierarchy .caption { padding:0; display:inline; border:1px; }
 .barHierarchy .caption div.title { display:inline; font-size:11px; }
 .barHierarchy .caption div.total { display:inline; margin-left:15px; font-size:10px; color:#999; }

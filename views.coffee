@@ -161,15 +161,37 @@
 
 
 
+
+
+  ############# purposeBars ###############
+
   @view purposeBars: ->
     @page = "purposeBars"
 
     style '@import url("css/purpose-bars.css");'
-
     div id:"purposeBars"
 
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils-purpose.js'
-    script src: "coffee/purpose-bars.js"
+    script src: "coffee/vis/bars-hierarchy.js"
+    script src: "/purpose-bars.js"
+
+
+  @coffee '/purpose-bars.js': ->
+
+    chart = barsHierarchy()
+      .width(550)
+      .height(300)
+
+
+    d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
+      data = nestPurposeDataByCategories(csv)
+      removeSingleChildNodes(data)
+      provideWithTotalAmount(data)
+
+      d3.select("#purposeBars").datum(data).call(chart)
+
+  
+
 
