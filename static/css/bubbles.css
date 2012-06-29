@@ -79,6 +79,7 @@ line.out:hover { stroke:#bbdeff; }
 .tseries .out circle.selAttrValue  { fill:#a1c0de; }
 
 
+.tseries svg  { cursor:ew-resize; }
 
 .tseries rect.background {
   fill:white;
