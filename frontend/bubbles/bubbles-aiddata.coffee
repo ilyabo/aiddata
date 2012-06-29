@@ -667,9 +667,9 @@ loadData()
     svg.append("text")
       .attr("id", "yearText")
       .attr("font-size", bubblesChartWidth/15)
-      .attr("x", bubblesChartWidth - 20)
+      .attr("x", 20) #bubblesChartWidth - 20)
       .attr("y", 100)
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "start")
         .text(state.selMagnAttr())
 
     setSelDateTo = (date, noAnim) ->
