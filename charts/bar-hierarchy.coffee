@@ -232,7 +232,7 @@ this.barHierarchy = () ->
       .attr("class", "node")
 
     newli.append("span")
-      .attr("class", "divider")
+      .attr("class", (d,i) -> if (i > 0) then "divider" else "first")
       .text((d, i) -> if (i > 0) then "/" else "")
     newli.append("a")
       .attr("href", "#")
@@ -243,9 +243,11 @@ this.barHierarchy = () ->
     ###
 
     # update
+    breadcrumbList.selectAll("li.node")
+      .classed("sel", (d) -> d == currentNode)
+
     breadcrumbList.selectAll("li.node a")
       .attr("href", "#")
-      .classed("sel", (d) -> d == currentNode)
       .text((d) -> d[nameAttr])
       .on "click", (d, i) ->  
         if (d != currentNode) then up(d.children[0])

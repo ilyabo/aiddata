@@ -44,9 +44,9 @@
       percentageFormat = d3.format(",.2%")
 
       chart = barHierarchy()
-        .width(600)
+        .width(500)
         .barHeight(10)
-        .labelsWidth(250)
+        .labelsWidth(200)
         .childrenAttr("values")
         .valueAttr("amount")
         .nameAttr("key")

@@ -49,7 +49,12 @@ text-align:center;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right:15px;
-  height: 80%;
+  height: auto;
+  background-color:rgba(255,255,255,0.5);
+  padding:5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;  
 }
 
 g.flows line { stroke-linecap:round; }
@@ -75,13 +80,7 @@ line.out:hover { stroke:#bbdeff; }
 
 
 /* Time-series */
-div.tseries {
-  background-color:rgba(255,255,255,0.5);
-  padding:5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;  
-}
+div.tseries { }
 
 .tseries .title { fill:#666; font-size:11px; font-weight:normal;}
 .tseries .line { fill: none; stroke-width: 1.5px; }
