@@ -13,10 +13,10 @@ mkdir = (dir) -> if !path.existsSync(dir) then fs.mkdirSync(dir, parseInt('0755'
 task 'build', ->
   mkdir "static"
   mkdir "static/coffee"
-  mkdir "static/coffee/vis"
+  mkdir "static/coffee/charts"
 
   run 'coffee -o static/coffee -c frontend/*.coffee frontend/*/*.coffee'
-  run 'coffee -o static/coffee/vis -c vis/*.coffee'
+  run 'coffee -o static/coffee/charts -c charts/*.coffee'
 
 
 # See: http://stackoverflow.com/questions/7259232/how-to-deploy-node-js-in-cloud-for-high-availability

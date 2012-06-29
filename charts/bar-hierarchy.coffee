@@ -1,15 +1,13 @@
 
-this.barsHierarchy = () ->
+this.barHierarchy = () ->
 
-  nameAttr = "key"
-  childrenAttr = "values"
-  valueAttr = "amount"
-  valueFormat = formatMagnitude
-  #valueFormatLong = formatMagnitudeLong
+  nameAttr = "name" 
+  childrenAttr = "children"
+  valueAttr = "value"
+  valueFormat = d3.format(",.0f")
 
-  selectionTotalText = (data, selectedNode) ->
-    valueFormat(selectedNode[valueAttr]) + " (" + 
-    percentageFormat(selectedNode[valueAttr] / data[valueAttr]) + " of total)"
+  currentNodeDescription = (currentNode) -> currentNode[nameAttr]
+
 
   data = null
   svg = vis = breadcrumb = null
@@ -32,7 +30,6 @@ this.barsHierarchy = () ->
   duration = 300
   delay = 25
 
-  percentageFormat = d3.format(",.2%")
 
   hierarchy = d3.layout.partition()
     .value((d) -> d[valueAttr])
@@ -40,10 +37,7 @@ this.barsHierarchy = () ->
                                        # thus .children is used further on
     #.sort((a,b) -> b[valueAttr] - a[valueAttr])
 
-  xAxis = d3.svg.axis().scale(x)
-    .orient("top")
-    .ticks(3)
-    .tickFormat(valueFormat)
+  xAxis = null
 
  
   leafNodeClass = (d, nodeClass, leafClass) ->
@@ -255,7 +249,7 @@ this.barsHierarchy = () ->
     caption = breadcrumb.select("div.caption")
     #caption.select("div.title").text(currentNode[nameAttr])
 
-    caption.select("div.total").text(selectionTotalText(data, currentNode))
+    caption.select("div.total").text(currentNodeDescription(currentNode))
 
 
     # remove
@@ -286,11 +280,8 @@ this.barsHierarchy = () ->
 
 
   initVis = (selection) ->
-
     selection.attr("class", "barHierarchy")
-
     initBreadcrumb(selection)
-
 
     svg = selection
       .append("svg")
@@ -306,7 +297,7 @@ this.barsHierarchy = () ->
       .attr("height", height)
       .on("click", up)
 
-    vis.append("g").attr "class", "x axis"
+    vis.append("g").attr("class", "x axis")
     vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
@@ -317,6 +308,12 @@ this.barsHierarchy = () ->
     initVis(selection)
     data = selection.datum()
 
+
+    xAxis = d3.svg.axis().scale(x)
+      .orient("top")
+      .ticks(3)
+      .tickFormat(valueFormat)
+
     hierarchy.nodes(data)
     x.domain([ 0, data[valueAttr] ]).nice()
     down data, 0
@@ -325,6 +322,16 @@ this.barsHierarchy = () ->
   chart.width = (_) -> if (!arguments.length) then fullwidth else fullwidth = _; chart
 
   chart.height = (_) -> if (!arguments.length) then fullheight else fullheight = _; chart
+
+  chart.nameAttr = (_) -> if (!arguments.length) then nameAttr else nameAttr = _; chart
+
+  chart.childrenAttr = (_) -> if (!arguments.length) then childrenAttr else childrenAttr = _; chart
+
+  chart.valueAttr = (_) -> if (!arguments.length) then valueAttr else valueAttr = _; chart
+
+  chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
+
+  chart.currentNodeDescription = (_) -> if (!arguments.length) then currentNodeDescription else currentNodeDescription = _; chart
 
 
   chart

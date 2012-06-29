@@ -168,30 +168,43 @@
   @view purposeBars: ->
     @page = "purposeBars"
 
-    style '@import url("css/purpose-bars.css");'
+    style '@import url("css/charts/bar-hierarchy.css");'
+
     div id:"purposeBars"
 
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils-purpose.js'
-    script src: "coffee/vis/bars-hierarchy.js"
+    script src: "coffee/charts/bar-hierarchy.js"
     script src: "/purpose-bars.js"
 
 
   @coffee '/purpose-bars.js': ->
+    $ ->
+      percentageFormat = d3.format(",.2%")
 
-    chart = barsHierarchy()
-      .width(550)
-      .height(300)
+      chart = barHierarchy()
+        .width(550)
+        .height(300)
+        .childrenAttr("values")
+        .valueAttr("amount")
+        .nameAttr("key")
+        .valueFormat(formatMagnitude)
+        .currentNodeDescription(
+          (currentNode) ->
+            data = currentNode; (data = data.parent) while data.parent?
+            formatMagnitude(currentNode.amount) + " (" + 
+            percentageFormat(currentNode.amount / data.amount) + " of total)"
+        )
 
 
-    d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
-      data = nestPurposeDataByCategories(csv)
-      removeSingleChildNodes(data)
-      provideWithTotalAmount(data)
+      d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
+        data = nestPurposeDataByCategories(csv)
+        removeSingleChildNodes(data)
+        provideWithTotalAmount(data)
 
-      d3.select("#purposeBars").datum(data).call(chart)
+        d3.select("#purposeBars").datum(data).call(chart)
 
-  
+    
 
 
