@@ -16,16 +16,18 @@ this.barHierarchy = () ->
     top: 20
     right: 20
     bottom: 20
-    left: 300
+    left: 150
 
   fullwidth = 550
   fullheight = 300
 
-  width = fullwidth - margin.right - margin.left
-  height = fullheight - margin.top - margin.bottom
-  x = d3.scale.linear().range([ 0, width ])
+  width = height = null
+  x = null
+
   barHeight = 12
-  barSpacing = barHeight * 0.2
+  barSpacing = null
+
+
   #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
   duration = 300
   delay = 25
@@ -55,8 +57,10 @@ this.barHierarchy = () ->
     
     exit.selectAll("rect").filter((p) -> p is d ).style "fill-opacity", 1e-6
 
-    enter = bar(d).attr("transform", stack(i)).style("opacity", 1)
-    enter.select("text").style "fill-opacity", 1e-6
+    enter = bar(d).attr("transform", stack(i))
+      .style("opacity", 1)
+    enter.select("text")
+      .style("fill-opacity", 1e-6)
 
     enter.select("rect")
       .attr("class", "bar")
@@ -66,9 +70,10 @@ this.barHierarchy = () ->
 
     vis.selectAll(".x.axis").transition().duration(duration).call xAxis
 
-    enterTransition = enter.transition().duration(duration).delay((d, i) ->
-      i * delay
-    ).attr("transform", barTranslate)
+    enterTransition = enter.transition()
+      .duration(duration)
+      .delay((d, i) -> i * delay)
+      .attr("transform", barTranslate)
 
     enterTransition.select("text")
       .attr("class", labelClass)
@@ -133,7 +138,9 @@ this.barHierarchy = () ->
     exitTransition = exit.selectAll("g").transition().duration(duration).delay((d, i) ->
       i * delay
     ).attr("transform", stack(d.index))
-    exitTransition.select("text").style "fill-opacity", 1e-6
+
+    exitTransition.select("text")
+      .style("fill-opacity", 1e-6)
 
     ###
     exitTransition.select("rect").attr("width", (d) ->
@@ -258,10 +265,10 @@ this.barHierarchy = () ->
 
 
   updateVisHeight = (d) ->
-    h = (d.children.length - 1) * (barHeight + barSpacing) + margin.top + margin.bottom
+    h = (d.children.length) * (barHeight + barSpacing) #+ margin.top + margin.bottom
     svg.transition()
       .duration(duration)
-      .attr("height", h)
+      .attr("height", h + margin.top + margin.bottom)
 
 
   initBreadcrumb = (selection) ->
@@ -305,8 +312,15 @@ this.barHierarchy = () ->
 
 
   chart = (selection) ->
+    barSpacing = barHeight * 0.2
+    width = fullwidth - margin.right - margin.left
+    height = fullheight - margin.top - margin.bottom
+    x = d3.scale.linear().range([ 0, width ])
+
+
     initVis(selection)
     data = selection.datum()
+
 
 
     xAxis = d3.svg.axis().scale(x)
@@ -322,6 +336,10 @@ this.barHierarchy = () ->
   chart.width = (_) -> if (!arguments.length) then fullwidth else fullwidth = _; chart
 
   chart.height = (_) -> if (!arguments.length) then fullheight else fullheight = _; chart
+
+  chart.barHeight = (_) -> if (!arguments.length) then barHeight else barHeight = _; chart
+
+  chart.labelsWidth = (_) -> if (!arguments.length) then margin.left else margin.left = _; chart
 
   chart.nameAttr = (_) -> if (!arguments.length) then nameAttr else nameAttr = _; chart
 

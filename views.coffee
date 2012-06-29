@@ -7,7 +7,9 @@
     @page = "bubbles"
     @dataset = "aiddata"
 
+    style '@import url("css/charts/bar-hierarchy.css");'
     style '@import url("css/bubbles.css");'
+    style '@import url("css/bubbles-purpose.css");'
 
     div id:"bubblesChart"
 
@@ -24,13 +26,45 @@
 
     div id:"tseriesPanel"
 
+    div id:"purposeBars"
+
+
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
     #script src: "coffee/time-slider.js"
     script src: "coffee/bubbles-#{@dataset}.js"
+    script src: "coffee/charts/bar-hierarchy.js"
+    script src: 'coffee/utils-purpose.js'
+    script src: "/bubbles-purposes.js"
 
 
+  @coffee '/bubbles-purposes.js': ->
+    $ ->
+      percentageFormat = d3.format(",.2%")
+
+      chart = barHierarchy()
+        .width(600)
+        .barHeight(10)
+        .labelsWidth(250)
+        .childrenAttr("values")
+        .valueAttr("amount")
+        .nameAttr("key")
+        .valueFormat(formatMagnitude)
+        .currentNodeDescription(
+          (currentNode) ->
+            data = currentNode; (data = data.parent) while data.parent?
+            formatMagnitude(currentNode.amount) + " (" + 
+            percentageFormat(currentNode.amount / data.amount) + " of total)"
+        )
+
+
+      d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
+        d3.select("#purposeBars")
+          .datum(utils.aiddata.purposes.fromCsv(csv))
+          .call(chart)
+
+    
 
 
 
@@ -205,11 +239,9 @@
 
 
       d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
-        data = nestPurposeDataByCategories(csv)
-        removeSingleChildNodes(data)
-        provideWithTotalAmount(data)
-
-        d3.select("#purposeBars").datum(data).call(chart)
+        d3.select("#purposeBars")
+          .datum(utils.aiddata.purposes.fromCsv(csv))
+          .call(chart)
 
     
 

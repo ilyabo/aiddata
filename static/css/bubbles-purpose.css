@@ -1,0 +1,9 @@
+#purposeBars {
+	text-align: right;
+	position:absolute;
+	right:10px; top:50px;
+	height: 200px;
+}
+#purposeBars .breadcrumb { text-align:left; }
+#purposeBars svg { background-color:rgba(255,255,255,0.5); }
+#purposeBars svg text.label { font-size:10px; fill:gray;}
