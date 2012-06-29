@@ -1,6 +1,7 @@
 @include = ->
 
   
+  ############# bubbles ###############
 
   @view bubbles: ->
     @page = "bubbles"
@@ -35,6 +36,7 @@
 
 
 
+  ############# horizon ###############
 
 
   @view horizon: ->
@@ -56,6 +58,7 @@
 
 
 
+  ############# ffprints ###############
 
   @view ffprints: ->
     @page = "ffprints"
@@ -94,7 +97,7 @@
 
 
 
-
+  ############# crossfilter ###############
 
   @view crossfilter: ->
     @page = "crossfilter"
@@ -132,6 +135,7 @@
 
 
 
+  ############# purposeTree ###############
 
   @view purposeTree: ->
     @page = "purposeTree"
@@ -147,6 +151,8 @@
 
 
 
+
+  ############# purposePack ###############
 
   @view purposePack: ->
     @page = "purposePack"
