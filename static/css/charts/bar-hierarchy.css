@@ -1,11 +1,10 @@
 
-.barHierarchy text.label {
+.barHierarchy text.barLabel {
   font-size: 11px;
   cursor:pointer;
-  font-weight: normal;
 }
 
-.barHierarchy text.label.hasChildren {
+.barHierarchy text.barLabel.hasChildren {
 }
 
 .barHierarchy rect.background {

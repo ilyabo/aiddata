@@ -2,8 +2,13 @@
 	text-align: right;
 	position:absolute;
 	right:10px; top:50px;
-	height: 200px;
+	height: auto;
+	background-color:rgba(255,255,255,0.5);
+	padding:10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px; 
 }
 #purposeBars .breadcrumb { text-align:left; }
-#purposeBars svg { background-color:rgba(255,255,255,0.5); }
-#purposeBars svg text.label { font-size:10px; fill:gray;}
+#purposeBars svg {  }
+#purposeBars svg text.barLabel { font-size:11px; fill:black;}

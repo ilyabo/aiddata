@@ -15,7 +15,7 @@ this.barHierarchy = () ->
   margin =
     top: 20
     right: 20
-    bottom: 20
+    bottom: 5 
     left: 150
 
   fullwidth = 550
@@ -46,7 +46,7 @@ this.barHierarchy = () ->
     if d.children? then nodeClass else leafClass
 
   barClass = (d) -> leafNodeClass(d, "bar hasChildren", "bar")
-  labelClass = (d) -> leafNodeClass(d, "label hasChildren", "label")
+  labelClass = (d) -> leafNodeClass(d, "barLabel hasChildren", "barLabel")
   barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
 
 
