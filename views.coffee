@@ -9,9 +9,10 @@
 
     style '@import url("css/charts/bar-hierarchy.css");'
     style '@import url("css/charts/time-series.css");'
-    style '@import url("css/bubbles.css");'
+    style '@import url("css/charts/bubbles.css");'
     style '@import url("css/bubbles-purpose.css");'
 
+    div id:"loading", -> "Loading..."
     div id:"bubblesChart"
 
 
@@ -34,7 +35,7 @@
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
     #script src: "coffee/time-slider.js"
-    script src: "coffee/bubbles-#{@dataset}.js"
+    script src: "coffee/charts/bubbles.js"
     script src: "coffee/charts/bar-hierarchy.js"
     script src: "coffee/charts/time-series.js"
     script src: "coffee/charts/time-slider.js"
@@ -43,13 +44,50 @@
 
 
   @coffee '/bubbles-purposes.js': ->
-    $ ->
+    bubbles = bubblesChart()
+      .conf(
+        flowOriginAttr: 'donor'
+        flowDestAttr: 'recipient'
+        nodeIdAttr: 'code'
+        nodeLabelAttr: 'name'
+        latAttr: 'Lat'
+        lonAttr: 'Lon'
+        flowMagnAttrs:
+          aid:
+            attrs: [1947..2011]
+            explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
+        )
+
+
+    loadData()
+      .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
+      .csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
+      #.csv('originTotals', "#{dynamicDataPath}aiddata-donor-totals.csv")
+      #.csv('destTotals', "#{dynamicDataPath}aiddata-recipient-totals.csv")
+      .json('map', "data/world-countries.json")
+      .csv('countries', "data/aiddata-countries.csv")
+      .onload (data) ->
+
+        provideCountryNodesWithCoords(
+          data.nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
+          data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
+        )
+
+        d3.select("#bubblesChart")
+          .datum(data)
+          .call(bubbles)
+
+        $("#loading").remove()
+
+
+
+
       percentageFormat = d3.format(",.2%")
 
       #timeSlider = timeSlider()
       #  .width(500)
 
-      purposesChart = barHierarchy()
+      purposes = barHierarchy()
         .width(500)
         .barHeight(10)
         .labelsWidth(200)
@@ -68,7 +106,7 @@
       d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
         d3.select("#purposeBars")
           .datum(utils.aiddata.purposes.fromCsv(csv))
-          .call(purposesChart)
+          .call(purposes)
 
     
 
