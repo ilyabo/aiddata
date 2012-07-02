@@ -2,6 +2,9 @@ bubblesChartWidth = $(document).width() * 0.95
 bubblesChartHeight = $(document).height() - 140
 nodesWithoutCoordsMarginBottom = 90
 
+tseriesw = bubblesChartWidth*0.25
+tseriesh = bubblesChartHeight*0.18
+
 
 yearTicksWidth = bubblesChartWidth * 0.6
 yearTicksLeft = yearTicksRight = 10
@@ -145,141 +148,35 @@ shortenLabel = (labelText, maxLength) ->
 
 # data is expected to be in the following form:
 # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
-createTimeSeries = (parent, data, title) ->
-  margin = {top: 28, right: 8, bottom: 14, left: 46}
-  w = bubblesChartWidth*0.25 - margin.left - margin.right
-  h = bubblesChartHeight*0.18 - margin.top - margin.bottom
+createTimeSeries = (tseriesDiv, data, title) ->
+  tschart = timeSeries()
+    .width(tseriesw)
+    .height(tseriesh)
+    .title(title)
 
-  hasIn = data[0]?.inbound?
-  hasOut = data[0]?.outbound?
+  d3.select(tseriesDiv).datum(data).call(tschart)
 
-  dates = data.map (d) -> d.date
-  maxVal = d3.max(d3.values(data.map (d) -> Math.max(d.inbound ? 0, d.outbound ? 0)))
-  x = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
-  y = d3.scale.linear().domain([0, maxVal]).range([h, 0])
-
-  xAxis = d3.svg.axis()
-    .scale(x)
-    .ticks(Math.max(1, Math.round(w/30)))
-    .orient("bottom")
-    .tickSize(3, 0, 0)
-
-  yAxis = d3.svg.axis()
-    .ticks(Math.max(1, Math.round(h/18)))
-    .scale(y)
-    .orient("left")
-    .tickFormat(shortMagnitudeFormat)
-    .tickSize(-w, 0, 0)
-
-  tsvg = parent
-    .append("svg")
-      .datum(data)
-      .attr("width", w + margin.left + margin.right)
-      .attr("height", h + margin.top + margin.bottom)
-  
-  tsvg.append("text")  
-    .attr("class", "title")
-    .attr("x",  margin.left + w/2)
-    .attr("y", 20)
-    .attr("text-anchor", "middle")
-    .text(title)
-
-  tg = tsvg.append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
-  tg.append("rect")
-    .attr("class", "background")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", w)
-    .attr("height", h)
-
-  tg.append("g")
-    .attr("class", "y axis")
-    .call(yAxis)
-
-  tg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + h + ")")
-    .call(xAxis)
-
-  selDateLine = tg.append("line")
-    .attr("class", "selDate")
-    .attr("y1", -3)
-    .attr("y2", h + 6)
-
-  updateYear = ->
-    tg.selectAll("line.selDate")
-      .attr("x1", x(data[state.selAttrIndex].date))
-      .attr("x2", x(data[state.selAttrIndex].date))
-
+  updateYear = -> tschart.selectDate(data[state.selAttrIndex].date)
   updateYear()
-  $(selDateLine[0]).bind("updateYear", updateYear)
+  $(tseriesDiv).bind "updateYear", updateYear
 
 
-  if hasIn
-    linein = d3.svg.line()
-      .x((d) -> x(d.date))
-      .y((d) -> y(d.inbound))
-    
-    gin = tg.append("g").attr("class", "in")
-
-    gin.append("path")
-      .attr("class", "line")
-      .attr("d", linein)
-
-    ###
-    gin.append("circle")
-      .attr("class","selAttrValue")
-      .attr("cx", x(data[state.selAttrIndex].date))
-      .attr("cy", y(data[state.selAttrIndex].inbound))
-      .attr("r", 2)
-    ###
 
 
-  if hasOut
-    lineout = d3.svg.line()
-      .x((d) -> x(d.date))
-      .y((d) -> y(d.outbound))
-    
-    gout = tg.append("g").attr("class", "out")
-
-    gout.append("path")
-      .attr("class", "line")
-      .attr("d", lineout)
-
-    ###
-    gout.append("circle")
-      .attr("class","selAttrValue")
-      .attr("cx", x(data[state.selAttrIndex].date))
-      .attr("cy", y(data[state.selAttrIndex].outbound))
-      .attr("r", 2)
-    ###
-
-  tg.append("rect")
-    .attr("class", "foreground")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", w)
-    .attr("height", h + margin.bottom)
-    .on 'mousemove', (d) ->
-      parent.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
-
-
-TimeSeries = 
+TimeSeriesPanel = 
   id: (type, i) -> 'tseries'+ type + i
 
-  exists: (type, i) -> $("#" + TimeSeries.id(type, i)).length > 0
+  exists: (type, i) -> $("#" + TimeSeriesPanel.id(type, i)).length > 0
 
   create: (type, i) ->
-    id = TimeSeries.id(type, i)
+    id = TimeSeriesPanel.id(type, i)
     $("#tseriesPanel").append('<div id="'+id+'" class="tseries"></div>')
     return $("#"+id).get(0)
 
-  remove: (type, i) -> $("#"+TimeSeries.id(type, i)).remove()
+  remove: (type, i) -> $("#"+TimeSeriesPanel.id(type, i)).remove()
 
   removeAllExcept: (type, i) ->  
-    $("#tseriesPanel .tseries").not("#" + TimeSeries.id(type, i)).remove()
+    $("#tseriesPanel .tseries").not("#" + TimeSeriesPanel.id(type, i)).remove()
 
 
 
@@ -526,13 +423,15 @@ loadData()
             inbound: if d3.select(flow).classed("in") then +d.data[attr]
             outbound: if d3.select(flow).classed("out") then +d.data[attr]
 
-        if not TimeSeries.exists("flow", i)
-          tseries = TimeSeries.create("flow", i)
+        if not TimeSeriesPanel.exists("flow", i)
+          tseries = TimeSeriesPanel.create("flow", i)
           recipient = d.target.data[conf.nodeLabelAttr]
           donor = d.source.data[conf.nodeLabelAttr]
 
           flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
-          createTimeSeries(d3.select(tseries), data, flowLabel)
+
+          createTimeSeries(tseries, data, flowLabel)
+
 
 
       flows.selectAll("line")
@@ -558,7 +457,7 @@ loadData()
 
         .on "mouseout", (d, i) ->
           $(this).tipsy("hide")
-          TimeSeries.remove("flow", i)
+          TimeSeriesPanel.remove("flow", i)
 
 
       $('line').tipsy
@@ -577,12 +476,12 @@ loadData()
           inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
           outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
 
-      if not TimeSeries.exists("node", i)
-        tseries = TimeSeries.create("node", i)
+      if not TimeSeriesPanel.exists("node", i)
+        tseries = TimeSeriesPanel.create("node", i)
         nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-        parent = d3.select(tseries)
-        parent.setSelDateTo = setSelDateTo
-        createTimeSeries(parent, data, shortenLabel(nodeLabel, 40))
+        #parent = d3.select(tseries)
+        #parent.setSelDateTo = setSelDateTo
+        createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
 
 
     bubble = svg.selectAll("g.bubble")
@@ -594,12 +493,12 @@ loadData()
           .on 'click', (d, i) ->
 
             if selectedNode == this
-              TimeSeries.remove("node", i)
+              TimeSeriesPanel.remove("node", i)
               selectedNode = null
               d3.select(this).selectAll("circle").classed("selected", false)
             else 
               if selectedNode != null
-                TimeSeries.removeAllExcept("node", i)
+                TimeSeriesPanel.removeAllExcept("node", i)
                 d3.select(selectedNode).selectAll("circle").classed("selected", false)
                 flows.selectAll("line").remove()
               else
@@ -629,7 +528,7 @@ loadData()
               flows.selectAll("line").remove()
 
             if selectedNode != this
-              TimeSeries.remove("node", i)
+              TimeSeriesPanel.remove("node", i)
   
             $(this).tipsy("hide")
 
@@ -763,7 +662,7 @@ loadData()
           state.selAttrIndex++
 
         $("#yearSlider").slider('value', state.selAttrIndex)
-        $(".tseries line.selDate").trigger("updateYear")
+        $(".tseries").trigger("updateYear")
         update()
 
         timer = setInterval(->
@@ -772,7 +671,7 @@ loadData()
           else
             state.selAttrIndex++
             $("#yearSlider").slider('value', state.selAttrIndex)
-            $(".tseries line.selDate").trigger("updateYear")
+            $(".tseries").trigger("updateYear")
             update()
 
         , 900)

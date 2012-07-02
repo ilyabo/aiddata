@@ -8,6 +8,7 @@
     @dataset = "aiddata"
 
     style '@import url("css/charts/bar-hierarchy.css");'
+    style '@import url("css/charts/time-series.css");'
     style '@import url("css/bubbles.css");'
     style '@import url("css/bubbles-purpose.css");'
 
@@ -35,6 +36,8 @@
     #script src: "coffee/time-slider.js"
     script src: "coffee/bubbles-#{@dataset}.js"
     script src: "coffee/charts/bar-hierarchy.js"
+    script src: "coffee/charts/time-series.js"
+    script src: "coffee/charts/time-slider.js"
     script src: 'coffee/utils-purpose.js'
     script src: "/bubbles-purposes.js"
 
@@ -43,7 +46,10 @@
     $ ->
       percentageFormat = d3.format(",.2%")
 
-      chart = barHierarchy()
+      #timeSlider = timeSlider()
+      #  .width(500)
+
+      purposesChart = barHierarchy()
         .width(500)
         .barHeight(10)
         .labelsWidth(200)
@@ -62,7 +68,7 @@
       d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
         d3.select("#purposeBars")
           .datum(utils.aiddata.purposes.fromCsv(csv))
-          .call(chart)
+          .call(purposesChart)
 
     
 
