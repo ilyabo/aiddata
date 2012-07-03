@@ -34,12 +34,12 @@ require('zappa').run 3000, ->
 
   
   @use 'bodyParser', 'methodOverride', @app.router
-  @use 'static': __dirname + '/static'
-  @use 'static': __dirname + '/node_modules/underscore'
-  @use 'static': __dirname + '/node_modules/d3'
-  @use 'static': __dirname + '/node_modules/crossfilter'
-  @use 'static': __dirname + '/node_modules/cubism'
-  @use 'static': __dirname + '/node_modules/queue-async'
+  @use 'static': __dirname + '/../static'
+  @use 'static': __dirname + '/../node_modules/underscore'
+  @use 'static': __dirname + '/../node_modules/d3'
+  @use 'static': __dirname + '/../node_modules/crossfilter'
+  @use 'static': __dirname + '/../node_modules/cubism'
+  @use 'static': __dirname + '/../node_modules/queue-async'
 
   #@enable 'default layout'
   #@enable 'minify'

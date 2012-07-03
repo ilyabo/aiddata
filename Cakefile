@@ -2,6 +2,7 @@
 fs = require 'fs'
 path = require 'path'
 log = console.log
+app = "app/app.coffee"
 
 cachedPath = 'static/data/cached'
 
@@ -15,19 +16,19 @@ task 'build', ->
   mkdir "static/coffee"
   mkdir "static/coffee/charts"
 
-  run 'coffee -o static/coffee -c frontend/*.coffee frontend/*/*.coffee'
-  run 'coffee -o static/coffee/charts -c charts/*.coffee'
+  run 'coffee -o static/coffee -c app/frontend/*.coffee app/frontend/*/*.coffee'
+  run 'coffee -o static/coffee/charts -c app/charts/*.coffee'
 
 
 # See: http://stackoverflow.com/questions/7259232/how-to-deploy-node-js-in-cloud-for-high-availability
 
 
-task 'restart', 'Build, kill existing app.coffee processes and run app.coffee again', (options) ->
+task 'restart', 'Build, kill existing app processes and run it again', (options) ->
   options.environment or= 'production'
   invoke 'build'
-  run 'PATH=/usr/bin:/usr/local/bin  && kill -9 `pgrep -f "coffee app.coffee"`'
+  run 'PATH=/usr/bin:/usr/local/bin  && kill -9 `pgrep -f "coffee '+app+'"`'
 
-  run "NODE_ENV=#{options.environment} coffee app.coffee"
+  run "NODE_ENV=#{options.environment} coffee "+app
 
 
 forever = (action, options) ->
@@ -41,12 +42,12 @@ forever = (action, options) ->
       #" -o logs/aiddata.out "+
       #" -e logs/aiddata.err "+
       " -a" +   # append logs
-      " app.coffee"
+      " " + app
 
 
 task 'forever-restart', (options) -> forever 'restart', options
 task 'forever-start', (options) -> forever 'start', options
-task 'forever-stop', (options) -> run "forever stop -c coffee app.coffee"
+task 'forever-stop', (options) -> run "forever stop -c coffee " + app
 task 'forever-list', (options) -> run "forever list"
 
 
