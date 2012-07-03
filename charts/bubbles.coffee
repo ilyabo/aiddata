@@ -54,20 +54,30 @@ this.bubblesChart = ->
 
 
 
-  TimeSeriesPanel = 
-    id: (type, i) -> 'tseries'+ type + i
+  class DivPanel
 
-    exists: (type, i) -> $("#" + TimeSeriesPanel.id(type, i)).length > 0
+    constructor: (@panelDivId) -> 
+      @div = $("#" + @panelDivId)
+      unless @div.length > 0 
+        throw new Error("Element with id '#{@panelDivId}' not found")
 
-    create: (type, i) ->
-      id = TimeSeriesPanel.id(type, i)
-      $("#tseriesPanel").append('<div id="'+id+'" class="tseries"></div>')
-      return $("#"+id).get(0)
+    find : (did) -> $(@div).children("[data-id="+did+"]")
 
-    remove: (type, i) -> $("#"+TimeSeriesPanel.id(type, i)).remove()
+    findNot : (did) -> $(@div).children(":not([data-id="+did+"])")
 
-    removeAllExcept: (type, i) ->  
-      $("#tseriesPanel .tseries").not("#" + TimeSeriesPanel.id(type, i)).remove()
+    addNew : (did, cssClass) -> 
+      $(@div).append('<div data-id="'+did+'" class="'+cssClass+'"></div>')
+      @find(did).get(0)
+
+    remove : (did) -> @find(did).remove()
+
+    removeOthers : (did) -> @findNot(did).remove()
+
+    contains : (did) -> @find(did).length > 0
+
+
+  tseriesPanel = new DivPanel("tseriesPanel")
+
 
 
 
@@ -416,8 +426,8 @@ this.bubblesChart = ->
             inbound: if d3.select(flow).classed("in") then +d.data[attr]
             outbound: if d3.select(flow).classed("out") then +d.data[attr]
 
-        if not TimeSeriesPanel.exists("flow", i)
-          tseries = TimeSeriesPanel.create("flow", i)
+        if not tseriesPanel.contains("flow" + i)
+          tseries = tseriesPanel.addNew("flow" + i, "tseries")
           recipient = d.target.data[conf.nodeLabelAttr]
           donor = d.source.data[conf.nodeLabelAttr]
 
@@ -439,7 +449,7 @@ this.bubblesChart = ->
             this.parentNode.appendChild(this)
 
           $(this).tipsy("show")
-          $("#tseriesPanel").add('<div id="tseries"></div>')
+          # $("#tseriesPanel").add('<div id="tseries"></div>')
 
           createFlowTimeSeries(this, d, i)
 
@@ -450,7 +460,7 @@ this.bubblesChart = ->
 
         .on "mouseout", (d, i) ->
           $(this).tipsy("hide")
-          TimeSeriesPanel.remove("flow", i)
+          tseriesPanel.remove("flow" + i)
 
 
       $('line').tipsy
@@ -469,8 +479,8 @@ this.bubblesChart = ->
           inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
           outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
 
-      if not TimeSeriesPanel.exists("node", i)
-        tseries = TimeSeriesPanel.create("node", i)
+      if not tseriesPanel.contains("node" + i)
+        tseries = tseriesPanel.addNew("node" + i, "tseries")
         nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
         #parent = d3.select(tseries)
         #parent.setSelDateTo = setSelDateTo
@@ -486,12 +496,12 @@ this.bubblesChart = ->
           .on 'click', (d, i) ->
 
             if selectedNode == this
-              TimeSeriesPanel.remove("node", i)
+              tseriesPanel.remove("node" + i)
               selectedNode = null
               d3.select(this).selectAll("circle").classed("selected", false)
             else 
               if selectedNode != null
-                TimeSeriesPanel.removeAllExcept("node", i)
+                tseriesPanel.removeOthers("node" + i)
                 d3.select(selectedNode).selectAll("circle").classed("selected", false)
                 flows.selectAll("line").remove()
               else
@@ -521,7 +531,7 @@ this.bubblesChart = ->
               flows.selectAll("line").remove()
 
             if selectedNode != this
-              TimeSeriesPanel.remove("node", i)
+              tseriesPanel.remove("node" + i)
   
             $(this).tipsy("hide")
 

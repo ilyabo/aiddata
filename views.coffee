@@ -16,6 +16,7 @@
     div id:"bubblesChart"
 
 
+    
     div id: "yearSliderOuter", ->
 
       div id:"play", class:"ui-state-default ui-corner-all", ->
@@ -24,6 +25,7 @@
       div id:'yearSliderInner', ->
         div id:'yearSlider'
         div id:'yearTicks'
+    
 
 
     div id:"tseriesPanel"
@@ -44,6 +46,8 @@
 
 
   @coffee '/bubbles-purposes.js': ->
+
+    # Bubbles
     bubbles = bubblesChart()
       .conf(
         flowOriginAttr: 'donor'
@@ -81,12 +85,14 @@
 
 
 
-
-      percentageFormat = d3.format(",.2%")
-
       #timeSlider = timeSlider()
       #  .width(500)
 
+
+
+      # Purposes
+
+      percentageFormat = d3.format(",.2%")
       purposes = barHierarchy()
         .width(500)
         .barHeight(10)
