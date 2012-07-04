@@ -1,4 +1,4 @@
-this.timeSeries = ->
+this.timeSeriesChart = ->
 
   title = ""
   width = 300

@@ -40,7 +40,7 @@ this.bubblesChart = ->
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
   createTimeSeries = (tseriesDiv, data, title) ->
-    tschart = timeSeries()
+    tschart = timeSeriesChart()
       .width(tseriesw)
       .height(tseriesh)
       .title(title)
