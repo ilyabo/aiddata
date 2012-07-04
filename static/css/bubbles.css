@@ -1,3 +1,19 @@
+
+#bubblesChart {
+text-align:center;
+}
+
+
+
+#timeSlider {
+  position:absolute;
+  left:10px;
+  top:60px;
+  border:1px solid red;
+}
+
+
+
 #purposeBars {
 	text-align: right;
 	position:absolute;
@@ -63,9 +79,7 @@
  padding:4px; display: inline-block;
  }
 
-#bubblesChart {
-text-align:center;
-}
-
 #yearText {  fill:#ccc;  font-weight:bold; }
+
+
 

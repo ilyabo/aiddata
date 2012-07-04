@@ -49,6 +49,7 @@
     script src: "/bubbles.js"
 
 
+
   @coffee '/bubbles.js': ->
 
     # Bubbles
@@ -67,6 +68,31 @@
         )
 
 
+    timeSlider = timeSliderControl()
+      .min(new Date("1947"))
+      .max(new Date("2011"))
+      .step(d3.time.year)
+      .width(250)
+      .height(30)
+
+    barHierarchy = barHierarchyChart()
+      .width(500)
+      .barHeight(10)
+      .labelsWidth(200)
+      .childrenAttr("values")
+      .valueAttr("amount")
+      .nameAttr("key")
+      .valueFormat(formatMagnitude)
+      .currentNodeDescription(
+        do ->
+          percentageFormat = d3.format(",.2%")
+          (currentNode) ->
+            data = currentNode; (data = data.parent while data.parent?)
+            formatMagnitude(currentNode.amount) + " (" + 
+            percentageFormat(currentNode.amount / data.amount) + " of total)"
+      )
+
+
     loadData()
       .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
       .csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
@@ -74,6 +100,7 @@
       #.csv('destTotals', "#{dynamicDataPath}aiddata-recipient-totals.csv")
       .json('map', "data/world-countries.json")
       .csv('countries', "data/aiddata-countries.csv")
+      .csv('purposes', "aiddata-purposes-with-totals.csv/2007")
       .onload (data) ->
 
         provideCountryNodesWithCoords(
@@ -85,49 +112,18 @@
           .datum(data)
           .call(bubbles)
 
-        $("#loading").remove()
+
+        d3.select("#timeSlider")
+          .call(timeSlider)
 
 
-
-    timeSlider = timeSliderControl()
-      .min(new Date("1947"))
-      .max(new Date("2011"))
-      .step(d3.time.year)
-      .width(250)
-      .height(30)
-
-    d3.select("#timeSlider")
-      .call(timeSlider)
-
-
-
-      # Purposes
-
-      percentageFormat = d3.format(",.2%")
-      purposes = barHierarchy()
-        .width(500)
-        .barHeight(10)
-        .labelsWidth(200)
-        .childrenAttr("values")
-        .valueAttr("amount")
-        .nameAttr("key")
-        .valueFormat(formatMagnitude)
-        .currentNodeDescription(
-          (currentNode) ->
-            data = currentNode; (data = data.parent) while data.parent?
-            formatMagnitude(currentNode.amount) + " (" + 
-            percentageFormat(currentNode.amount / data.amount) + " of total)"
-        )
-
-
-      d3.csv "aiddata-purposes-with-totals.csv/2007", (csv) ->
         d3.select("#purposeBars")
-          .datum(utils.aiddata.purposes.fromCsv(csv))
-          .call(purposes)
-
-    
+          .datum(utils.aiddata.purposes.fromCsv(data.purposes))
+          .call(barHierarchy)
 
 
+        $("#loading").remove()
+  
 
 
 
@@ -293,7 +289,7 @@
     $ ->
       percentageFormat = d3.format(",.2%")
 
-      chart = barHierarchy()
+      chart = barHierarchyChart()
         .width(550)
         .height(300)
         .childrenAttr("values")

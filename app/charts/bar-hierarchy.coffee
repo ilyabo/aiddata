@@ -1,5 +1,5 @@
 
-this.barHierarchy = () ->
+this.barHierarchyChart = () ->
 
   nameAttr = "name" 
   childrenAttr = "children"
