@@ -1,42 +1,3 @@
-#yearSliderOuter {
-  margin: 0 auto;
-  display:none;
-  vertical-align: top;
-  height:35px;
-  background-color:#eee; 
-  border:1px solid #ddd;
-  padding:15px;
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-}
-
-#yearSliderInner { float:left; height:40px; }
-
-#yearSlider { display: inline-block; }
-#yearTicks { padding:1px; display: inline-block; }
-
-
-#yearTicks .x.axis line.tick { stroke:#333; stroke-width:.5; }
-#yearTicks .x.axis line.tick.minor { stroke:#999; stroke-width:.5; }
-#yearTicks path.domain { fill:none; }
-
-#yearTicks .x.axis text { cursor:pointer;  }
-
-#play { 
- margin-left:0;
- float:left;
- cursor:pointer;
- }
-
-#bubblesChart {
-text-align:center;
-}
-
-#yearText {  fill:#ccc;  font-weight:bold; }
-
-
-#play { padding:4px; display: inline-block;}
-
 .tipsy { font-size:9pt !important; }
 .tipsy .sm { font-size:8pt;}
 .tipsy-inner { background-color:#333; }
@@ -44,18 +5,7 @@ text-align:center;
 
 .nodeLabel { cursor:default;}
 
-#tseriesPanel { 
-  position: absolute; top:170px; left:5px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right:15px;
-  height: auto;
-  background-color:rgba(255,255,255,0.5);
-  padding:5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;  
-}
+
 
 g.flows line { stroke-linecap:round; }
 

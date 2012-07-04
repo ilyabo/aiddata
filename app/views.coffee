@@ -9,8 +9,10 @@
 
     style '@import url("css/charts/bar-hierarchy.css");'
     style '@import url("css/charts/time-series.css");'
+    style '@import url("css/charts/time-slider.css");'
+
     style '@import url("css/charts/bubbles.css");'
-    style '@import url("css/bubbles-purpose.css");'
+    style '@import url("css/bubbles.css");'
 
     div id:"loading", -> "Loading..."
     div id:"bubblesChart"
@@ -32,6 +34,8 @@
 
     div id:"purposeBars"
 
+    div id:"timeSlider"
+
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
@@ -42,10 +46,10 @@
     script src: "coffee/charts/time-series.js"
     script src: "coffee/charts/time-slider.js"
     script src: 'coffee/utils-purpose.js'
-    script src: "/bubbles-purposes.js"
+    script src: "/bubbles.js"
 
 
-  @coffee '/bubbles-purposes.js': ->
+  @coffee '/bubbles.js': ->
 
     # Bubbles
     bubbles = bubblesChart()
@@ -85,8 +89,15 @@
 
 
 
-      #timeSlider = timeSlider()
-      #  .width(500)
+    timeSlider = timeSliderControl()
+      .min(new Date("1947"))
+      .max(new Date("2011"))
+      .step(d3.time.year)
+      .width(250)
+      .height(30)
+
+    d3.select("#timeSlider")
+      .call(timeSlider)
 
 
 
@@ -115,6 +126,15 @@
           .call(purposes)
 
     
+
+
+
+
+
+
+
+
+
 
 
 
