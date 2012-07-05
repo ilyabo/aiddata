@@ -1,8 +1,8 @@
 this.bubblesChart = ->
 
 
-  bubblesChartWidth = $(document).width() * 0.95
-  bubblesChartHeight = $(document).height() * 0.95
+  bubblesChartWidth = $(document).width() - 50
+  bubblesChartHeight = $(document).height() - 70
   conf = null
 
 
