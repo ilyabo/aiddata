@@ -135,9 +135,9 @@ d3.csv "aiddata-purposes-with-totals.csv/#{selectedDate}", (csv) ->
 
 
   #data = data.values[0].values[0].values[0]
-  data = nestPurposeDataByCategories(csv)
-  removeSingleChildNodes(data)
-  provideWithTotalAmount(data)
+  data = utils.aiddata.purposes.nestPurposeDataByCategories(csv)
+  utils.aiddata.purposes.removeSingleChildNodes(data)
+  utils.aiddata.purposes.provideWithTotalAmount(data)
 
   selectedNode = root = data
 

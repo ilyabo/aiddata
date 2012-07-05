@@ -57,18 +57,18 @@
                     <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
                     <a href="bubbles">Bubbles</a></li>
 
-                    <li <%=(if @page == "ffprints" then 'class=active' else "") %>>
-                      <a href="ffprints">Flowprints</a></li>
-
                     <li <%=(if @page == "horizon" then 'class=active' else "") %> >
                     <a href="horizon">Horizon</a></li>
+
+                    <li <%=(if @page == "ffprints" then 'class=active' else "") %>>
+                      <a href="ffprints">Flowprints</a></li>
 
                     <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
                     <a href="crossfilter">Crossfilter</a></li>
 
 
-                    <li <%=(if @page == "purposeTree" then 'class=active' else "") %> >
-                    <a href="purpose-tree">Purposes</a></li>
+                    <li <%=(if @page == "purposePack" then 'class=active' else "") %> >
+                    <a href="purpose-pack">Purposes</a></li>
 
                     <!--
                     <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
