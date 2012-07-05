@@ -13,7 +13,7 @@ div.tseries { }
 .tseries .out circle.selAttrValue  { fill:#a1c0de; }
 
 
-.tseries svg  { cursor:ew-resize; }
+.tseries svg  { }
 
 .tseries rect.background {
   fill:white;

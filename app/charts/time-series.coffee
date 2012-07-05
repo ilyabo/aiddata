@@ -5,6 +5,7 @@ this.timeSeriesChart = ->
   height = 200
 
   x = tg = null
+  marginLeft = 40
 
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
@@ -12,7 +13,7 @@ this.timeSeriesChart = ->
   chart = (selection) ->
     data = selection.datum()
 
-    margin = {top: 28, right: 8, bottom: 14, left: 46}
+    margin = {top: 28, right: 8, bottom: 14, left: marginLeft}
 
     w = width - margin.left - margin.right
     h = height - margin.top - margin.bottom
@@ -144,6 +145,8 @@ this.timeSeriesChart = ->
   chart.width = (_) -> if (!arguments.length) then width else width = _; chart
 
   chart.height = (_) -> if (!arguments.length) then height else height = _; chart
+
+  chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
 
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
 

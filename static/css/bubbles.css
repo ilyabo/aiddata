@@ -7,9 +7,8 @@ text-align:center;
 
 #timeSlider {
   position:absolute;
-  left:10px;
+  left:20px;  /* 10 + 30 (tseries margin) - 20 (tslider left padding) */
   top:60px;
-  border:1px solid red;
 }
 
 
@@ -17,7 +16,7 @@ text-align:center;
 #purposeBars {
 	text-align: right;
 	position:absolute;
-	right:5px; top:40px;
+	right:5px; top:50px;
 	height: auto;
 	background-color:rgba(255,255,255,0.7);
 	padding:10px;
@@ -35,7 +34,7 @@ text-align:center;
 
 
 #tseriesPanel { 
-  position: absolute; top:170px; left:5px;
+  position: absolute; top:160px; left:5px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right:15px;

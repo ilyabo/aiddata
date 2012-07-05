@@ -2,16 +2,36 @@ this.bubblesChart = ->
 
 
   bubblesChartWidth = $(document).width() * 0.95
-  bubblesChartHeight = $(document).height() - 140
+  bubblesChartHeight = $(document).height() * 0.95
+  conf = null
+
+
+  #############################################################################################
+  #############################################################################################
+  #############################################################################################
+
+  chart = (selection) -> init(selection)
+
+  chart.conf = (_) -> if (!arguments.length) then conf else conf = _; chart
+
+  chart.width = (_) -> if (!arguments.length) then bubblesChartWidth else bubblesChartWidth = _; chart
+
+  chart.height = (_) -> if (!arguments.length) then bubblesChartHeight else bubblesChartHeight = _; chart
+
+
+
+  tseriesw = 250 #bubblesChartWidth*0.25
+  tseriesh = 100 #bubblesChartHeight*0.18
+  tseriesMarginLeft = 30
+
   nodesWithoutCoordsMarginBottom = 90
 
-  tseriesw = 300 #bubblesChartWidth*0.25
-  tseriesh = 100 #bubblesChartHeight*0.18
 
-
+  ###
   yearTicksWidth = bubblesChartWidth * 0.6
   yearTicksLeft = yearTicksRight = 10
   playButtonWidth = 40
+  ###
 
   lightVersionMode = $.browser.mozilla
   if lightVersionMode
@@ -24,9 +44,18 @@ this.bubblesChart = ->
     flowMagnitudeThreshold = 0
 
 
-  conf = null
+
   state = null
   stopAnimation = null
+
+
+  mapProj = winkelTripel()
+  mapProjPath = d3.geo.path().projection(mapProj)
+
+  force = d3.layout.force()
+      .charge(0)
+      .gravity(0)
+      .size([bubblesChartWidth, bubblesChartHeight])
 
 
 
@@ -43,6 +72,7 @@ this.bubblesChart = ->
     tschart = timeSeriesChart()
       .width(tseriesw)
       .height(tseriesh)
+      .marginLeft(tseriesMarginLeft)
       .title(title)
 
     d3.select(tseriesDiv).datum(data).call(tschart)
@@ -90,11 +120,6 @@ this.bubblesChart = ->
       undefined
 
 
-  force = d3.layout.force()
-      .charge(0)
-      .gravity(0)
-      .size([bubblesChartWidth, bubblesChartHeight])
-
 
 
   bubbleTooltip = (d) ->
@@ -120,14 +145,11 @@ this.bubblesChart = ->
 
 
 
-  mapProj = winkelTripel()
-  mapProjPath = d3.geo.path().projection(mapProj)
-
 
   dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
 
 
-
+  ###
   createYearTicks = ->
 
     dates = state.magnAttrs().map (attr) -> dateFromMagnAttr(attr)
@@ -141,14 +163,6 @@ this.bubblesChart = ->
       .append("g")
         .attr("transform", "translate(#{yearTicksLeft})")
 
-    ###
-    ticksSvg.append("rect")
-      .attr("fill", "#eee")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", yearTicksWidth)
-      .attr("height", 50)
-    ###
 
     xAxis = d3.svg.axis()
       .scale(x)
@@ -184,17 +198,16 @@ this.bubblesChart = ->
       ,
       () -> $(this).removeClass('ui-state-hover')
     )
+  ###
     
 
+  svg = null 
+  nodes = null
+  rscale = fwscale = null
 
+  flowLineValue = (d) -> +d.data[state.selMagnAttr()]
 
-
-
-  #############################################################################################
-  #############################################################################################
-  #############################################################################################
-
-  chart = (selection) ->
+  init = (selection) ->
 
     data = selection.datum()
 
@@ -240,7 +253,7 @@ this.bubblesChart = ->
   
 
 
-    createYearTicks()
+    #createYearTicks()
 
     svg.append("rect")
       .attr("x", 0)
@@ -286,15 +299,6 @@ this.bubblesChart = ->
         y: xy?[1]
         gravity: {x: xy?[0], y: xy?[1]}
 
-    updateNodeSizes = ->
-      for n in nodes
-        d = n.data
-        n.inbound = d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0
-        n.outbound = d.totals[state.selMagnAttrGrp].outbound?[state.selAttrIndex] ? 0
-        n.rin = rscale(n.inbound)
-        n.rout = rscale(n.outbound)
-        n.r = Math.max(n.rin, n.rout)
-        n.maxr = rscale(n.max)
 
 
     updateNodeSizes()
@@ -333,7 +337,6 @@ this.bubblesChart = ->
         (target.inlinks ?= []).push link
         links.push link
 
-    v = (d) -> +d.data[state.selMagnAttr()]
 
     force
         .nodes(nodes)
@@ -405,7 +408,7 @@ this.bubblesChart = ->
 
       if (d.outlinks?)
         flows.selectAll("line.out")
-            .data(d.outlinks) #.filter (d) -> v(d) > 0)
+            .data(d.outlinks) #.filter (d) -> flowLineValue(d) > 0)
           .enter().append("svg:line")
             .attr("class", "out")
             #.attr("stroke", outboundColor)
@@ -414,7 +417,7 @@ this.bubblesChart = ->
 
       if (d.inlinks?)
         flows.selectAll("line.in")
-            .data(d.inlinks) #.filter (d) -> v(d) > 0)
+            .data(d.inlinks) #.filter (d) -> flowLineValue(d) > 0)
           .enter().append("svg:line")
             .attr("class", "in")
             #.attr("stroke", inboundColor)
@@ -442,8 +445,8 @@ this.bubblesChart = ->
         .attr("y1", (d) -> d.source.y)
         .attr("x2", (d) -> d.target.x)
         .attr("y2", (d) -> d.target.y)
-        .attr("stroke-width", (d) -> fwscale(v(d)))
-        .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
+        .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
+        .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
         .on "mouseover", (d, i) ->
           if this.parentNode?
             this.parentNode.appendChild(this)
@@ -565,7 +568,7 @@ this.bubblesChart = ->
 
 
 
-
+    ###
     svg.append("text")
       .attr("id", "yearText")
       .attr("font-size", bubblesChartWidth/15)
@@ -573,52 +576,12 @@ this.bubblesChart = ->
       .attr("y", 100)
       .attr("text-anchor", "start")
         .text(state.selMagnAttr())
+    ###
 
-    setSelDateTo = (date, noAnim) ->
-      idx = state.magnAttrs().indexOf(d3.time.year(date).getFullYear())
-      if idx >= 0
-        setSelAttrIndexTo(idx, noAnim)
-        
-
-    setSelAttrIndexTo = (newSelAttr, noAnim) ->
-      unless state.selAttrIndex == newSelAttr
-        state.selAttrIndex = newSelAttr
-        update(noAnim)
-        $(".tseries line.selDate").trigger("updateYear")
-        $("#yearSlider").slider('value', state.selAttrIndex)
-
-    update = (noAnim) ->
-      updateNodeSizes()
-      duration = if noAnim or noAnimation then 0 else 200
-
-      svg.selectAll("#yearText")
-        .text(state.selMagnAttr())
-
-      bubble.selectAll("circle.rin")
-        .transition()
-        .duration(duration)
-        .attr("r", (d) -> d.rin)
-      
-      bubble.selectAll("circle.rout")
-        .transition()
-        .duration(duration)
-        .attr("r", (d) -> d.rout)
-
-      bubble.selectAll("text.nodeLabel")
-        .attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
-
-      flows.selectAll("line")
-        .transition()
-        .duration(duration)
-        .attr("stroke-width", (d) -> fwscale(v(d)))
-        .attr("visibility", (d) -> if v(d) > 0 then "visible" else "hidden")
-
-      unless dontUseForceLayout
-       force.start()
 
     update()
 
-
+    ###
     $("#yearSlider")
       .slider
         min: 0
@@ -630,6 +593,7 @@ this.bubblesChart = ->
     $("#yearSlider").focus()
 
     #$("#playButton").button()
+    ###
 
     $('g.bubble').tipsy
       gravity: 'w'
@@ -640,6 +604,7 @@ this.bubblesChart = ->
         bubbleTooltip(d3.select(this).data()[0])
 
 
+    ###
 
     timer = undefined
 
@@ -679,11 +644,64 @@ this.bubblesChart = ->
 
         , 900)
 
+    ###
 
-  chart.conf = (_) -> if (!arguments.length) then conf else conf = _; chart
+  
+  chart.setSelDateTo = (date, noAnim) ->
+    idx = state.magnAttrs().indexOf(d3.time.year(date).getFullYear())
+    if idx >= 0
+      chart.setSelAttrIndexTo(idx, noAnim)
+   
 
-  chart.width = (_) -> if (!arguments.length) then bubblesChartWidth else bubblesChartWidth = _; chart
+  chart.setSelAttrIndexTo = (newSelAttr, noAnim) ->
+    unless state.selAttrIndex == newSelAttr
+      state.selAttrIndex = newSelAttr
+      update(noAnim)
+      $(".tseries line.selDate").trigger("updateYear")
+      #$("#yearSlider").slider('value', state.selAttrIndex)
 
-  chart.height = (_) -> if (!arguments.length) then bubblesChartHeight else bubblesChartHeight = _; chart
+  updateNodeSizes = ->
+    for n in nodes
+      d = n.data
+      n.inbound = d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0
+      n.outbound = d.totals[state.selMagnAttrGrp].outbound?[state.selAttrIndex] ? 0
+      n.rin = rscale(n.inbound)
+      n.rout = rscale(n.outbound)
+      n.r = Math.max(n.rin, n.rout)
+      n.maxr = rscale(n.max)
+
+  update = (noAnim) ->
+    updateNodeSizes()
+    duration = if noAnim or noAnimation then 0 else 200
+
+    ###
+    svg.selectAll("#yearText")
+      .text(state.selMagnAttr())
+    ###
+
+    bubble = svg.selectAll("g.bubble")
+
+    bubble.selectAll("circle.rin")
+      .transition()
+      .duration(duration)
+      .attr("r", (d) -> d.rin)
+    
+    bubble.selectAll("circle.rout")
+      .transition()
+      .duration(duration)
+      .attr("r", (d) -> d.rout)
+
+    bubble.selectAll("text.nodeLabel")
+      .attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
+
+    flows = svg.selectAll("g.flows line")
+    flows
+      .transition()
+      .duration(duration)
+      .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
+      .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
+
+    force.start() unless dontUseForceLayout
+     
 
   chart

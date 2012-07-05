@@ -1,0 +1,37 @@
+.timeSlider { 
+  padding: 0 20px 10px 20px;
+  cursor:ew-resize; 
+  background: white;
+  opacity: 0.7;
+    -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px; 
+  border:1px solid #ccc;
+ }
+
+.timeSlider {
+}
+
+.timeSlider .caption {
+  padding-bottom: 10px;
+  color:#aaa; font-weight:bold; font-size:70px; line-height:70px; text-align:center; 
+}
+
+.timeSlider .range { 
+  background: #eee;
+  border:1px solid #ccc; 
+  cursor:ew-resize;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px; 
+  padding:0; margin:0;
+}
+
+.timeSlider .handle { 
+  background: #999; 
+  /*border-left:solid 1px #bbb; border-right:solid 1px #bbb; */
+  cursor:ew-resize; 
+  position: absolute;
+  padding:0; margin:0;
+  /*margin-top:-1px; border-bottom:solid 2px #999; */
+}

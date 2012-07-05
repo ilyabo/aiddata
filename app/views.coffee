@@ -18,7 +18,7 @@
     div id:"bubblesChart"
 
 
-    
+    ###
     div id: "yearSliderOuter", ->
 
       div id:"play", class:"ui-state-default ui-corner-all", ->
@@ -27,8 +27,7 @@
       div id:'yearSliderInner', ->
         div id:'yearSlider'
         div id:'yearTicks'
-    
-
+    ###
 
     div id:"tseriesPanel"
 
@@ -67,16 +66,8 @@
             explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
         )
 
-
-    timeSlider = timeSliderControl()
-      .min(new Date("1947"))
-      .max(new Date("2011"))
-      .step(d3.time.year)
-      .width(250)
-      .height(30)
-
     barHierarchy = barHierarchyChart()
-      .width(500)
+      .width(400)
       .barHeight(10)
       .labelsWidth(200)
       .childrenAttr("values")
@@ -91,6 +82,21 @@
             formatMagnitude(currentNode.amount) + " (" + 
             percentageFormat(currentNode.amount / data.amount) + " of total)"
       )
+
+
+
+    timeSlider = timeSliderControl()
+      .min(new Date("1947"))
+      .max(new Date("2011"))
+      .step(d3.time.year)
+      .format(d3.time.format("%Y"))
+      .width(250 - 30 - 8) # timeSeries margins
+      .height(10)
+
+    timeSlider.bind "change", (current, old) ->
+      bubbles.setSelDateTo(current, true)
+
+
 
 
     loadData()
