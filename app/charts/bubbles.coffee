@@ -231,7 +231,7 @@ this.bubblesChart = ->
 
     state = initFlowData(conf)
     state.selMagnAttrGrp = d3.keys(conf.flowMagnAttrs)[0]
-    state.selAttrIndex =  state.magnAttrs().length - 7  # state.magnAttrs().length - 1
+    state.selAttrIndex = 0 # state.magnAttrs().length - 7  # state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
@@ -646,19 +646,31 @@ this.bubblesChart = ->
 
     ###
 
-  
-  chart.setSelDateTo = (date, noAnim) ->
-    idx = state.magnAttrs().indexOf(d3.time.year(date).getFullYear())
-    if idx >= 0
-      chart.setSelAttrIndexTo(idx, noAnim)
-   
+  listeners = { changeSelDate : [] }
 
+  chart.bind = (event, handler) ->
+    listeners.changeSelDate.push handler
+
+  dateToYear = (date) -> d3.time.year(date).getFullYear()
+  yearToDate = (year) -> d3.time.format("%Y").parse(""+year)
+
+
+  chart.setSelDateTo = (date, noAnim) ->
+    idx = state.magnAttrs().indexOf(dateToYear(date))
+    chart.setSelAttrIndexTo(idx, noAnim) unless idx < 0
+    chart
+   
   chart.setSelAttrIndexTo = (newSelAttr, noAnim) ->
     unless state.selAttrIndex == newSelAttr
+      #console.log "bubbles ",state.selAttrIndex, "<>",newSelAttr
+      old = state.selAttrIndex
       state.selAttrIndex = newSelAttr
       update(noAnim)
       $(".tseries line.selDate").trigger("updateYear")
+      for handler in listeners.changeSelDate
+        handler(yearToDate(state.magnAttrs(newSelAttr)), yearToDate(state.magnAttrs(old)))
       #$("#yearSlider").slider('value', state.selAttrIndex)
+    chart
 
   updateNodeSizes = ->
     for n in nodes

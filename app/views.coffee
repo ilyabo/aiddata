@@ -93,10 +93,9 @@
       .width(250 - 30 - 8) # timeSeries margins
       .height(10)
 
-    timeSlider.bind "change", (current, old) ->
-      bubbles.setSelDateTo(current, true)
+    timeSlider.bind "change", (current, old) -> bubbles.setSelDateTo(current, true)
 
-
+    bubbles.bind "changeSelDate", (current, old) -> timeSlider.setTime(current)
 
 
     loadData()
@@ -127,6 +126,7 @@
           .datum(utils.aiddata.purposes.fromCsv(data.purposes))
           .call(barHierarchy)
 
+        bubbles.setSelDateTo(new Date("2005"), true)
 
         $("#loading").remove()
   

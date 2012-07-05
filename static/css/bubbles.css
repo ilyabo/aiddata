@@ -7,7 +7,7 @@ text-align:center;
 
 #timeSlider {
   position:absolute;
-  left:20px;  /* 10 + 30 (tseries margin) - 20 (tslider left padding) */
+  left:19px;  /* 10 + 30 (tseries margin) - 20 (tslider left padding) */
   top:60px;
 }
 

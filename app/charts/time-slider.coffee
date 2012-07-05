@@ -102,17 +102,18 @@ this.timeSliderControl = ->
 
 
   chart.setTime = (time) ->
-    #console.log time, rangeValues.indexOf(time.getTime())
-    if current != time
+    time = step(time)        # align to step
+    if current.getTime() != time.getTime()
+      #console.log "slider.setTime",time, "<>", current
       if min <= time <= max 
         old = current
-        current = new Date(time.getTime())
+        current = time
         handler(current, old) for handler in listeners.change
         update()
 
   chart.current = -> current
 
-  chart.currentIndex = -> rangeValues.indexOf(current.getTime())
+  chart.currentIndex = -> rangeValues.indexOf(step(current).getTime())
 
   update = ->
 
