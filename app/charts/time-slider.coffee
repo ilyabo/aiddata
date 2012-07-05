@@ -97,8 +97,9 @@ this.timeSliderControl = ->
 
   listeners = { change: [] }
 
-  chart.bind = (event, handler) ->
+  chart.on = (event, handler) ->
     listeners.change.push handler
+    chart
 
 
   chart.setTime = (time) ->

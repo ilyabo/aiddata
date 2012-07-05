@@ -648,8 +648,9 @@ this.bubblesChart = ->
 
   listeners = { changeSelDate : [] }
 
-  chart.bind = (event, handler) ->
+  chart.on = (event, handler) ->
     listeners.changeSelDate.push handler
+    chart
 
 
   chart.setSelDateTo = (date, noAnim) ->

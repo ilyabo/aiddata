@@ -65,6 +65,7 @@
             attrs: [1947..2011]
             explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
         )
+      .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
 
     barHierarchy = barHierarchyChart()
       .width(400)
@@ -92,10 +93,7 @@
       .format(d3.time.format("%Y"))
       .width(250 - 30 - 8) # timeSeries margins
       .height(10)
-
-    timeSlider.bind "change", (current, old) -> bubbles.setSelDateTo(current, true)
-
-    bubbles.bind "changeSelDate", (current, old) -> timeSlider.setTime(current)
+      .on "change", (current, old) -> bubbles.setSelDateTo(current, true)
 
 
     loadData()
