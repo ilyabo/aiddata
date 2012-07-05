@@ -1,6 +1,16 @@
 root = exports ? this
 
 
+root.utils ?= {} 
+
+root.utils.date =
+
+  dateToYear : (date) -> d3.time.year(date).getFullYear()
+  yearToDate : (year) -> d3.time.format("%Y").parse(""+year)
+
+
+
+
 root.initFlowData = (conf) ->
   state = 
     selMagnAttrGrp : d3.keys(conf.flowMagnAttrs)[0]

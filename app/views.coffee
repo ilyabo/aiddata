@@ -86,8 +86,8 @@
 
 
     timeSlider = timeSliderControl()
-      .min(new Date("1947"))
-      .max(new Date("2011"))
+      .min(utils.date.yearToDate(1947))
+      .max(utils.date.yearToDate(2011))
       .step(d3.time.year)
       .format(d3.time.format("%Y"))
       .width(250 - 30 - 8) # timeSeries margins
@@ -126,7 +126,7 @@
           .datum(utils.aiddata.purposes.fromCsv(data.purposes))
           .call(barHierarchy)
 
-        bubbles.setSelDateTo(new Date("2005"), true)
+        bubbles.setSelDateTo(utils.date.yearToDate(2005), true)
 
         $("#loading").remove()
   

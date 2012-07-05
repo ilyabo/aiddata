@@ -651,12 +651,9 @@ this.bubblesChart = ->
   chart.bind = (event, handler) ->
     listeners.changeSelDate.push handler
 
-  dateToYear = (date) -> d3.time.year(date).getFullYear()
-  yearToDate = (year) -> d3.time.format("%Y").parse(""+year)
-
 
   chart.setSelDateTo = (date, noAnim) ->
-    idx = state.magnAttrs().indexOf(dateToYear(date))
+    idx = state.magnAttrs().indexOf(utils.date.dateToYear(date))
     chart.setSelAttrIndexTo(idx, noAnim) unless idx < 0
     chart
    
@@ -668,7 +665,9 @@ this.bubblesChart = ->
       update(noAnim)
       $(".tseries line.selDate").trigger("updateYear")
       for handler in listeners.changeSelDate
-        handler(yearToDate(state.magnAttrs(newSelAttr)), yearToDate(state.magnAttrs(old)))
+        handler(
+          utils.date.yearToDate(state.magnAttrs(newSelAttr)),
+          utils.date.yearToDate(state.magnAttrs(old)))
       #$("#yearSlider").slider('value', state.selAttrIndex)
     chart
 

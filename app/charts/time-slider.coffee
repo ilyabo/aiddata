@@ -39,6 +39,7 @@ this.timeSliderControl = ->
       min = d3.min(data)
       max = d3.max(data)
 
+
     min = step(min)
     max = step(max)
     current = min
@@ -59,7 +60,6 @@ this.timeSliderControl = ->
       (a = step.offset(a, 1); count++) while a < max
       count
     ###
-
     timeScale = d3.time.scale().domain([min, max]).range([0, width])
 
     mousemove = (d) ->
