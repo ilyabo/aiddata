@@ -45,7 +45,7 @@
     script src: "coffee/charts/time-series.js"
     script src: "coffee/charts/time-slider.js"
     script src: 'coffee/utils-purpose.js'
-    script src: "/bubbles.js"
+    script src: "bubbles.js"
 
 
 
@@ -288,7 +288,7 @@
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils-purpose.js'
     script src: "coffee/charts/bar-hierarchy.js"
-    script src: "/purpose-bars.js"
+    script src: "purpose-bars.js"
 
 
   @coffee '/purpose-bars.js': ->
