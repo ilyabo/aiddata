@@ -316,3 +316,93 @@
     
 
 
+
+
+
+
+
+
+
+
+  ############# US donations vs GDP ###############
+
+  @view "us-donations": ->
+    style '@import url("css/charts/time-series.css");'
+    style '@import url("css/bubbles.css");'
+
+    div id:"tseries2", class:"tseries", style:"margin-bottom:40px"
+    div id:"tseries3", class:"tseries", style:"margin-bottom:40px"
+    div id:"tseries1", class:"tseries", style:"margin-bottom:40px"
+
+    script src: "coffee/charts/time-series.js"
+    script src: 'coffee/utils.js'
+    script src: 'coffee/utils-aiddata.js'
+    script src: "us-donations.js"
+
+
+  @coffee '/us-donations.js': ->
+   $ ->
+      tschart1 = timeSeriesChart()
+        .width(800)
+        .height(300)
+        .marginLeft(200)
+        .title("Total US donations (blue, nominal US$) as percentage of US GDP (red, current US$)")
+        .valueTickFormat(d3.format(",.2%"))
+
+
+      tschart2 = timeSeriesChart()
+        .width(800)
+        .height(300)
+        .marginLeft(200)
+        .title("US GDP (red, current US$), total US donations (blue, nominal US$)")
+        .valueTickFormat(formatMagnitude)
+
+
+      tschart3 = timeSeriesChart()
+        .width(800)
+        .height(300)
+        .marginLeft(200)
+        .title("Total US donations (blue, nominal US$)")
+        .valueTickFormat(formatMagnitude)
+
+
+
+      loadData()
+        .json('gdp', "wb.json/NY.GDP.MKTP.CD/USA")
+        #.json('donated', "aiddata-donor-totals.json/USA")
+        .json('donated', "aiddata-donor-totals-nominal.json/USA")
+        .onload (data) ->
+          
+          
+          datum1 = []
+          datum2 = []
+          datum3 = []
+
+          donated = {}
+          donated[d.date] = d.sum_amount_usd_nominal  for d in data.donated
+
+          for y, o of data.gdp
+            year = utils.date.yearToDate(y)
+
+            datum1.push
+              date : year
+              outbound : +(donated[y]) / o.value 
+
+            datum2.push
+              date : year
+              inbound : +o.value 
+              outbound : +donated[y]
+
+            datum3.push
+              date : year
+              outbound : +donated[y]
+
+
+          d3.select("#tseries1").datum(datum1).call(tschart1)
+          d3.select("#tseries2").datum(datum2).call(tschart2)
+          d3.select("#tseries2").datum(datum3).call(tschart3)
+
+
+
+
+

@@ -31,6 +31,9 @@
 
   @get '/purpose-bars': -> @render purposeBars: {layout: 'bootstrap.eco'}
 
+
+  @get '/us-donations': -> @render "us-donations": {layout: 'bootstrap.eco'}
+
   @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
 
@@ -51,7 +54,7 @@
 
 
   @get '/wb-indicators.json': ->
-    request "http://api.worldbank.org/indicator?format=json", (err, response, body) =>
+    request "http://api.worldbank.org/indicator?format=json&per_page=10000", (err, response, body) =>
       unless err?
         @send JSON.parse body
       else
@@ -134,6 +137,63 @@
         else
           @next(err)
 
+
+  @get '/aiddata-donor-totals.json/:countryCode': ->
+    unless @params.countryCode.match /^[A-Z]{3}$/
+      @send "Bad country code"
+      return
+
+    countryCode = @params.countryCode
+
+    pg.sql "select donorcode AS donor,sum,year from totals_for_donor_ma
+             WHERE donorcode='#{countryCode}'",
+      (err, data) =>
+        unless err?
+           [table, columns] = utils.pivotTable(data.rows, "year", "sum", ["donor"])
+           @send table
+        else
+          @next(err)
+
+
+
+
+  @get '/aiddata-donor-totals-nominal.json/:countryCode': ->
+    unless @params.countryCode.match /^[A-Z]{3}$/
+      @send "Bad country code"
+      return
+
+    countryCode = @params.countryCode
+    dateQ = "TO_CHAR(COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY')"
+
+    pg.sql """
+       SELECT 
+           #{dateQ} AS date,
+
+          aiddata2.donorcode, 
+
+          to_char(SUM(aiddata2.commitment_amount_usd_constant), 'FM99999999999999999999')              
+            AS sum_amount_usd_nominal
+
+        FROM aiddata2
+
+        WHERE donorcode = '#{countryCode}'
+
+        GROUP BY
+          donorcode, #{dateQ}
+
+      """, (err, data) =>
+
+        unless err?
+           @send data.rows
+        else
+          @next(err)
+
+
+
+
+
+
+
   ###
 
   @get '/flows.csv': ->
@@ -176,6 +236,7 @@
         else
           @next(err)
   ###
+
 
 
 

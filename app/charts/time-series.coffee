@@ -6,6 +6,7 @@ this.timeSeriesChart = ->
 
   x = tg = null
   marginLeft = 40
+  valueTickFormat = d3.format(",.0f")
 
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
@@ -36,7 +37,7 @@ this.timeSeriesChart = ->
       .ticks(Math.max(1, Math.round(h/18)))
       .scale(y)
       .orient("left")
-      .tickFormat(shortMagnitudeFormat)
+      .tickFormat(valueTickFormat)
       .tickSize(-w, 0, 0)
 
     tsvg = selection
@@ -91,6 +92,8 @@ this.timeSeriesChart = ->
       linein = d3.svg.line()
         .x((d) -> x(d.date))
         .y((d) -> y(d.inbound))
+        .defined((d) -> !isNaN(d.inbound))
+        .interpolate("basis")
       
       gin = tg.append("g").attr("class", "in")
 
@@ -111,6 +114,8 @@ this.timeSeriesChart = ->
       lineout = d3.svg.line()
         .x((d) -> x(d.date))
         .y((d) -> y(d.outbound))
+        .defined((d) -> !isNaN(d.outbound))
+        .interpolate("basis")
       
       gout = tg.append("g").attr("class", "out")
 
@@ -141,6 +146,7 @@ this.timeSeriesChart = ->
 
 
 
+  chart.valueTickFormat = (_) -> if (!arguments.length) then valueTickFormat else valueTickFormat = _; chart
 
   chart.width = (_) -> if (!arguments.length) then width else width = _; chart
 

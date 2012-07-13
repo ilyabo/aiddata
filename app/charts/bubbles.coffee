@@ -74,6 +74,7 @@ this.bubblesChart = ->
       .height(tseriesh)
       .marginLeft(tseriesMarginLeft)
       .title(title)
+      .valueTickFormat(shortMagnitudeFormat)
 
     d3.select(tseriesDiv).datum(data).call(tschart)
 
