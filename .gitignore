@@ -1,5 +1,5 @@
 .DS_Store
-.pgurl
+.dbconf.coffee
 node_modules/
 static/coffee/
 logs/
