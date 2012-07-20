@@ -49,9 +49,10 @@
           toprocess = row.count
           processed = 0
           scheduledForInsertion = 0
+          inserted = 0
 
           closeIfFinished = ->
-            console.log "Processed "+processed+" of " +toprocess
+            console.log "Processed "+processed+" of " +toprocess +", "+inserted+" documents inserted"
             if scheduledForInsertion == 0  and  processed == toprocess
               console.log "Closing connections"
               pgclient.end()    
@@ -82,6 +83,7 @@
                 scheduledForInsertion++
                 coll.insert row, (err, docs) ->
                   console.log "Inserted aiddata_id: " + row.aiddata_id
+                  inserted++
                   scheduledForInsertion--
                   closeIfFinished()
               processed++
