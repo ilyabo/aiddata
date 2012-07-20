@@ -52,7 +52,7 @@
           inserted = 0
 
           closeIfFinished = ->
-            console.log "Processed "+processed+" of " +toprocess +", "+inserted+" documents inserted"
+            console.log("Processed "+processed+" of "+toprocess+", "+inserted+" documents inserted")
             if scheduledForInsertion == 0  and  processed == toprocess
               console.log "Closing connections"
               pgclient.end()    
