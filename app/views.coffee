@@ -346,7 +346,8 @@
         .width(800)
         .height(300)
         .marginLeft(200)
-        .title("Total US donations (blue, nominal US$) as percentage of US GDP (red, current US$)")
+        #.title("Total US donations (blue, nominal US$) as percentage of US GDP (red, current US$)")
+        .title("Total US foreign aid donations as percentage of US GDP")
         .valueTickFormat(d3.format(",.2%"))
 
 
@@ -384,9 +385,10 @@
           for y, o of data.gdp
             year = utils.date.yearToDate(y)
 
-            datum1.push
-              date : year
-              outbound : +(donated[y]) / o.value 
+            if (donated[y]?)
+              datum1.push
+                date : year
+                outbound : +(donated[y]) / o.value 
 
             datum2.push
               date : year
@@ -398,9 +400,15 @@
               outbound : +donated[y]
 
 
-          d3.select("#tseries1").datum(datum1).call(tschart1)
+          d3.select("#tseries1")
+            .datum(datum1).call(tschart1)
+            .append("div")
+              .attr("class", "credits")
+              .attr("style", "font-size:10px; color:#ccc; text-align:center;")
+              .text("Based on data from AidData.org and World Bank")
+
           d3.select("#tseries2").datum(datum2).call(tschart2)
-          d3.select("#tseries2").datum(datum3).call(tschart3)
+          d3.select("#tseries3").datum(datum3).call(tschart3)
 
 
 
