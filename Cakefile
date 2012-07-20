@@ -51,6 +51,8 @@ task 'forever-stop', (options) -> run "forever stop -c coffee " + app
 task 'forever-list', (options) -> run "forever list"
 
 
+task 'mongo-imports', ->  require('./data/mongo-imports').run()
+
 
 task 'refresh-views', ->
   pg = require('./pg-sql').include()
@@ -86,6 +88,7 @@ task 'refresh-cached', ->
   for file in files
     console.log "Refreshing file #{file}"
     run  "wget http://localhost:3000/#{file} -O #{cachedPath}/#{file}"
+
 
 
 
