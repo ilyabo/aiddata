@@ -1,11 +1,10 @@
 require('zappa').run 3000, ->
   
 
-  express = require('zappa/node_modules/express')
+  express = require('express')
   @include './layout'
   @include './views'
   @include './aiddata/queries'
-
 
   log4js = require('log4js')
   logger = null

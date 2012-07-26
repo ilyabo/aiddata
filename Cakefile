@@ -36,7 +36,7 @@ forever = (action, options) ->
   options.environment or= 'production'
   #if !path.existsSync('logs') then fs.mkdir('logs', parseInt('0755', 8))
   run "NODE_ENV=#{options.environment} " +
-      "forever #{action} -c coffee " +
+      "node_modules/forever/bin/forever #{action} -c coffee " +
       " --sourceDir ./" +
       " -l aiddata.log "+
       #" -o logs/aiddata.out "+
@@ -45,10 +45,10 @@ forever = (action, options) ->
       " " + app
 
 
-task 'forever-restart', (options) -> forever 'restart', options
-task 'forever-start', (options) -> forever 'start', options
-task 'forever-stop', (options) -> run "forever stop -c coffee " + app
-task 'forever-list', (options) -> run "forever list"
+task 'restart-forever', (options) -> forever 'restart', options
+task 'start-forever', (options) -> forever 'start', options
+task 'stop-forever', (options) -> run "node_modules/forever/bin/forever stop -c coffee " + app
+task 'list-forever', (options) -> run "node_modules/forever/bin/forever list"
 
 
 task 'mongo-imports', ->  require('./data/mongo-imports').run()
