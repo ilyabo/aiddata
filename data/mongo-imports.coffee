@@ -60,6 +60,9 @@
                 unless v?
                   delete row[k]
 
+            console.log "Upserted #{++numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
+
+            ###
             coll.update({ _id:row._id }, row, { safe:true, upsert:true }, (err, docs) ->
               numUpserted++
               console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
@@ -67,6 +70,7 @@
                 #pgclient.end()
                 mongodb.close()
             , true)  # means upsert
+            ###
 
           query.on 'end', -> pgclient.end()
           #mongodb.close()

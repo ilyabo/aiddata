@@ -52,7 +52,8 @@ task 'list-forever', (options) -> run "node_modules/forever/bin/forever list"
 
 
 task 'import-data', ->
-  require('./data/mongo-imports').run()
+  require('./data/mongo-imports2').run()
+  run "/usr/bin/mongoimport -d aiddata -c aiddata --upsert --upsertFields aiddata_id data/_aiddata.json"
 
 
 task 'refresh-views', ->
