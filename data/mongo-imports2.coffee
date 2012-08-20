@@ -1,7 +1,7 @@
 @run = ->
   
-  {spawn, exec} = require 'child_process'
   fs = require 'fs'
+  util = (require '../cakeutils').include()
 
   mongo = require 'mongodb'
   mongoConf = require('../.dbconf').mongodb
@@ -19,6 +19,9 @@
   runImportTasks
 
     aiddata : ->    
+      tempDir = "data/temp"
+      tempFile = tempDir + "/_aiddata.json" 
+      util.mkdir tempDir
 
       omitNullValueFields = true
 
@@ -44,7 +47,7 @@
         numProcessed = 0
 
 
-        jsonFile = fs.createWriteStream("data/_aiddata.json")
+        jsonFile = fs.createWriteStream(tempFile)
         jsonFile.write "["
 
         firstRow = true
@@ -67,7 +70,11 @@
           else
             jsonFile.write JSON.stringify(row) + "]"
             console.log "Read in: #{numProcessed}"
-            importIntoMongoDB()
+            util.run "/usr/bin/mongoimport -d aiddata -c aiddata --upsert --upsertFields aiddata_id data/temp/_aiddata.json",
+              ->
+                fs.unlink tempFile 
+                console.log "Done"
+
 
 
         query.on 'end', -> pgclient.end()
