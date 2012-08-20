@@ -3,7 +3,7 @@
   fs = require 'fs'
   util = (require '../cakeutils').include()
 
-  mongo = require 'mongodb'
+  #mongo = require 'mongodb'
   mongoConf = require('../.dbconf').mongodb
 
   pg = require 'pg'
@@ -70,7 +70,10 @@
           else
             jsonFile.write JSON.stringify(row) + "]"
             console.log "Read in: #{numProcessed}"
-            util.run "/usr/bin/mongoimport -d aiddata -c aiddata --upsert --upsertFields aiddata_id data/temp/_aiddata.json",
+            util.run "/usr/bin/mongoimport " +
+                        "-d aiddata -c aiddata --upsert --upsertFields aiddata_id " +
+                        "-u #{mongoConf.user} -p #{mongoConf.password} "+ 
+                        "#{tempFile}",
               ->
                 fs.unlink tempFile 
                 console.log "Done"
