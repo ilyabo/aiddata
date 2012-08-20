@@ -30,7 +30,7 @@
       #pgclient.on('drain', pgclient.end.bind(pgclient))
       pgclient.connect()
 
-      limit = 10
+      #limit = 10
 
       cntQuery = pgclient.query(
         if limit? 
