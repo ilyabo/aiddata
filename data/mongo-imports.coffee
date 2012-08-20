@@ -15,7 +15,10 @@
     mongodb.open (err, p_client) -> ifnot err, -> 
       mongodb.authenticate mongoConf.user, mongoConf.password, (err) -> ifnot err, -> 
         mongodb.collection collName, (err, coll) ->
-          callback(mongodb, coll)
+          unless err?
+            callback(mongodb, coll)
+          else
+            console.log err
 
   runImportTasks = (importTasks) ->
     for taskName, importFunc of importTasks
