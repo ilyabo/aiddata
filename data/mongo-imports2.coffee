@@ -48,7 +48,6 @@
 
 
         jsonFile = fs.createWriteStream(tempFile)
-        jsonFile.write "["
 
         firstRow = true
         query = pgclient.query "SELECT * FROM aiddata2 #{if limit? then 'LIMIT '+limit}"
@@ -65,10 +64,10 @@
           #console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
           numProcessed++
 
-          if numProcessed < totalRecordsNum
-            jsonFile.write JSON.stringify(row) + ","
-          else
-            jsonFile.write JSON.stringify(row) + "]"
+          # assuming that stringify produces a one-liner
+          jsonFile.write JSON.stringify(row) + "\n"
+
+          if numProcessed >= totalRecordsNum
             console.log "Read in: #{numProcessed}"
             util.run "/usr/bin/mongoimport " +
                         "-d aiddata -c aiddata --upsert --upsertFields aiddata_id " +
