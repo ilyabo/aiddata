@@ -17,15 +17,13 @@
         mongodb.collection collName, (err, coll) ->
           callback(mongodb, coll)
 
-  runImportTasks = ->
+  runImportTasks = (importTasks) ->
     for taskName, importFunc of importTasks
       console.log ">>>>>>>>>> Importing '#{taskName}' >>>>>>>>>>"
       importFunc()
 
 
-
-
-  importTasks =
+  runImportTasks
 
     aiddata : ->    
 
@@ -39,63 +37,36 @@
         pgclient.connect()
 
 
-        q = "SELECT * FROM aiddata2"
 
-        query = pgclient.query q.replace("*", "COUNT(*) AS count")
-        query.on 'row', (row) ->
+        cntQuery = pgclient.query "SELECT COUNT(*) AS count FROM aiddata2"
+        cntQuery.on 'row', (row) ->
 
-          console.log row
+          totalRecordsNum = row.count
 
-          toprocess = row.count
-          processed = 0
-          scheduledForInsertion = 0
-          inserted = 0
+          numUpserted = 0
+ 
 
-          closeIfFinished = ->
-            console.log("Processed "+processed+" of "+toprocess+", "+inserted+" documents inserted")
-            if scheduledForInsertion == 0  and  processed == toprocess
-              console.log "Closing connections"
-              pgclient.end()    
-              mongodb.close()      
-
-
-          query = pgclient.query q
+          query = pgclient.query "SELECT * FROM aiddata2"
           query.on 'row', (row) ->
 
-            
+            row._id = row.aiddata_id
+            delete row.aiddata_id
 
             if omitNullValueFields
               for k,v of row
                 unless v?
                   delete row[k]
 
-            #coll.insert row, (err, docs) ->
-            #  console.log "Inserted aiddata_id: " + row.aiddata_id
+            coll.update({ _id:row._id }, row, { safe:true, upsert:true }, (err, docs) ->
+              numUpserted++
+              console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
+              if numUpserted >= totalRecordsNum
+                #pgclient.end()
+                mongodb.close()
+            , true)  # means upsert
 
-            #console.log "Scedule insert "+ row.aiddata_id
-            ###
-            coll.findOne { aiddata_id: row.aiddata_id }, (err, item) -> 
-              console.log "Inserting aiddata_id: " + row.aiddata_id
-            ###
-            coll.find({ aiddata_id: row.aiddata_id }).toArray (err, found) -> 
-              console.log "Found for aiddata_id: " + row.aiddata_id + " num: " + found.length
-              if found.length == 0
-                scheduledForInsertion++
-                coll.insert row, (err, docs) ->
-                  console.log "Inserted aiddata_id: " + row.aiddata_id
-                  inserted++
-                  scheduledForInsertion--
-                  closeIfFinished()
-              processed++
-              closeIfFinished()
+          query.on 'end', -> pgclient.end()
+          #mongodb.close()
 
 
-
-
-
-
-
-
-
-  runImportTasks()
 

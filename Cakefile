@@ -51,7 +51,8 @@ task 'stop-forever', (options) -> run "node_modules/forever/bin/forever stop -c 
 task 'list-forever', (options) -> run "node_modules/forever/bin/forever list"
 
 
-task 'mongo-imports', ->  require('./data/mongo-imports').run()
+task 'import-data', ->
+  require('./data/mongo-imports').run()
 
 
 task 'refresh-views', ->
