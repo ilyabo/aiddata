@@ -59,7 +59,8 @@
         numProcessed = 0
 
 
-        jsonFile = fs.createWriteStream(tempFile)
+        #jsonFile = fs.createWriteStream(tempFile)
+        fd = fs.openSync(tempFile, 'w')
 
         firstRow = true
         query = pgclient.query "SELECT * FROM aiddata2 #{if limit? then 'LIMIT '+limit}"
@@ -77,7 +78,10 @@
           numProcessed++
 
           # assuming that stringify produces a one-liner
-          jsonFile.write JSON.stringify(row) + "\n"
+          fs.writeSync fd, JSON.stringify(row) + "\n"
+
+          if numProcessed % 1000 == 0
+            console.log "Processed #{numProcessed} of #{totalRecordsNum}"
 
 
           if numProcessed >= totalRecordsNum
@@ -88,8 +92,10 @@
                         "-u #{mongoConf.user} -p #{mongoConf.password} "+ 
                         "#{tempFile}",
               ->
+                fs.closeSync fd
                 fs.unlink tempFile 
                 console.log "Done"
+
 
         query.on 'end', -> pgclient.end()
 
