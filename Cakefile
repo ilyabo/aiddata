@@ -50,7 +50,7 @@ task 'list-forever', (options) -> util.run "node_modules/forever/bin/forever lis
 
 
 task 'import-data', ->
-  require('./data/mongo-imports2').run()
+  require('./data/mongo-imports').run()
 
 
 task 'refresh-views', ->

@@ -1,12 +1,15 @@
 @run = ->
+  
+  console.log ">>>>>>>>>> Importing aiddata >>>>>>>>>>"
+
+  fs = require 'fs'
+  util = (require '../cakeutils').include()
 
   mongo = require 'mongodb'
   mongoConf = require('../.dbconf').mongodb
 
   pg = require 'pg'
   pgurl = require('../.dbconf').postgres
-
-
 
   connectToMongo = (dbName, collName, callback) ->
     ifnot = (err, callback) -> if not err then callback() else console.error err
@@ -20,60 +23,79 @@
           else
             console.log err
 
-  runImportTasks = (importTasks) ->
-    for taskName, importFunc of importTasks
-      console.log ">>>>>>>>>> Importing '#{taskName}' >>>>>>>>>>"
-      importFunc()
 
+  limit = undefined
 
-  runImportTasks
+  connectToMongo 'aiddata', 'aiddata', (mongodb, coll) ->
+    coll.ensureIndex { aiddata_id : 1 }, -> 
+      console.log "Index for aiddata_id ensured"
 
-    aiddata : ->    
+      mongodb.close()
+
+      tempDir = "data/temp"
+      tempFile = tempDir + "/_aiddata.json" 
+      util.mkdir tempDir
 
       omitNullValueFields = true
 
-      connectToMongo 'aiddata', 'aiddata', (mongodb, coll) ->
-
-        pgclient = new pg.Client(pgurl)
-        # disconnect client when all queries are finished        
-        #pgclient.on('drain', pgclient.end.bind(pgclient))
-        pgclient.connect()
+      pgclient = new pg.Client(pgurl)
+      # disconnect client when all queries are finished        
+      #pgclient.on('drain', pgclient.end.bind(pgclient))
+      pgclient.connect()
 
 
+      cntQuery = pgclient.query(
+        if limit? 
+          "SELECT #{limit} AS count"
+        else
+          "SELECT COUNT(*) AS count FROM aiddata2"
+      )
 
-        cntQuery = pgclient.query "SELECT COUNT(*) AS count FROM aiddata2"
-        cntQuery.on 'row', (row) ->
+      cntQuery.on 'row', (row) ->
+        
+        totalRecordsNum = row.count
+        console.log "Reading #{totalRecordsNum} records from postgres..."
 
-          totalRecordsNum = row.count
-
-          numUpserted = 0
- 
-
-          query = pgclient.query "SELECT * FROM aiddata2"
-          query.on 'row', (row) ->
-
-            row._id = row.aiddata_id
-            delete row.aiddata_id
-
-            if omitNullValueFields
-              for k,v of row
-                unless v?
-                  delete row[k]
-
-            console.log "Upserted #{++numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
-
-            ###
-            coll.update({ _id:row._id }, row, { safe:true, upsert:true }, (err, docs) ->
-              numUpserted++
-              console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
-              if numUpserted >= totalRecordsNum
-                #pgclient.end()
-                mongodb.close()
-            , true)  # means upsert
-            ###
-
-          query.on 'end', -> pgclient.end()
-          #mongodb.close()
+        numProcessed = 0
 
 
+        #jsonFile = fs.createWriteStream(tempFile)
+        fd = fs.openSync(tempFile, 'w')
+
+        firstRow = true
+        query = pgclient.query "SELECT * FROM aiddata2 #{if limit? then 'LIMIT '+limit}"
+        query.on 'row', (row) ->
+
+          #row._id = row.aiddata_id
+          #delete row.aiddata_id
+
+          if omitNullValueFields
+            for k,v of row
+              unless v?
+                delete row[k]
+
+          #console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
+          numProcessed++
+
+          # assuming that stringify produces a one-liner
+          fs.writeSync fd, JSON.stringify(row) + "\n"
+
+          if numProcessed % 1000 == 0
+            console.log "Processed #{numProcessed} of #{totalRecordsNum}"
+
+
+          if numProcessed >= totalRecordsNum
+            console.log "#{numProcessed} records were saved temporarily in #{tempFile}"
+            console.log "Now importing into MongoDB"
+            util.run "/usr/bin/mongoimport " +
+                        "-d aiddata -c aiddata --upsert --upsertFields aiddata_id " +
+                        "-u #{mongoConf.user} -p #{mongoConf.password} "+ 
+                        "#{tempFile}",
+              ->
+                fs.closeSync fd
+                fs.unlink tempFile 
+                console.log "Done"
+
+
+        query.on 'end', -> pgclient.end()
 
