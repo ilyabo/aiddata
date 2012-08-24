@@ -1,8 +1,11 @@
 To install dependencies run
 
     npm install
-    npm install -g forever
 
-To run the app use
+To run the app in the development mode use
   
     cake restart
+
+To run in production
+
+    cake start-forever
