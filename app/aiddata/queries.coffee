@@ -4,9 +4,11 @@
 
   utils = @include './data-utils'
   pg = @include './pg-sql'
+  mongo = @include './mongo'
   d3 = require "d3"
   request = require "request"
   purposes = @include './aiddata/purposes'
+
 
 
   @get '/': -> @render 'bubbles': {layout: 'bootstrap.eco'}
@@ -49,6 +51,52 @@
 
 
 
+  @get '/purpose-codes.json': ->
+    mongo.collection 'aiddata', (err, coll) =>
+      if err? then @next(err)
+      else
+        coll.distinct "coalesced_purpose_code", (err, result) =>
+          if err? then @next(err)
+          else
+            @send result
+
+
+
+
+  @get '/aiddata-totals-d-r-y.json': ->
+    mongo.collection 'aiddata', (err, coll) =>
+      if err? then @next(err)
+      else
+        keys = { donor:true, recipient:true, year:true }
+        condition = { coalesced_purpose_code : "24030", year: 2005 }
+        initial = { ccsum : 0 }
+        reduce = (obj,prev) -> 
+          c = obj.commitment_amount_usd_constant
+          unless isNaN(c)
+            prev.ccsum += Math.round(c)
+
+        finalize = null
+        command = true
+        options = null
+
+        coll.group keys, condition, initial, reduce, finalize, command, options, (err, result) =>
+          if err? then @next(err)
+          else
+            ###
+            nested = d3.nest()
+              .key((r) -> r.donor)
+              .key((r) -> r.recipient)
+              #.key((r) -> +r.date)
+              #.key((r) -> r.purpose_code)
+              #.rollup((list) -> 
+              #    if list.length == 1
+              #      +list[0].sum_amount_usd_constant
+              #    else
+              #      list.map (r) -> +r.sum_amount_usd_constant
+              #)
+              .map(result)
+            ###
+            @send utils.objListToCsv(result)
 
 
 
