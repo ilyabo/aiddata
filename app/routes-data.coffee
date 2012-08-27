@@ -3,11 +3,11 @@
   _ = require "underscore"
   request = require "request"
 
-  utils = require '../data-utils'
-  pg = require '../pg-sql'
-  mongo = require '../mongo'
-  purposes = require '../aiddata/purposes'
-  
+  utils = require './data-utils'
+  pg = require './pg-sql'
+  mongo = require './mongo'
+  purposes = require '../data/purposes'
+
   d3 = require "d3"
 
 

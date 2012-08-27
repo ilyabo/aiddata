@@ -4,8 +4,8 @@ require('zappa').run 3000, ->
   express = require('express')
   @include './layout'
   @include './views'
-  @include './aiddata/routes-data'
-  @include './aiddata/routes-views'
+  @include './routes-data'
+  @include './routes-views'
 
   log4js = require('log4js')
   logger = null
