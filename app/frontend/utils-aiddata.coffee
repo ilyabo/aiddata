@@ -1,11 +1,8 @@
-root = exports ? this
-
-
 fmt = d3.format(",.0f")
 
-root.formatMagnitudeLong = (d) -> "$#{fmt(d)}"
+@formatMagnitudeLong = (d) -> "$#{fmt(d)}"
 
-root.formatMagnitude = root.magnitudeFormat = (d) ->
+@formatMagnitude = @magnitudeFormat = (d) ->
   if (d >= 1e15)
     "$#{fmt(d / 1e15)}P"
   else if (d >= 1e12)
@@ -19,14 +16,14 @@ root.formatMagnitude = root.magnitudeFormat = (d) ->
   else
     "$#{fmt(d)}" 
 
-root.formatMagnitudeShort = root.shortMagnitudeFormat = (d) -> formatMagnitude(d)
+@formatMagnitudeShort = @shortMagnitudeFormat = (d) -> formatMagnitude(d)
 
 
 
 
-root.utils ?= {} 
+@utils ?= {} 
 
-root.utils.aiddata =
+@utils.aiddata =
 
   purposes :
 

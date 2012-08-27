@@ -1,13 +1,14 @@
 @include = ->
 
   _ = require "underscore"
-
-  utils = @include './data-utils'
-  pg = @include './pg-sql'
-  mongo = @include './mongo'
-  d3 = require "d3"
   request = require "request"
-  purposes = @include './aiddata/purposes'
+
+  utils = require '../data-utils'
+  pg = require '../pg-sql'
+  mongo = require '../mongo'
+  purposes = require '../aiddata/purposes'
+  
+  d3 = require "d3"
 
 
 

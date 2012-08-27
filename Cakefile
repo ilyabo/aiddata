@@ -1,6 +1,6 @@
 log = console.log
 app = "app/app.coffee"
-util = (require './cakeutils').include()
+util = (require './cakeutils')
 
 
 cachedPath = 'static/data/cached'
@@ -50,7 +50,7 @@ task 'list-forever', (options) -> util.run "node_modules/forever/bin/forever lis
 
 
 task 'import-data', ->
-  require('./data/mongo-imports').run()
+  require('./data/imports/aiddata').run()
 
 
 task 'refresh-views', ->
