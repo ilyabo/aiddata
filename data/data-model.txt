@@ -1,3 +1,56 @@
+https://docs.google.com/document/d/1_tfz3_zo7ylobH2XzVYbouB8gnwkWXS8CpFxIdDRX_s/edit#heading=h.m15xxt8g75w3
+
+
+Data
+
+  Location
+    [parentLocation] (to define the node hierarchy for subnational data, or for organisation subdivisions
+    code)
+    name
+    geo coords
+
+  Location event
+    type
+    location
+    timestamp
+    property1 -> value
+    property2 -> value
+    property3 -> value
+    …
+
+  Flow event
+    type
+    timestamp (in reality multiple timestamps may be available (e.g. commitment_date, disbursment_date, end_date))
+    origin location
+    dest location
+    property1 -> value
+    property2 -> value
+    property3 -> value
+    …
+
+  Property value hierarchies (for hierarchical properties, e.g. purposes)
+    property1 -> value hierarchy
+    property2 -> value hierarchy
+    property3 -> value hierarchy
+    ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------
+
+
 nodes
   code
   name
