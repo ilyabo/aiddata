@@ -1,3 +1,34 @@
+_ = require "underscore"
+
+# For most purposes several different names exist
+# so we have to group them together
+@groupPurposesByCode = (purposes) ->
+  nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
+  unique = {}
+  for r in purposes
+    if not r.code? then r.code = "00000"
+    if not r.name? then r.name = "Unknown"
+
+    r.name = r.name.trim()
+    uname = r.name.toUpperCase()
+    
+    if not(_.has(unique, r.code))
+      unique[r.code] = r
+    else
+      oldname = unique[r.code].name
+      # prefer not to use capitalized or shortened versions
+      if oldname == oldname.toUpperCase() or nopunct(r.name).length > nopunct(oldname).length
+        old = unique[r.code] 
+        old.name = r.name
+        if old.total_amount?
+          old.total_amount += r.total_amount
+        if old.total_num?
+          old.total_num += r.total_num
+
+  _.values(unique)
+
+
+
 
 @provideWithPurposeCategories = (purposes) ->
   for p in purposes
