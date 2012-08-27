@@ -3,7 +3,7 @@ app = "app/app.coffee"
 util = (require './cakeutils')
 
 
-cachedPath = 'static/data/cached'
+cachedPath = 'data/static/data/cached'
 
 
 option '-e', '--environment [ENVIRONMENT_NAME]', 'set the environment for `restart`'
