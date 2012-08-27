@@ -3,7 +3,7 @@
   console.log ">>>>>>>>>> Importing aiddata >>>>>>>>>>"
 
   fs = require 'fs'
-  util = (require '../../cakeutils')
+  util = (require '../../os-utils')
 
   dbconf = require('../../.dbconf')
   mongo = require('../../app/mongo')

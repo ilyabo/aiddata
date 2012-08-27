@@ -1,6 +1,6 @@
 log = console.log
 app = "app/app.coffee"
-util = (require './cakeutils')
+util = (require './os-utils')
 
 
 cachedPath = 'data/static/data/cached'
