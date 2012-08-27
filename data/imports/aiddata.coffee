@@ -1,94 +1,90 @@
-@run = ->
+console.log ">>>>>>>>>> Importing AidData >>>>>>>>>>"
+
+fs = require 'fs'
+os = require '../../os-utils'
+dbconf = require '../../.dbconf'
+mongo = require '../../app/mongo'
+
+pg = require 'pg'
+pgurl = dbconf.postgres
+
+DEBUG_updateRowsLimit = null   # set for debugging
+
+mongodb = pgclient = null
+aiddataColl = null
+
+
+queue = require('queue-async')
+
+
+os.runTasksSerially [
+
+  (callWhenEnded) ->
+    console.log "> Connecting to mongodb"
+    mongo.open (err, db) ->
+      if err? then callWhenEnded(err)
+      else
+        mongodb = db
+        db.collection 'aiddata', (err, coll) =>
+          if err? then callWhenEnded(err)
+          else
+            aiddataColl = coll
+            callWhenEnded()
+
+  (callWhenEnded) ->
+    console.log "> Connecting to PostgreSQL"
   
-  console.log ">>>>>>>>>> Importing aiddata >>>>>>>>>>"
+    pgclient = new pg.Client(pgurl)
+    # disconnect client when all queries are finished        
+    #pgclient.on('drain', pgclient.end.bind(pgclient))
+    pgclient.connect()
+    callWhenEnded()
 
-  fs = require 'fs'
-  util = (require '../../os-utils')
+  (callWhenEnded) ->
+    console.log "> Ensure aiddata index"
+  
+    aiddataColl.ensureIndex { aiddata_id : 1 }, (err) -> 
+      if err? then callWhenEnded(err)
+      else 
+        console.log "Index for aiddata_id ensured"
+        callWhenEnded()
 
-  dbconf = require('../../.dbconf')
-  mongo = require('../../app/mongo')
+  (callWhenEnded) ->
+    console.log "> Import AidData commitments from PostgreSQL"
 
-  pg = require 'pg'
-  pgurl = dbconf.postgres
+    upsertCount = 0
+    upsertQueue = queue(1)
+    upsert = (row, callWhenEnded) ->
+      aiddataColl.update(
+        { aiddata_id:row.aiddata_id }, row, { safe:true, upsert:true }, 
+        (err, docs) ->
+          if err?
+            console.warn "Problem upserting aiddata_id: #{row.aiddata_id}: #{err}"
+          else
+            upsertCount++
+            #console.log "Upserted aiddata_id: #{row.aiddata_id}"
+            if upsertCount % 1000 == 0
+              console.log "Upsert count: #{upsertCount}"
+          callWhenEnded(err)
+        , true
+      )
 
-  limit = 10 #undefined   # set for debugging
+
+    query = pgclient.query "SELECT * FROM aiddata2 #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}"
+    query.on 'row', (row) -> upsertQueue.defer upsert, row
+    query.on 'end', -> upsertQueue.await (err, results) -> 
+      console.log "Upserted #{upsertCount} documents"
+      callWhenEnded err, results
 
 
-  mongo.open (err, mongodb) ->
-    if err? then callback err
+
+], (err, results) ->
+
+    if err?
+      console.warn "> There was an error: " + err
     else
-      mongodb.collection 'aiddata', (err, coll) =>
-        if err? then console.log(err)
-        else
-          coll.ensureIndex { aiddata_id : 1 }, -> 
-            console.log "Index for aiddata_id ensured"
-
-            mongodb.close()
-
-            tempDir = "data/imports/temp"
-            tempFile = tempDir + "/_aiddata.json" 
-            util.mkdir tempDir
-
-            omitNullValueFields = true
-
-            pgclient = new pg.Client(pgurl)
-            # disconnect client when all queries are finished        
-            #pgclient.on('drain', pgclient.end.bind(pgclient))
-            pgclient.connect()
-
-
-            cntQuery = pgclient.query(
-              if limit? 
-                "SELECT #{limit} AS count"
-              else
-                "SELECT COUNT(*) AS count FROM aiddata2"
-            )
-
-            cntQuery.on 'row', (row) ->
-              
-              totalRecordsNum = row.count
-              console.log "Reading #{totalRecordsNum} records from postgres..."
-
-              numProcessed = 0
-
-
-              #jsonFile = fs.createWriteStream(tempFile)
-              fd = fs.openSync(tempFile, 'w')
-
-              firstRow = true
-              query = pgclient.query "SELECT * FROM aiddata2 #{if limit? then 'LIMIT '+limit}"
-              query.on 'row', (row) ->
-
-                #row._id = row.aiddata_id
-                #delete row.aiddata_id
-
-                if omitNullValueFields
-                  for k,v of row
-                    unless v?
-                      delete row[k]
-
-                #console.log "Upserted #{numUpserted} of #{totalRecordsNum}, last _id: #{row._id}"
-                numProcessed++
-
-                # assuming that stringify produces a one-liner
-                fs.writeSync fd, JSON.stringify(row) + "\n"
-
-                if numProcessed % 1000 == 0
-                  console.log "Processed #{numProcessed} of #{totalRecordsNum}"
-
-
-                if numProcessed >= totalRecordsNum
-                  console.log "#{numProcessed} records were saved temporarily in #{tempFile}"
-                  console.log "Now importing into MongoDB"
-                  util.run "/usr/bin/mongoimport " +
-                              "-d aiddata -c aiddata --upsert --upsertFields aiddata_id " +
-                              "-u #{dbconf.mongodb.user} -p #{dbconf.mongodb.password} "+ 
-                              "#{tempFile}",
-                    ->
-                      fs.closeSync fd
-                      fs.unlink tempFile 
-                      console.log "Done"
-
-
-              query.on 'end', -> pgclient.end()
+      console.log("> All tasks finished")
+    
+    mongodb.close()
+    pgclient.end()
 

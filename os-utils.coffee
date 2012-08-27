@@ -19,4 +19,18 @@ path = require 'path'
   cmd.stdout.on 'data', (data) -> process.stdout.write data
   cmd.stderr.on 'data', (data) -> process.stderr.write data
   process.on 'SIGHUP', -> cmd.kill()
-  cmd.on 'exit', (code) -> callback() if callback? and code is 0
+  cmd.on 'exit', (code) -> 
+    if callback?
+      if code is 0
+        callback()
+      else
+        callback("Exec exit code: #{code}")
+
+
+
+queue = require('queue-async')
+
+@runTasksSerially = (tasks, callWhenEnded) ->
+  q = queue(1)  # no parallelism
+  tasks.forEach (t) -> q.defer t
+  q.await callWhenEnded

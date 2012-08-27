@@ -50,11 +50,11 @@ task 'list-forever', (options) -> util.run "node_modules/forever/bin/forever lis
 
 
 task 'import-data', ->
-  require('./data/imports/aiddata').run()
+  require './data/imports/aiddata'
 
 
 task 'refresh-views', ->
-  pg = require('./pg-sql').include()
+  pg = require('./pg-sql')
 
   views = [
       "donor_recipient_year_purpose_ma",
