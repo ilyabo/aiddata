@@ -11,7 +11,7 @@ queue = require 'queue-async'
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit = 10   # set for debugging
+DEBUG_updateRowsLimit = null  # set for debugging
 OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = false
  
 PATH = "data/imports/"
@@ -35,7 +35,7 @@ importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
                 "-u #{dbconf.mongodb.user} -p #{dbconf.mongodb.password} "+ 
                 "#{file}"
 
-    console.log "Running in \"#{__dirname}\":\n#{cmd}"
+    console.log "Running command:\n#{cmd}"
     os.run cmd,
       (err) ->
         callWhenEnded(err)
