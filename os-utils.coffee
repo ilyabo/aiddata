@@ -25,12 +25,3 @@ path = require 'path'
         callback()
       else
         callback("Exec exit code: #{code}")
-
-
-
-queue = require('queue-async')
-
-@runTasksSerially = (tasks, callWhenEnded) ->
-  q = queue(1)  # no parallelism
-  tasks.forEach (t) -> q.defer t
-  q.await callWhenEnded
