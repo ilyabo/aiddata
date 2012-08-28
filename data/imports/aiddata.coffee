@@ -6,13 +6,16 @@ dbconf = require '../../.dbconf'
 mongo = require '../../app/mongo'
 linereader = require './linereader'
 
+queue = require 'queue-async'
+
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit =  null   # set for debugging
-TEMP_DIR = "data/imports/temp"
+DEBUG_updateRowsLimit = null   # set for debugging
 OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = false
-
+ 
+PATH = "data/imports/"
+TEMP_DIR = "temp"
 AIDDATA_TEMP_FILE = TEMP_DIR + "/aiddata.json"
 LOCATIONS_TEMP_FILE = TEMP_DIR + "/locations.json"
 
@@ -27,15 +30,13 @@ locationNameToCode = {}
 importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
 
   if USE_MONGOIMPORT   # faster
-
-    os.run "/usr/bin/mongoimport " +
+    cmd = "/usr/bin/mongoimport " +
                 "-d aiddata -c #{collection} --upsert --upsertFields #{upsertFields.join(',')} " +
                 "-u #{dbconf.mongodb.user} -p #{dbconf.mongodb.password} "+ 
-                "#{file}",
+                "#{file}"
+    console.log "Running in \"#{__dirname}\":\n#{cmd}"
+    os.run cmd,
       (err) ->
-        unless err?
-          fs.unlink(AIDDATA_TEMP_FILE)
-
         callWhenEnded(err)
 
   else
@@ -45,14 +46,13 @@ importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
       if err? then callWhenEnded(err)
       else
 
-        reader = linereader.open file
+        reader = linereader.open PATH + file
 
         nextRow = ->
           if reader.hasNextLine()
             JSON.parse reader.nextLine()
           else
             null
-
 
         # update synchronously
         upsert = do -> 
@@ -83,8 +83,24 @@ importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
 
 
 
+ensureIndices = (collName, indices, callWhenEnded) ->
+  mongodb.collection collName, (err, coll) =>
+    if err? then callWhenEnded(err)
+    else
+      ensure = (index, ended) ->
+        console.log "Ensuring #{collName} index #{JSON.stringify(index)}"
+        coll.ensureIndex index, (err) ->
+          if err? then callWhenEnded(err)
+          else 
+            ended()
 
-queue = require('queue-async')
+
+      q = queue(1)  # no parallelism
+      indices.forEach (index) -> q.defer ensure, index
+      q.await -> callWhenEnded()
+
+
+
 
 runTasksSerially = (tasks, callWhenEnded) ->
   q = queue(1)  # no parallelism
@@ -112,6 +128,35 @@ runTasksSerially [
 
 
 
+
+
+
+
+  (callWhenEnded) ->
+    console.log "> Ensure aiddata commitments indices"
+    
+    indices = [
+      { aiddata_id : 1 }
+      { origin : 1 }
+      { dest : 1 }
+      { origin : 1, dest : 1 }
+      { coalesced_purpose_code : 1 }
+    ]
+    ensureIndices 'aiddata', indices, callWhenEnded
+
+
+
+  (callWhenEnded) ->
+    console.log "> Ensure locations indices"    
+    indices = [
+      { code : 1 }
+    ]
+    ensureIndices 'locations', indices, callWhenEnded
+
+
+
+
+
   (callWhenEnded) ->
     console.log "> Connecting to PostgreSQL"
   
@@ -120,40 +165,6 @@ runTasksSerially [
     #pgclient.on('drain', pgclient.end.bind(pgclient))
     pgclient.connect()
     callWhenEnded()
-
-
-
-
-
-
-  (callWhenEnded) ->
-    console.log "> Ensure aiddata indices"
-  
-    mongodb.collection 'aiddata', (err, coll) =>
-      if err? then callWhenEnded(err)
-      else
-
-        indices = [
-          { aiddata_id : 1 }
-          { origin : 1 }
-          { dest : 1 }
-          { origin : 1, dest : 1 }
-          { coalesced_purpose_code : 1 }
-        ]
-
-        ensure = (index, ended) ->
-          console.log "Ensuring index #{JSON.stringify(index)}"
-          coll.ensureIndex index, (err) ->
-            if err? then callWhenEnded(err)
-            else 
-              ended()
-
-
-        q = queue(1)  # no parallelism
-        indices.forEach (index) -> q.defer ensure, index
-        q.await -> callWhenEnded()
-
-
 
 
 
@@ -228,7 +239,7 @@ runTasksSerially [
 
 
           os.mkdir TEMP_DIR
-          fd = fs.openSync(LOCATIONS_TEMP_FILE, 'w')
+          fd = fs.openSync(PATH + LOCATIONS_TEMP_FILE, 'w')
           for r in result.rows
             fs.writeSync fd, JSON.stringify(r) + "\n"
           fs.closeSync fd
@@ -247,7 +258,7 @@ runTasksSerially [
     console.log "> Export aiddata commitments from PostgreSQL to a temporary file"
 
     os.mkdir TEMP_DIR
-    fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
+    fd = fs.openSync(PATH + AIDDATA_TEMP_FILE, 'w')
 
     query = pgclient.query "SELECT * FROM aiddata2 #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}"
     query.on 'row', (row) ->
@@ -300,7 +311,7 @@ runTasksSerially [
                   "#{file}",
         (err) ->
           unless err?
-            fs.unlink(AIDDATA_TEMP_FILE)
+            fs.unlink(PATH + AIDDATA_TEMP_FILE)
 
           callWhenEnded(err)
 
@@ -312,7 +323,7 @@ runTasksSerially [
         if err? then callWhenEnded(err)
         else
 
-          reader = linereader.open AIDDATA_TEMP_FILE
+          reader = linereader.open PATH + AIDDATA_TEMP_FILE
 
           nextRow = ->
             if reader.hasNextLine()
@@ -356,6 +367,8 @@ runTasksSerially [
       console.warn "> There was an error: " + err
     else
       console.log("> All tasks finished")
+      fs.unlink(PATH + AIDDATA_TEMP_FILE)
+      fs.unlink(PATH + LOCATIONS_TEMP_FILE)
     
     mongodb.close()
     pgclient.end()
