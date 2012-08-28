@@ -11,13 +11,13 @@ queue = require 'queue-async'
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit = null   # set for debugging
+DEBUG_updateRowsLimit = 10   # set for debugging
 OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = false
  
 PATH = "data/imports/"
 TEMP_DIR = "temp"
-AIDDATA_TEMP_FILE = TEMP_DIR + "/aiddata.json"
-LOCATIONS_TEMP_FILE = TEMP_DIR + "/locations.json"
+AIDDATA_TEMP_FILE = PATH + TEMP_DIR + "/aiddata.json"
+LOCATIONS_TEMP_FILE = PATH + TEMP_DIR + "/locations.json"
 
 USE_MONGOIMPORT = true
 
@@ -34,6 +34,7 @@ importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
                 "-d aiddata -c #{collection} --upsert --upsertFields #{upsertFields.join(',')} " +
                 "-u #{dbconf.mongodb.user} -p #{dbconf.mongodb.password} "+ 
                 "#{file}"
+
     console.log "Running in \"#{__dirname}\":\n#{cmd}"
     os.run cmd,
       (err) ->
@@ -46,7 +47,7 @@ importCollectionToMongo = (collection, file, upsertFields, callWhenEnded) ->
       if err? then callWhenEnded(err)
       else
 
-        reader = linereader.open PATH + file
+        reader = linereader.open file
 
         nextRow = ->
           if reader.hasNextLine()
@@ -106,6 +107,18 @@ runTasksSerially = (tasks, callWhenEnded) ->
   q = queue(1)  # no parallelism
   tasks.forEach (t) -> q.defer t
   q.await callWhenEnded
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 runTasksSerially [
@@ -239,7 +252,7 @@ runTasksSerially [
 
 
           os.mkdir TEMP_DIR
-          fd = fs.openSync(PATH + LOCATIONS_TEMP_FILE, 'w')
+          fd = fs.openSync(LOCATIONS_TEMP_FILE, 'w')
           for r in result.rows
             fs.writeSync fd, JSON.stringify(r) + "\n"
           fs.closeSync fd
@@ -258,7 +271,7 @@ runTasksSerially [
     console.log "> Export aiddata commitments from PostgreSQL to a temporary file"
 
     os.mkdir TEMP_DIR
-    fd = fs.openSync(PATH + AIDDATA_TEMP_FILE, 'w')
+    fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
 
     query = pgclient.query "SELECT * FROM aiddata2 #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}"
     query.on 'row', (row) ->
@@ -311,7 +324,7 @@ runTasksSerially [
                   "#{file}",
         (err) ->
           unless err?
-            fs.unlink(PATH + AIDDATA_TEMP_FILE)
+            fs.unlink(AIDDATA_TEMP_FILE)
 
           callWhenEnded(err)
 
@@ -323,7 +336,7 @@ runTasksSerially [
         if err? then callWhenEnded(err)
         else
 
-          reader = linereader.open PATH + AIDDATA_TEMP_FILE
+          reader = linereader.open AIDDATA_TEMP_FILE
 
           nextRow = ->
             if reader.hasNextLine()
@@ -367,8 +380,8 @@ runTasksSerially [
       console.warn "> There was an error: " + err
     else
       console.log("> All tasks finished")
-      fs.unlink(PATH + AIDDATA_TEMP_FILE)
-      fs.unlink(PATH + LOCATIONS_TEMP_FILE)
+      fs.unlink(AIDDATA_TEMP_FILE)
+      fs.unlink(LOCATIONS_TEMP_FILE)
     
     mongodb.close()
     pgclient.end()
