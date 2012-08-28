@@ -16,7 +16,7 @@ OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = false
 AIDDATA_TEMP_FILE = TEMP_DIR + "/aiddata.json"
 LOCATIONS_TEMP_FILE = TEMP_DIR + "/locations.json"
 
-USE_MONGOIMPORT = false
+USE_MONGOIMPORT = true
 
 mongodb = pgclient = null
 
