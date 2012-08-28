@@ -50,7 +50,7 @@ runTasksSerially [
     callWhenEnded()
 
   (callWhenEnded) ->
-    console.log "> Ensure aiddata index"
+    console.log "> Ensure aiddata_id index"
   
     aiddataColl.ensureIndex { aiddata_id : 1 }, (err) -> 
       if err? then callWhenEnded(err)
