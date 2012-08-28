@@ -4,6 +4,6 @@ node_modules/
 static/coffee/
 logs/
 data/static/data/cached/
-data/imports/temp/ 
+data/imports/temp/
 aiddata.sublime-project
 aiddata.sublime-workspace
