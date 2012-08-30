@@ -1,3 +1,30 @@
+
+#################    CONFIG     #################
+USE_MONGOIMPORT = true
+
+DEBUG_updateRowsLimit =  null  # set for debugging
+
+OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = true
+
+IMPORT_COMMITMENT_DATES_AS_ = "epoch"    # Possibilities:  "epoch" "date" "string"
+# "date" won't work for negative dates
+# as long as https://jira.mongodb.org/browse/SERVER-961 is not fixed
+
+
+
+
+PATH = "data/imports/"
+TEMP_DIR = "temp"
+AIDDATA_TEMP_FILE = PATH + TEMP_DIR + "/aiddata.json"
+LOCATIONS_TEMP_FILE = PATH + TEMP_DIR + "/locations.json"
+
+################# END OF CONFIG #################
+
+
+
+
+
+
 console.log ">>>>>>>>>> Importing AidData >>>>>>>>>>"
 
 fs = require 'fs'
@@ -12,16 +39,6 @@ queue = require 'queue-async'
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit =  null  # set for debugging
-OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = true
- 
-PATH = "data/imports/"
-TEMP_DIR = "temp"
-AIDDATA_TEMP_FILE = PATH + TEMP_DIR + "/aiddata.json"
-LOCATIONS_TEMP_FILE = PATH + TEMP_DIR + "/locations.json"
-IMPORT_COMMITMENT_DATES_AS_DATES = true
-
-USE_MONGOIMPORT = true
 
 mongodb = pgclient = null
 
@@ -308,10 +325,9 @@ runTasksSerially [
     fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
 
     dateFieldQ = (field, q) ->
-      if IMPORT_COMMITMENT_DATES_AS_DATES
-        "EXTRACT(EPOCH FROM #{q})*1000 AS #{field}"
-      else
-        "#{q} AS #{field}"
+      switch IMPORT_COMMITMENT_DATES_AS_
+        when "date", "epoch" then "EXTRACT(EPOCH FROM #{q})*1000 AS #{field}"
+        when "string" then "#{q} AS #{field}"
 
     dateFields = 
       "date" : "COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))"
@@ -320,7 +336,6 @@ runTasksSerially [
       "end_date" : "end_date"
     
     dateFieldsSelect = (dateFieldQ(f,q) for f,q of dateFields).join(',') 
-
 
     query = pgclient.query "
         SELECT
@@ -340,7 +355,8 @@ runTasksSerially [
       row.origin = locationNameToCode[row.donor]
       row.dest = locationNameToCode[row.recipient]
 
-      if IMPORT_COMMITMENT_DATES_AS_DATES
+      # won't work for negative dates as long as https://jira.mongodb.org/browse/SERVER-961 is not fixed
+      if IMPORT_COMMITMENT_DATES_AS_ is "date"
         for f,q of dateFields 
           if row[f]?
             row[f] = { "$date" : row[f] }
