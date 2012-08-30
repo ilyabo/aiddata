@@ -12,7 +12,7 @@ queue = require 'queue-async'
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit = null  # set for debugging
+DEBUG_updateRowsLimit = 10 #null  # set for debugging
 OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = true
  
 PATH = "data/imports/"
@@ -306,7 +306,15 @@ runTasksSerially [
     os.mkdir TEMP_DIR
     fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
 
-    query = pgclient.query "SELECT * FROM aiddata2 #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}"
+    query = pgclient.query "
+      SELECT
+        *, 
+        COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))
+          AS date_coalesced
+      FROM 
+        aiddata2 
+      #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}
+    "
     query.on 'row', (row) ->
 
       if OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON
@@ -318,10 +326,15 @@ runTasksSerially [
       row.origin = locationNameToCode[row.donor]
       row.dest = locationNameToCode[row.recipient]
 
+      for f in ["date_coalesced", "start_date", "commitment_date", "end_date"]
+        if row[f]?
+          row[f] = { "$date" : row[f] }
+
       delete row.donor
       delete row.donorcode
       delete row.recipient
       delete row.recipientcode
+      delete row.year
 
       # assuming that stringify produces a one-liner
       fs.writeSync fd, JSON.stringify(row) + "\n"
