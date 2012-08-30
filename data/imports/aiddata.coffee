@@ -12,13 +12,14 @@ queue = require 'queue-async'
 pg = require 'pg'
 pgurl = dbconf.postgres
 
-DEBUG_updateRowsLimit = 10 #null  # set for debugging
+DEBUG_updateRowsLimit =  null  # set for debugging
 OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = true
  
 PATH = "data/imports/"
 TEMP_DIR = "temp"
 AIDDATA_TEMP_FILE = PATH + TEMP_DIR + "/aiddata.json"
 LOCATIONS_TEMP_FILE = PATH + TEMP_DIR + "/locations.json"
+IMPORT_COMMITMENT_DATES_AS_DATES = true
 
 USE_MONGOIMPORT = true
 
@@ -306,18 +307,24 @@ runTasksSerially [
     os.mkdir TEMP_DIR
     fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
 
-    epochMillis = (field, q) -> "EXTRACT(EPOCH FROM #{q})*1000 AS #{field}"
+    dateFieldQ = (field, q) ->
+      if IMPORT_COMMITMENT_DATES_AS_DATES
+        "EXTRACT(EPOCH FROM #{q})*1000 AS #{field}"
+      else
+        "#{q} AS #{field}"
 
-    dateFields = [
-      epochMillis("date", "COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))"),
-      epochMillis("start_date", "start_date"),
-      epochMillis("commitment_date", "commitment_date"),
-      epochMillis("end_date", "end_date"),
-    ].join(',')
+    dateFields = 
+      "date" : "COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))"
+      "start_date" : "start_date"
+      "commitment_date" : "commitment_date"
+      "end_date" : "end_date"
     
+    dateFieldsSelect = (dateFieldQ(f,q) for f,q of dateFields).join(',') 
+
+
     query = pgclient.query "
         SELECT
-          *, #{dateFields}
+          *, #{dateFieldsSelect}
         FROM 
           aiddata2 
         #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}
@@ -333,9 +340,10 @@ runTasksSerially [
       row.origin = locationNameToCode[row.donor]
       row.dest = locationNameToCode[row.recipient]
 
-      for f in ["date_coalesced", "start_date", "commitment_date", "end_date"]
-        if row[f]?
-          row[f] = { "$date" : row[f] }
+      if IMPORT_COMMITMENT_DATES_AS_DATES
+        for f,q of dateFields 
+          if row[f]?
+            row[f] = { "$date" : row[f] }
 
       delete row.donor
       delete row.donorcode
@@ -367,62 +375,6 @@ runTasksSerially [
     console.log "> Upserting commitments in MongoDB"
 
     importCollectionToMongo  "aiddata", AIDDATA_TEMP_FILE, ["aiddata_id"], callWhenEnded
-
-    ###
-    if USE_MONGOIMPORT   # faster
-
-      os.run "/usr/bin/mongoimport " +
-                  "-d aiddata -c aiddata --upsert --upsertFields aiddata_id " +
-                  "-u #{dbconf.mongodb.user} -p #{dbconf.mongodb.password} "+ 
-                  "#{file}",
-        (err) ->
-          unless err?
-            fs.unlink(AIDDATA_TEMP_FILE)
-
-          callWhenEnded(err)
-
-    else
-
-      import 
-
-      mongodb.collection 'aiddata', (err, coll) =>
-        if err? then callWhenEnded(err)
-        else
-
-          reader = linereader.open AIDDATA_TEMP_FILE
-
-          nextRow = ->
-            if reader.hasNextLine()
-              JSON.parse reader.nextLine()
-            else
-              null
-
-
-          # update synchronously
-          upsert = do -> 
-            upsertCount = 0
-            (row) ->
-              unless row?
-                callWhenEnded()
-                console.log "Upserted #{upsertCount} documents"
-              else
-                coll.update(
-                  { aiddata_id:row.aiddata_id }, row, { safe:true, upsert:true }, 
-                  (err, docs) ->
-                    if err?
-                      console.log "Upserted #{upsertCount} documents"
-                      console.warn "Problem upserting aiddata_id: #{row.aiddata_id}: #{err}"
-                      callWhenEnded(err)
-                    else
-                      upsertCount++
-                      if ((upsertCount % 10000) is 0) then console.log "Upsert count: #{upsertCount}" 
-                      upsert nextRow()   # proceed to next row              
-                  , true
-                )
-          upsert nextRow()
-    ###
-
-
 
 
 
