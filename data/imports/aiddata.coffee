@@ -306,15 +306,22 @@ runTasksSerially [
     os.mkdir TEMP_DIR
     fd = fs.openSync(AIDDATA_TEMP_FILE, 'w')
 
+    epochMillis = (field, q) -> "EXTRACT(EPOCH FROM #{q})*1000 AS #{field}"
+
+    dateFields = [
+      epochMillis("date", "COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))"),
+      epochMillis("start_date", "start_date"),
+      epochMillis("commitment_date", "commitment_date"),
+      epochMillis("end_date", "end_date"),
+    ].join(',')
+    
     query = pgclient.query "
-      SELECT
-        *, 
-        COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY'))
-          AS date_coalesced
-      FROM 
-        aiddata2 
-      #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}
-    "
+        SELECT
+          *, #{dateFields}
+        FROM 
+          aiddata2 
+        #{if DEBUG_updateRowsLimit? then 'LIMIT '+DEBUG_updateRowsLimit}
+      "
     query.on 'row', (row) ->
 
       if OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON
