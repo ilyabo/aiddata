@@ -5,6 +5,7 @@ os = require '../../os-utils'
 dbconf = require '../../.dbconf'
 mongo = require '../../app/mongo'
 linereader = require './linereader'
+d3 = require 'd3'
 
 queue = require 'queue-async'
 
@@ -12,7 +13,7 @@ pg = require 'pg'
 pgurl = dbconf.postgres
 
 DEBUG_updateRowsLimit = null  # set for debugging
-OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = false
+OMIT_NULL_VALUE_FIELDS_IN_COMMITMENTS_JSON = true
  
 PATH = "data/imports/"
 TEMP_DIR = "temp"
@@ -24,6 +25,7 @@ USE_MONGOIMPORT = true
 mongodb = pgclient = null
 
 locationNameToCode = {}
+
 
 
 
@@ -208,54 +210,85 @@ runTasksSerially [
 
 
           # Ensure each location has a meaningful code
-          for r in result.rows
-            oldname = r.name
+          do -> 
+            for r in result.rows
+              oldname = r.name
 
-            if /, regional/.test r.name
-              r.type = "region"
-              match = /(.*), regional/.exec r.name
-              r.name = match[1]
-              r.code = "R-"+acronym(r.name)
-            else if (r.name in ["GLOBAL", "Bilateral, unspecified", "MADCT Unspecified", 
-            "Sts Ex-Yugo. Unspec."])
-              r.code = "C-"+acronym(r.name) 
-              r.type = "congl" 
-            else if r.code?
-              r.type = "country" 
-              unless r.code.trim().length > 0
-                r.code = acronym(r.name)
-            else
-              r.type = "org"
-              match = /(.*)\(([A-Z]+)\)(.*)/.exec r.name 
-              if match?
-                # if there is an acronym in parethesis in the name, use it as the code
-                r.code = "O-"+match[2]
-                r.name = (match[1] + match[3]).trim()
+              if /, regional/.test r.name
+                r.type = "region"
+                match = /(.*), regional/.exec r.name
+                r.name = match[1]
+                r.code = "R-"+acronym(r.name)
+              else if (r.name in ["GLOBAL", "Bilateral, unspecified", "MADCT Unspecified", 
+              "Sts Ex-Yugo. Unspec."])
+                r.code = "C-"+acronym(r.name) 
+                r.type = "congl" 
+              else if r.code?
+                r.type = "country" 
+                unless r.code.trim().length > 0
+                  r.code = acronym(r.name)
+
+                # fix the problem with the wrong country code of Italy
+                if (r.code in ["IRA", "ITA"] and r.name is "Italy")
+                  r.code = "ITA"
+                  delete codes["ITA"]
+
               else
-                r.code = "O-"+acronym(r.name)
+                r.type = "org"
+                match = /(.*)\(([A-Z]+)\)(.*)/.exec r.name 
+                if match?
+                  # if there is an acronym in parethesis in the name, use it as the code
+                  r.code = "O-"+match[2]
+                  r.name = (match[1] + match[3]).trim()
+                else
+                  r.code = "O-"+acronym(r.name)
 
-            # if code was already used, add a number at the end
-            do -> 
-              c = r.code
-              i = 1
-              while codes[c]?
-                c = r.code + i++
-              codes[c] = true
-              r.code = c
+              # if code was already used, add a number at the end
+              do -> 
+                c = r.code
+                i = 1
+                while codes[c]?
+                  c = r.code + i++
+                codes[c] = true
+                r.code = c
 
-            locationNameToCode[oldname] = r.code
-
-
-          #console.log locationNameToCode
-          #console.log result
+              locationNameToCode[oldname] = r.code
 
 
+          # add coordinates and polygons
+          do ->
+            countries = d3.csv.parse(fs.readFileSync("data/static/data/aiddata-countries.csv", "utf8"))
+            countriesByCode = d3.nest().key((c) -> c.Code).rollup((a) -> a[0]).map(countries)
 
-          os.mkdir TEMP_DIR
-          fd = fs.openSync(LOCATIONS_TEMP_FILE, 'w')
-          for r in result.rows
-            fs.writeSync fd, JSON.stringify(r) + "\n"
-          fs.closeSync fd
+            geometry = JSON.parse(fs.readFileSync("data/static/data/world-countries.json", "utf8"))
+            geometryByCode = d3.nest().key((c) -> c.id).rollup((a) -> a[0]).map(geometry.features)
+
+            for r in result.rows when r.type is "country"
+              c = countriesByCode[r.code]
+              if c?
+                r.lat = c.Lat
+                r.lon = c.Lon
+              g = geometryByCode[r.code]
+              if g?
+                r.geometry = g.geometry
+                delete geometryByCode[r.code]
+
+
+            console.log "! Countries with no centroid coords:\n" + 
+              ("(#{r.name},#{r.code})" for r in result.rows when r.type is "country" and not r.lat?) + "\n"
+            console.log "! Countries with no geometry:\n" +
+              ("(#{r.name},#{r.code})" for r in result.rows when r.type is "country" and not r.geometry?) + "\n"
+            console.log "! Countries found in the map, but not in the list of locations:\n" +
+              ("(#{code},#{obj.properties.name})" for code,obj of geometryByCode) + "\n"
+
+          # writing to the temp file for importing into Mongo
+          do ->
+            os.mkdir TEMP_DIR
+            fd = fs.openSync(LOCATIONS_TEMP_FILE, 'w')
+            for r in result.rows
+              fs.writeSync fd, JSON.stringify(r) + "\n"
+            fs.closeSync fd
+
 
           callWhenEnded()
     )
