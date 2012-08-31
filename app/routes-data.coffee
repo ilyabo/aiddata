@@ -27,10 +27,12 @@
     mongo.collection 'aiddata', (err, coll) =>
       if err? then @next(err)
       else
-        keys = { donor:true, recipient:true, year:true }
-        condition = { coalesced_purpose_code : "24030", year: 2005 }
+        # , date : new Date(doc.date).getFullYear() }
+        # keys = (doc) -> { origin : doc.origin, dest: doc.dest }
+        keys = { origin:true, dest:true }   # coalesced_purpose_code:true }
+        condition = (doc) -> (new Date(doc.date).getFullYear() is 2005)    # coalesced_purpose_code : "23010" }
         initial = { ccsum : 0 }
-        reduce = (obj,prev) -> 
+        reduce = (obj,prev) ->  
           c = obj.commitment_amount_usd_constant
           unless isNaN(c)
             prev.ccsum += Math.round(c)
@@ -57,6 +59,28 @@
               .map(result)
             ###
             @send utils.objListToCsv(result)
+
+
+
+  @get '/aiddata-map-reduce.csv': ->
+    mongo.collection 'aiddata', (err, coll) =>
+      if err? then @next(err)
+      else
+
+        map = () -> emit(this.user_id, 1)
+        reduce = (k,vals) -> return 1
+
+        coll.mapReduce map, reduce, {out: {replace : 'tempCollection'}}, (err, collection) ->
+          coll.findOne {'_id':1}, (err, result) ->
+            assert.equal(1, result.value)
+
+            coll.findOne {'_id':2}, (err, result) ->
+              assert.equal(1, result.value)
+
+              #db.close()
+
+              @send utils.objListToCsv(result)
+
 
 
 
