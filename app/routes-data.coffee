@@ -11,7 +11,7 @@
 
 
 
-  @get '/purpose-codes.json': ->
+  @get '/mongo-purpose-codes.json': ->
     mongo.collection 'aiddata', (err, coll) =>
       if err? then @next(err)
       else
@@ -23,14 +23,14 @@
 
 
 
-  @get '/aiddata-totals-d-r-y.json': ->
+  @get '/mongo-aiddata-group.csv': ->
     mongo.collection 'aiddata', (err, coll) =>
       if err? then @next(err)
       else
         # , date : new Date(doc.date).getFullYear() }
         # keys = (doc) -> { origin : doc.origin, dest: doc.dest }
-        keys = { origin:true, dest:true }   # coalesced_purpose_code:true }
-        condition = (doc) -> (new Date(doc.date).getFullYear() is 2005)    # coalesced_purpose_code : "23010" }
+        keys = { origin:true }   # coalesced_purpose_code:true }
+        condition = { coalesced_purpose_code : "23010"}  #   (doc) -> (new Date(doc.date).getFullYear() is 2005)    # 
         initial = { ccsum : 0 }
         reduce = (obj,prev) ->  
           c = obj.commitment_amount_usd_constant
@@ -62,24 +62,72 @@
 
 
 
-  @get '/aiddata-map-reduce.csv': ->
+  @get '/mongo-aiddata-aggregate.csv': ->
+    mongo.collection 'aiddata', (err, coll) =>
+      if err? then @next(err)
+      else
+        a = {
+          $group : {
+            _id : "$origin",
+            total : { $sum : "$commitment_amount" }
+          }
+        }
+
+        coll.aggregate a, (err, result) =>
+          if err? then @next(err)
+          else        
+            @send utils.objListToCsv(items)
+
+
+
+
+  @get '/mongo-aiddata-map-reduce.csv': ->
     mongo.collection 'aiddata', (err, coll) =>
       if err? then @next(err)
       else
 
-        map = () -> emit(this.user_id, 1)
-        reduce = (k,vals) -> return 1
+        prop2sum = "commitment_amount_usd_constant"
 
-        coll.mapReduce map, reduce, {out: {replace : 'tempCollection'}}, (err, collection) ->
-          coll.findOne {'_id':1}, (err, result) ->
-            assert.equal(1, result.value)
+        # map = () -> 
+        #   console.log "Hi"
+        #   key = this.origin
+        #   #origin: this.origin
+        #   #dest: this.dest
+        #   #date: new Date(this.date).getFullYear()
 
-            coll.findOne {'_id':2}, (err, result) ->
-              assert.equal(1, result.value)
+        #   value = 
+        #     # sum :
+        #     #   unless isNaN(this[prop2sum])
+        #     #     this[prop2sum]
+        #     #   else
+        #     #     0
+        #     count : 1
 
-              #db.close()
+        #   emit key, value
 
-              @send utils.objListToCsv(result)
+        # reduce = (key, values) -> 
+        #   sum = 0
+        #   count = 0
+        #   for val in values
+        #     unless isNaN(val[prop2sum]) then sum += val[prop2sum]
+        #     count += val.count
+
+        #   # { count: count, sum: sum }
+        #   return { count: count }
+
+
+        map = () -> emit(this.origin, { count:1 })
+        reduce = (key, values) -> 
+          return { count: 1 }
+
+
+        coll.mapReduce map, reduce, { out: { replace : 'aiddataMapReduce' } }, (err, coll) =>
+          if err? then @next(err)
+          else        
+            coll.find().toArray (err, items) =>
+              if err? then @next(err)
+              else        
+                @send utils.objListToCsv(items)
 
 
 
