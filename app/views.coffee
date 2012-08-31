@@ -44,7 +44,6 @@
     script src: "coffee/charts/bar-hierarchy.js"
     script src: "coffee/charts/time-series.js"
     script src: "coffee/charts/time-slider.js"
-    script src: 'coffee/utils-purpose.js'
     script src: "bubbles.js"
 
 
@@ -250,7 +249,7 @@
     script src: 'libs/chroma/chroma.min.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
-    script src: 'coffee/utils-purpose.js'
+    
     script src: "coffee/purpose-tree.js"
 
 
@@ -266,7 +265,7 @@
 
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
-    script src: 'coffee/utils-purpose.js'
+    
     script src: "coffee/purpose-pack.js"
 
 
@@ -284,7 +283,7 @@
 
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
-    script src: 'coffee/utils-purpose.js'
+    
     script src: "coffee/charts/bar-hierarchy.js"
     script src: "purpose-bars.js"
 
