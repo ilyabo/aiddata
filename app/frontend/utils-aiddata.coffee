@@ -75,7 +75,10 @@ fmt = d3.format(",.0f")
 
         return subtree
 
-      recurse(tree)
+      if tree instanceof Array
+        tree.map recurse
+      else
+        recurse tree
 
       ###
       values = [] 
@@ -94,19 +97,59 @@ fmt = d3.format(",.0f")
       ###
       
 
+    # Given a tree in which the leaves have valueAttrs. the function provides the parent nodes in 
+    # the whole tree with totals for the valueAttrs over each node's children.
+    #
+    # Example input tree:
+    #
+    # {
+    #     "key": "Basic education",
+    #     "values": [
+    #         { "key": "11220", "name": "Primary education", "amount" : 20000 },
+    #         { "key": "11230", "name": "Basic life skills for youth and adults", "amount" : 30000 },
+    #         { "key": "11240", "name": "Early childhood education", "amount" : 10000 }
+    #     ]
+    # }
+    #
+    # The input tree can be also an array of trees. Each of them will be processed, but no overall totals
+    # will be computed summarizing all the trees.
+    #
+    # The valueAttrs can be a list of attributes. In this case totals will be provided for each of them.
+    #
+    #
+    provideWithTotals: (tree, valueAttrs, childrenAttr) ->
 
-    provideWithTotalAmount : (tree) ->
+      unless valueAttrs instanceof Array
+        valueAttrs = [ valueAttrs ]
+
 
       recurse = (subtree) ->
-        if subtree.amount or not subtree.values? then return
-        total = 0
-        for child in subtree.values
-          recurse(child)
-          total += if child.amount then +child.amount else 0
-        subtree.amount = total
+
+        return unless subtree[childrenAttr]?
+
+        for child in subtree[childrenAttr]
+          recurse child
+
+        for attr in valueAttrs
+          total = 0
+          for child in subtree[childrenAttr]
+            total += +(child[attr] ? 0)
+          subtree[attr] = total
+
         return subtree
 
-      recurse(tree)
+      if tree instanceof Array
+        tree.map recurse
+      else
+        recurse tree
+
+
+
+
+
+    provideWithTotalAmounts : (tree) ->
+      provideWithTotals ["amount"], "values"
+
 
       
 

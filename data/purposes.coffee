@@ -2,37 +2,37 @@ _ = require "underscore"
 
 # For most purposes several different names exist
 # so we have to group them together
-@groupPurposesByCode = (purposes) ->
+@groupPurposesByCode = (purposes, codeAttr = "code", nameAttr = "name", totalAmountAttr = "total_amount", totalNumAttr = "total_num") ->
   nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
   unique = {}
   for r in purposes
-    if not r.code? then r.code = "00000"
-    if not r.name? then r.name = "Unknown"
+    if not r[codeAttr]? then r[codeAttr] = "00000"
+    if not r[nameAttr]? then r[nameAttr] = "Unknown"
 
-    r.name = r.name.trim()
-    uname = r.name.toUpperCase()
+    r[nameAttr] = r[nameAttr].trim()
+    uname = r[nameAttr].toUpperCase()
     
-    if not(_.has(unique, r.code))
-      unique[r.code] = r
+    if not(_.has(unique, r[codeAttr]))
+      unique[r[codeAttr]] = r
     else
-      oldname = unique[r.code].name
+      oldname = unique[r[codeAttr]][nameAttr]
       # prefer not to use capitalized or shortened versions
-      if oldname == oldname.toUpperCase() or nopunct(r.name).length > nopunct(oldname).length
-        old = unique[r.code] 
-        old.name = r.name
-        if old.total_amount?
-          old.total_amount += r.total_amount
-        if old.total_num?
-          old.total_num += r.total_num
+      if oldname == oldname.toUpperCase() or nopunct(r[nameAttr]).length > nopunct(oldname).length
+        old = unique[r[codeAttr]] 
+        old[nameAttr] = r[nameAttr]
+        if old[totalAmountAttr]?
+          old[totalAmountAttr] += r[totalAmountAttr]
+        if old[totalNumAttr]?
+          old[totalNumAttr] += r[totalNumAttr]
 
   _.values(unique)
 
 
 
 
-@provideWithPurposeCategories = (purposes) ->
+@provideWithPurposeCategories = (purposes, codeAttr = "code") ->
   for p in purposes
-    p.category = switch p.code.substring(0, 1)
+    p.category = switch p[codeAttr]?.substring(0, 1)
       when "1" then "Social Infrastructure and Services"
       when "2" then "Economic Infrastructure and Services"
       when "3" then "Production Sectors"
@@ -42,7 +42,7 @@ _ = require "underscore"
       when "7" then "Humanitarian Aid"
       when "9" then "Other"
 
-    p.subcategory = switch p.code.substring(0, 2)
+    p.subcategory = switch p[codeAttr]?.substring(0, 2)
       # ? Social Infrastructure and Services
       when "11" then "Education"
       when "12" then "Health"
@@ -89,13 +89,13 @@ _ = require "underscore"
 
 
     # Should be subsubcategories, but they have no parent
-    switch p.code.substring(0, 3)
+    switch p[codeAttr]?.substring(0, 3)
       when "331" then p.subcategory = "Trade policy and regulations"
       when "332" then p.subcategory = "Tourism"
 
 
 
-    p.subsubcategory = switch p.code.substring(0, 3)
+    p.subsubcategory = switch p[codeAttr]?.substring(0, 3)
       when "111" then "Education, level unspecified"
       when "112" then "Basic education"
       when "113" then "Secondary education"

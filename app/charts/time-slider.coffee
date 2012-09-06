@@ -73,7 +73,7 @@ this.timeSliderControl = ->
 
     outerDiv = selection.append("div")
       .attr("class", "timeSlider")
-      .on 'mousemove', mousemove
+      #.on 'mousemove', mousemove
 
     caption = outerDiv.append("div")
       .attr("class", "caption")
@@ -84,6 +84,7 @@ this.timeSliderControl = ->
       .attr("class", "range")
       .style("width", "#{width}px")
       .style("height", "#{height}px")
+      .on 'mousemove', mousemove
         
 
  

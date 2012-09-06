@@ -4,6 +4,8 @@ require('zappa').run 3000, ->
   express = require('express')
   @include './layout'
   @include './views'
+  @include './routes-data-mongo'
+  @include './routes-data-extern'
   @include './routes-data'
   @include './routes-views'
 

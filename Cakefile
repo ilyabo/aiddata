@@ -81,12 +81,15 @@ task 'refresh-cached', ->
   files = [
     "aiddata-donor-totals.csv",  
     "aiddata-recipient-totals.csv", 
-    "flows.json",
+    "flows.csv",
+    #"flows.json",
     "aiddata-nodes.csv", 
     "aiddata-totals-d-r-y.csv"]
   for file in files
     console.log "Refreshing file #{file}"
-    util.run  "wget http://localhost:3000/#{file} -O #{cachedPath}/#{file}"
+    cmd = "wget http://localhost:3000/#{file} -O #{cachedPath}/#{file}"
+    console.log "Running '#{cmd}'"
+    util.run  cmd
 
 
 

@@ -50,6 +50,9 @@
 
   @coffee '/bubbles.js': ->
 
+    years = [1947..2011]
+    startYear = 2007
+
     # Bubbles
     bubbles = bubblesChart()
       .conf(
@@ -61,7 +64,7 @@
         lonAttr: 'Lon'
         flowMagnAttrs:
           aid:
-            attrs: [1947..2011]
+            attrs: years
             explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
         )
       .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
@@ -71,28 +74,37 @@
       .barHeight(10)
       .labelsWidth(200)
       .childrenAttr("values")
-      .valueAttr("amount")
       .nameAttr("key")
       .valueFormat(formatMagnitude)
+      .values((d) -> d["sum_#{startYear}"] ? 0)
+      .labelsFormat((d) ->
+        name = d.name ? d.key
+        if name.length > 35 then name = name.substr(0, 32) + "..."
+        name
+      )
+      .labelsTooltipFormat((d) -> name = d.name ? d.key)
       .currentNodeDescription(
         do ->
           percentageFormat = d3.format(",.2%")
           (currentNode) ->
+            v = barHierarchy.values()
             data = currentNode; (data = data.parent while data.parent?)
-            formatMagnitude(currentNode.amount) + " (" + 
-            percentageFormat(currentNode.amount / data.amount) + " of total)"
+            formatMagnitude(v(currentNode)) + " (" + 
+            percentageFormat(v(currentNode) / v(data)) + " of total)"
       )
 
 
 
     timeSlider = timeSliderControl()
-      .min(utils.date.yearToDate(1947))
-      .max(utils.date.yearToDate(2011))
+      .min(utils.date.yearToDate(years[0]))
+      .max(utils.date.yearToDate(years[years.length - 1]))
       .step(d3.time.year)
       .format(d3.time.format("%Y"))
       .width(250 - 30 - 8) # timeSeries margins
       .height(10)
-      .on "change", (current, old) -> bubbles.setSelDateTo(current, true)
+      .on "change", (current, old) ->
+        bubbles.setSelDateTo(current, true)
+        barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
 
 
     loadData()
@@ -102,7 +114,9 @@
       #.csv('destTotals', "#{dynamicDataPath}aiddata-recipient-totals.csv")
       .json('map', "data/world-countries.json")
       .csv('countries', "data/aiddata-countries.csv")
-      .csv('purposes', "aiddata-purposes-with-totals.csv/2007")
+      #.csv('purposes', "aiddata-purposes-with-totals.csv/2007")
+      .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
+      .json('purposeTree', "purposes-with-totals.json")
       .onload (data) ->
 
         provideCountryNodesWithCoords(
@@ -118,12 +132,24 @@
         d3.select("#timeSlider")
           .call(timeSlider)
 
+        # purposes = d3.nest()
+        #   .key((d) -> d.date)
+        #   .map(data.purposes)
+
+        valueAttrs = do ->
+          arr = []
+          for y in years
+            for attr in ["sum"] #"count", "sum"]
+              arr.push "#{attr}_#{y}"
+          arr
+
+        utils.aiddata.purposes.provideWithTotals(data.purposeTree, valueAttrs, "values")
 
         d3.select("#purposeBars")
-          .datum(utils.aiddata.purposes.fromCsv(data.purposes))
+          .datum(data.purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
           .call(barHierarchy)
 
-        bubbles.setSelDateTo(utils.date.yearToDate(2005), true)
+        bubbles.setSelDateTo(utils.date.yearToDate(startYear), true)
 
         $("#loading").remove()
   
@@ -191,6 +217,7 @@
     script src: 'js/fit-projection.js'
     script src: 'coffee/ffprints.js'
     script src: 'coffee/utils.js'
+    script src: 'libs/chroma/chroma.min.js'
 
     script src: "coffee/ffprints-#{@dataset}.js"
     

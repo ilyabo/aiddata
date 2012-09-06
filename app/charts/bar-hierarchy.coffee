@@ -3,12 +3,55 @@ this.barHierarchyChart = () ->
 
   nameAttr = "name" 
   childrenAttr = "children"
-  valueAttr = "value"
+  valueAccessor = (d) -> d["value"]
   valueFormat = d3.format(",.0f")
+  width = height = null
+  currentNodeDescription = (d) -> d[nameAttr]
+  barHeight = 12
+  barSpacing = null
+  labelsFormat = (d) -> d[nameAttr]
+  labelsTooltipFormat = (d) -> d[nameAttr]
 
-  currentNodeDescription = (currentNode) -> currentNode[nameAttr]
 
 
+  chart = (selection) -> init(selection)
+
+  chart.width = (_) -> if (!arguments.length) then fullwidth else fullwidth = _; chart
+
+  chart.height = (_) -> if (!arguments.length) then fullheight else fullheight = _; chart
+
+  chart.barHeight = (_) -> if (!arguments.length) then barHeight else barHeight = _; chart
+
+  chart.labelsWidth = (_) -> if (!arguments.length) then margin.left else margin.left = _; chart
+
+  chart.labelsFormat = (_) -> if (!arguments.length) then labelsFormat else labelsFormat = _; chart
+
+  chart.labelsTooltipFormat = (_) -> if (!arguments.length) then labelsTooltipFormat else labelsTooltipFormat = _; chart
+
+  chart.nameAttr = (_) -> if (!arguments.length) then nameAttr else nameAttr = _; chart
+
+  chart.childrenAttr = (_) -> if (!arguments.length) then childrenAttr else childrenAttr = _; chart
+
+  chart.values = (_) ->
+    if (!arguments.length)
+      valueAccessor
+    else 
+      valueAccessor = (if typeof _ is "function" then _ else (d) -> d[_])
+      if vis?
+        x.domain([ 0, d3.max(currentNode.children, valueAccessor ) ]).nice()
+        updateBreadcrumbCaption(currentNode)
+        vis.selectAll(".x.axis").transition().duration(50).call xAxis
+        vis.selectAll("rect")
+          .transition().duration(50)
+          .attr("width", (d) -> x(valueAccessor(d)))
+        vis.selectAll("g.barg").transition().duration(50).attr("transform", (d,i) -> stack(i))
+      chart
+
+  chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
+
+  chart.currentNodeDescription = (_) -> if (!arguments.length) then currentNodeDescription else currentNodeDescription = _; chart
+
+  currentNode = null
   data = null
   svg = vis = breadcrumb = null
 
@@ -21,11 +64,8 @@ this.barHierarchyChart = () ->
   fullwidth = 550
   fullheight = 300
 
-  width = height = null
   x = null
 
-  barHeight = 12
-  barSpacing = null
 
 
   #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
@@ -34,14 +74,60 @@ this.barHierarchyChart = () ->
 
 
   hierarchy = d3.layout.partition()
-    .value((d) -> d[valueAttr])
+    .value(valueAccessor)
     .children((d) -> d[childrenAttr])  # the sorted child list is stored in .children
                                        # thus .children is used further on
-    #.sort((a,b) -> b[valueAttr] - a[valueAttr])
+    .sort((a,b) -> valueAccessor(b) - valueAccessor(a))
 
   xAxis = null
 
  
+
+  init = (selection) ->
+    barSpacing = barHeight * 0.2
+    width = fullwidth - margin.right - margin.left
+    height = fullheight - margin.top - margin.bottom
+    x = d3.scale.linear().range([ 0, width ])
+
+
+    initVis(selection)
+    data = selection.datum()
+    currentNodeData = data
+
+
+    xAxis = d3.svg.axis().scale(x)
+      .orient("top")
+      .ticks(3)
+      .tickFormat(valueFormat)
+
+    hierarchy.nodes(data)
+    x.domain([ 0, valueAccessor(data) ]).nice()
+    down data, 0
+
+
+
+  initVis = (selection) ->
+    selection.attr("class", "barHierarchy")
+    initBreadcrumb(selection)
+
+    svg = selection
+      .append("svg")
+        .attr("width", width + margin.right + margin.left)
+        .attr("height", height + margin.top + margin.bottom)
+
+    vis = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    vis.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height)
+      .on("click", up)
+
+    vis.append("g").attr("class", "x axis")
+    vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
+
+
   leafNodeClass = (d, nodeClass, leafClass) ->
     if d.children? then nodeClass else leafClass
 
@@ -66,7 +152,7 @@ this.barHierarchyChart = () ->
       .attr("class", "bar")
       #.style "fill", z(true)
 
-    x.domain([ 0, d3.max(d.children, (d) -> d[valueAttr] ) ]).nice()
+    x.domain([ 0, d3.max(d.children, valueAccessor ) ]).nice()
 
     vis.selectAll(".x.axis").transition().duration(duration).call xAxis
 
@@ -82,7 +168,7 @@ this.barHierarchyChart = () ->
     enterTransition.select("rect")
       #.classed("bar", true)
       .attr("class", barClass)
-      .attr("width", (d) -> x(d[valueAttr]))
+      .attr("width", (d) -> x(valueAccessor(d)))
       #.style("fill", (d) -> z(d.children?))
       #.classed("hasChildren", d.children?)
 
@@ -93,11 +179,12 @@ this.barHierarchyChart = () ->
       .remove()
 
     exitTransition.selectAll("rect")
-      .attr("width", (d) -> x(d[valueAttr]))
+      .attr("width", (d) -> x(valueAccessor(d)))
 
     vis.select(".background").data([ d ]).transition().duration(end)
     d.index = i
 
+    currentNode = d
     updateBreadcrumb(d)
     updateVisHeight(d)
 
@@ -123,7 +210,7 @@ this.barHierarchyChart = () ->
       .filter((p) -> p is d)
       .style "fill-opacity", 1e-6
 
-    x.domain([ 0, d3.max(d.parent[childrenAttr], (d) -> d[valueAttr]) ]).nice()
+    x.domain([ 0, d3.max(d.parent[childrenAttr], valueAccessor) ]).nice()
 
 
 
@@ -131,7 +218,7 @@ this.barHierarchyChart = () ->
     enterTransition = enter.transition().duration(end).style("opacity", 1)
 
     enterTransition.select("rect").attr("width", (d) ->
-      x(d[valueAttr])
+      x(valueAccessor(d))
     ).each "end", (p) ->
       d3.select(this).style "fill-opacity", null  if p is d
 
@@ -150,12 +237,13 @@ this.barHierarchyChart = () ->
 
     enterTransition.select("rect")
       .attr("class", barClass)
-      .attr("width", (d) -> x(d[valueAttr]))
+      .attr("width", (d) -> x(valueAccessor(d)))
 
 
     exit.transition().duration(end).remove()
     vis.select(".background").data([ d.parent ]).transition().duration end
 
+    currentNode = d.parent
     updateBreadcrumb(d.parent)
     updateVisHeight(d.parent)
 
@@ -167,6 +255,7 @@ this.barHierarchyChart = () ->
         .attr("class", "enter")
         .attr("transform", "translate(0,5)")
       .selectAll("g")
+        .attr("class", "barg")
         .data(d.children)
           .enter()
           .append("g")
@@ -177,6 +266,8 @@ this.barHierarchyChart = () ->
         )
         ###
 
+    b.append("svg:title")
+        .text(labelsTooltipFormat)
 
     b.append("text")
       .attr("x", -6)
@@ -184,11 +275,11 @@ this.barHierarchyChart = () ->
       .attr("dy", ".35em")
       .attr("text-anchor", "end")
       .attr("class", labelClass)
-      .text (d) -> d[nameAttr]
+      .text(labelsFormat)
 
     b.append("rect")
       .attr("x", 1)
-      .attr("width", (d) -> x(d[valueAttr]))
+      .attr("width", (d) -> x(valueAccessor(d)))
       .attr("height", barHeight)
 
     return b
@@ -198,16 +289,16 @@ this.barHierarchyChart = () ->
     x0 = 0
     (d) ->
       tx = barTranslate(d, i)
-      x0 += x(d[valueAttr])
+      x0 += x(valueAccessor(d))
       tx
 
 
 
 
 
-  breadcrumbPath = (currentNode) ->
+  breadcrumbPath = (node) ->
     path = []
-    cur = currentNode
+    cur = node
     while cur?
       path.push cur
       cur = cur.parent 
@@ -216,10 +307,19 @@ this.barHierarchyChart = () ->
 
     
 
+  updateBreadcrumbCaption = (node) ->
+    ###
+    li.selectAll("li.total")
+    ###
+    caption = breadcrumb.select("div.caption")
+    #caption.select("div.title").text(node[nameAttr])
 
-  updateBreadcrumb = (currentNode) ->
+    caption.select("div.total").text(currentNodeDescription(node))
+
+
+  updateBreadcrumb = (node) ->
     
-    path = breadcrumbPath currentNode
+    path = breadcrumbPath node
 
     breadcrumbList = breadcrumb.select("ul")
     # enter
@@ -244,22 +344,15 @@ this.barHierarchyChart = () ->
 
     # update
     breadcrumbList.selectAll("li.node")
-      .classed("sel", (d) -> d == currentNode)
+      .classed("sel", (d) -> d == node)
 
     breadcrumbList.selectAll("li.node a")
       .attr("href", "#")
       .text((d) -> d[nameAttr])
       .on "click", (d, i) ->  
-        if (d != currentNode) then up(d.children[0])
+        if (d != node) then up(d.children[0])
 
-    ###
-    li.selectAll("li.total")
-    ###
-    caption = breadcrumb.select("div.caption")
-    #caption.select("div.title").text(currentNode[nameAttr])
-
-    caption.select("div.total").text(currentNodeDescription(currentNode))
-
+    updateBreadcrumbCaption(node)
 
     # remove
     li.exit().remove()
@@ -288,70 +381,8 @@ this.barHierarchyChart = () ->
     breadcrumbCaption.append("div").attr("class", "total")
 
 
-  initVis = (selection) ->
-    selection.attr("class", "barHierarchy")
-    initBreadcrumb(selection)
-
-    svg = selection
-      .append("svg")
-        .attr("width", width + margin.right + margin.left)
-        .attr("height", height + margin.top + margin.bottom)
-
-    vis = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
-    vis.append("rect")
-      .attr("class", "background")
-      .attr("width", width)
-      .attr("height", height)
-      .on("click", up)
-
-    vis.append("g").attr("class", "x axis")
-    vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
-
-
-
-  chart = (selection) ->
-    barSpacing = barHeight * 0.2
-    width = fullwidth - margin.right - margin.left
-    height = fullheight - margin.top - margin.bottom
-    x = d3.scale.linear().range([ 0, width ])
-
-
-    initVis(selection)
-    data = selection.datum()
-
-
-
-    xAxis = d3.svg.axis().scale(x)
-      .orient("top")
-      .ticks(3)
-      .tickFormat(valueFormat)
-
-    hierarchy.nodes(data)
-    x.domain([ 0, data[valueAttr] ]).nice()
-    down data, 0
-
-
-  chart.width = (_) -> if (!arguments.length) then fullwidth else fullwidth = _; chart
-
-  chart.height = (_) -> if (!arguments.length) then fullheight else fullheight = _; chart
-
-  chart.barHeight = (_) -> if (!arguments.length) then barHeight else barHeight = _; chart
-
-  chart.labelsWidth = (_) -> if (!arguments.length) then margin.left else margin.left = _; chart
-
-  chart.nameAttr = (_) -> if (!arguments.length) then nameAttr else nameAttr = _; chart
-
-  chart.childrenAttr = (_) -> if (!arguments.length) then childrenAttr else childrenAttr = _; chart
-
-  chart.valueAttr = (_) -> if (!arguments.length) then valueAttr else valueAttr = _; chart
-
-  chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
-
-  chart.currentNodeDescription = (_) -> if (!arguments.length) then currentNodeDescription else currentNodeDescription = _; chart
 
 
   chart
