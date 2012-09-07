@@ -373,8 +373,8 @@ this.barHierarchyChart = () ->
 
 
   updateBreadcrumb = (node) ->
-    
     path = breadcrumbPath node
+    console.log path
 
     breadcrumbList = breadcrumb.select("ul")
     # enter
@@ -404,8 +404,8 @@ this.barHierarchyChart = () ->
     breadcrumbList.selectAll("li.node a")
       .attr("href", "#")
       .text((d) -> d[nameAttr])
-      .on "click", (d, i) ->  
-        if (d != node) then up(d.children[0])
+      .on "click", (d, i) ->
+        if (i < path.length - 1) then up(path[i + 1]) #d.children[0])
 
     updateBreadcrumbCaption(node)
 
