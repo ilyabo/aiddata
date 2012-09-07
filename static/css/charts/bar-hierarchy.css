@@ -24,11 +24,14 @@
 
 .barHierarchy rect.bar {
   fill:#a1c0de;
+  stroke-width:0.3;
+  stroke:black;
+}
+.barHierarchy text.hasChildren {
+  font-weight: bold
 }
 .barHierarchy rect.bar.hasChildren {
   fill:#a1c0de;
-  stroke-width:1;
-  stroke:#999;
 }
 .barHierarchy rect.bar:hover {
   stroke:#B2182B; 

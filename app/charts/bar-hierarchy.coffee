@@ -37,14 +37,7 @@ this.barHierarchyChart = () ->
       valueAccessor
     else 
       valueAccessor = (if typeof _ is "function" then _ else (d) -> d[_])
-      if vis?
-        x.domain([ 0, d3.max(currentNode.children, valueAccessor ) ]).nice()
-        updateBreadcrumbCaption(currentNode)
-        vis.selectAll(".x.axis").transition().duration(50).call xAxis
-        vis.selectAll("rect")
-          .transition().duration(50)
-          .attr("width", (d) -> x(valueAccessor(d)))
-        vis.selectAll("g.barg").transition().duration(50).attr("transform", (d,i) -> stack(i))
+      if vis? then updateValues()
       chart
 
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
@@ -67,17 +60,69 @@ this.barHierarchyChart = () ->
   x = null
 
 
+  # update upon the change of the represented value (e.g. year)
+  updateValues = do ->
+
+    delay = 1000
+    duration = 500
+    shortDuration = 50
+
+    update = ->
+      # bar ordering
+      vis.selectAll("g.barg")
+        .sort(comparator)
+        .transition()
+          .duration(duration)
+          .attr("transform", barTranslate)
+
+      # x axis scale
+      x.domain([ 0, d3.max(currentNode.children, valueAccessor ) ]).nice()
+      vis.selectAll(".x.axis")
+        .transition()
+          .duration(duration)
+          .call xAxis
+
+      # bar widths in the new scale
+      vis.selectAll("rect")
+        .transition()
+          .duration(duration)
+          .attr("width", (d) -> x(valueAccessor(d)))
+
+    prev = 0
+
+    # only update if at least endTransitionDelay passed since the last value change
+    maybeUpdate = ->
+      if (Date.now() - prev >= delay) then update()
+      return true  # causes the timer to stop
+
+
+    ->
+      updateBreadcrumbCaption(currentNode)
+      vis.selectAll("rect")
+        .transition()
+          .duration(shortDuration)
+          .attr("width", (d) -> x(valueAccessor(d)))
+
+      prev = Date.now()
+      d3.timer maybeUpdate, delay
+
+
+
+
+    #bar(currentNode).transition().duration(duration).attr("transform", barTranslate)
+
 
   #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
   duration = 300
   delay = 25
 
-
+  comparator = (a,b) -> valueAccessor(b) - valueAccessor(a)
   hierarchy = d3.layout.partition()
     .value(valueAccessor)
     .children((d) -> d[childrenAttr])  # the sorted child list is stored in .children
                                        # thus .children is used further on
-    .sort((a,b) -> valueAccessor(b) - valueAccessor(a))
+    .sort(comparator)
+
 
   xAxis = null
 
@@ -141,33 +186,37 @@ this.barHierarchyChart = () ->
     end = duration + d.children.length * delay
     exit = vis.selectAll(".enter").attr("class", "exit")
     
-    exit.selectAll("rect").filter((p) -> p is d ).style "fill-opacity", 1e-6
+    exit.selectAll("rect")
+      .filter((p) -> p is d )
+      .style "fill-opacity", 1e-6
 
     enter = bar(d).attr("transform", stack(i))
       .style("opacity", 1)
     enter.select("text")
       .style("fill-opacity", 1e-6)
 
-    enter.select("rect")
-      .attr("class", "bar")
-      #.style "fill", z(true)
+    #enter.select("rect")
+    #  .attr("class", "bar")
+    #  .style "fill", z(true)
 
     x.domain([ 0, d3.max(d.children, valueAccessor ) ]).nice()
 
     vis.selectAll(".x.axis").transition().duration(duration).call xAxis
 
-    enterTransition = enter.transition()
-      .duration(duration)
-      .delay((d, i) -> i * delay)
-      .attr("transform", barTranslate)
+    enterTransition = enter
+      .sort(comparator)
+      .transition()
+        .duration(duration)
+        .delay((d, i) -> i * delay)
+        .attr("transform", barTranslate)
 
     enterTransition.select("text")
-      .attr("class", labelClass)
+      #.attr("class", labelClass)
       .style("fill-opacity", 1)
 
     enterTransition.select("rect")
       #.classed("bar", true)
-      .attr("class", barClass)
+      #.attr("class", barClass)
       .attr("width", (d) -> x(valueAccessor(d)))
       #.style("fill", (d) -> z(d.children?))
       #.classed("hasChildren", d.children?)
@@ -200,12 +249,13 @@ this.barHierarchyChart = () ->
     exit = vis.selectAll(".enter").attr("class", "exit")
     
     enter = bar(d.parent)
+      .sort(comparator)
       .attr("transform", barTranslate)
       .style("opacity", 1e-6)
 
 
     enter.select("rect")
-    .attr("class", barClass)
+    #.attr("class", barClass)
       #.style("fill", (d) -> z(!!d.children))
       .filter((p) -> p is d)
       .style "fill-opacity", 1e-6
@@ -214,13 +264,17 @@ this.barHierarchyChart = () ->
 
 
 
-    vis.selectAll(".x.axis").transition().duration(duration).call xAxis
+    vis.selectAll(".x.axis")
+      .transition()
+        .duration(duration)
+        .call xAxis
+
     enterTransition = enter.transition().duration(end).style("opacity", 1)
 
-    enterTransition.select("rect").attr("width", (d) ->
-      x(valueAccessor(d))
-    ).each "end", (p) ->
-      d3.select(this).style "fill-opacity", null  if p is d
+    enterTransition.select("rect")
+      .attr("width", (d) -> x(valueAccessor(d)))
+      .each "end", (p) -> d3.select(this).style "fill-opacity", null  if p is d
+
 
     exitTransition = exit.selectAll("g").transition().duration(duration).delay((d, i) ->
       i * delay
@@ -236,7 +290,7 @@ this.barHierarchyChart = () ->
     ###
 
     enterTransition.select("rect")
-      .attr("class", barClass)
+      #.attr("class", barClass)
       .attr("width", (d) -> x(valueAccessor(d)))
 
 
@@ -255,10 +309,10 @@ this.barHierarchyChart = () ->
         .attr("class", "enter")
         .attr("transform", "translate(0,5)")
       .selectAll("g")
-        .attr("class", "barg")
         .data(d.children)
           .enter()
-          .append("g")
+      .append("g")
+        .attr("class", "barg")
         .on("click", down)
         ###
         .style("cursor", (d) ->
@@ -270,14 +324,15 @@ this.barHierarchyChart = () ->
         .text(labelsTooltipFormat)
 
     b.append("text")
+      .attr("class", labelClass)
       .attr("x", -6)
       .attr("y", barHeight / 2)
       .attr("dy", ".35em")
       .attr("text-anchor", "end")
-      .attr("class", labelClass)
       .text(labelsFormat)
 
     b.append("rect")
+      .attr("class", barClass)
       .attr("x", 1)
       .attr("width", (d) -> x(valueAccessor(d)))
       .attr("height", barHeight)
