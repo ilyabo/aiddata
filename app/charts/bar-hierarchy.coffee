@@ -374,7 +374,6 @@ this.barHierarchyChart = () ->
 
   updateBreadcrumb = (node) ->
     path = breadcrumbPath node
-    console.log path
 
     breadcrumbList = breadcrumb.select("ul")
     # enter
