@@ -74,16 +74,18 @@
       .barHeight(10)
       .labelsWidth(200)
       .childrenAttr("values")
-      .nameAttr("key")
+      .nameAttr("name")
       .valueFormat(formatMagnitude)
       .values((d) -> d["sum_#{startYear}"] ? 0)
+      # .values((d) -> d.totals[startYear].sum ? 0)
+      #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
       .labelsFormat((d) ->
         name = d.name ? d.key
         if name.length > 35 then name = name.substr(0, 32) + "..."
         name
       )
       .labelsTooltipFormat((d) -> name = d.name ? d.key)
-      .currentNodeDescription(
+      .breadcrumbText(
         do ->
           percentageFormat = d3.format(",.2%")
           (currentNode) ->
@@ -139,11 +141,11 @@
         valueAttrs = do ->
           arr = []
           for y in years
-            for attr in ["sum"] #"count", "sum"]
+            for attr in ["sum", "count"]
               arr.push "#{attr}_#{y}"
           arr
 
-        utils.aiddata.purposes.provideWithTotals(data.purposeTree, valueAttrs, "values")
+        utils.aiddata.purposes.provideWithTotals(data.purposeTree, valueAttrs, "values", "totals")
 
         d3.select("#purposeBars")
           .datum(data.purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
@@ -326,7 +328,7 @@
         .valueAttr("amount")
         .nameAttr("key")
         .valueFormat(formatMagnitude)
-        .currentNodeDescription(
+        .breadcrumbText(
           (currentNode) ->
             data = currentNode; (data = data.parent) while data.parent?
             formatMagnitude(currentNode.amount) + " (" + 

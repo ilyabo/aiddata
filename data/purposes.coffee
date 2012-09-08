@@ -1,12 +1,14 @@
 _ = require "underscore"
 
+
+
 # For most purposes several different names exist
 # so we have to group them together
 @groupPurposesByCode = (purposes, codeAttr = "code", nameAttr = "name", totalAmountAttr = "total_amount", totalNumAttr = "total_num") ->
   nopunct = (s) -> s.replace(/[\s'\.,-:;]/g, "")
   unique = {}
   for r in purposes
-    if not r[codeAttr]? then r[codeAttr] = "00000"
+    if not r[codeAttr]? then r[codeAttr] = "99000"  # put it in Unallocated/Unspecified
     if not r[nameAttr]? then r[nameAttr] = "Unknown"
 
     r[nameAttr] = r[nameAttr].trim()
@@ -120,3 +122,9 @@ _ = require "underscore"
       #when "332" then "Tourism"
 
   return purposes
+
+
+
+
+
+

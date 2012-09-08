@@ -6,7 +6,7 @@ this.barHierarchyChart = () ->
   valueAccessor = (d) -> d["value"]
   valueFormat = d3.format(",.0f")
   width = height = null
-  currentNodeDescription = (d) -> d[nameAttr]
+  breadcrumbText = (d) -> d[nameAttr]
   barHeight = 12
   barSpacing = null
   labelsFormat = (d) -> d[nameAttr]
@@ -42,7 +42,7 @@ this.barHierarchyChart = () ->
 
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
 
-  chart.currentNodeDescription = (_) -> if (!arguments.length) then currentNodeDescription else currentNodeDescription = _; chart
+  chart.breadcrumbText = (_) -> if (!arguments.length) then breadcrumbText else breadcrumbText = _; chart
 
   currentNode = null
   data = null
@@ -369,7 +369,7 @@ this.barHierarchyChart = () ->
     caption = breadcrumb.select("div.caption")
     #caption.select("div.title").text(node[nameAttr])
 
-    caption.select("div.total").text(currentNodeDescription(node))
+    caption.select("div.total").text(breadcrumbText(node))
 
 
   updateBreadcrumb = (node) ->

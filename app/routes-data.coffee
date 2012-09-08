@@ -2,6 +2,7 @@
 
 
   _ = require 'underscore'
+  fs = require 'fs'
   d3 = require 'd3'
   csv = require 'csv'
   queue = require 'queue-async'
@@ -12,6 +13,7 @@
   pu = require '../data/purposes'
   aidutils = require './frontend/utils-aiddata'
   caching = require './caching-loader'
+
 
 
   getFlows = caching.loader { preload : true }, (callback) ->
@@ -30,39 +32,66 @@
 
   getPurposeTree = caching.loader { preload : true }, (callback) ->
 
-    pg.sql "select
+    queue()
+      .defer((cb) ->
+        fs.readFile 'data/static/data/purpose-categories.json', (err, result) ->
+          result = JSON.parse(result) unless err?
+          cb(err, result)
+      )
+      .defer(
+        pg.sql 
+          "select
               distinct(coalesced_purpose_code) as code,
               coalesced_purpose_name as name
             from aiddata2
-            order by coalesced_purpose_name
-          ",
-      (err, data) =>
-        if err? callback err
+            order by coalesced_purpose_name"
+      )
+      .await (err, results) =>
+        if err? then callback(err)
         else
+          [ cats, { 'rows': purposes } ] = results
 
-          nested = d3.nest()
-            .key((p) -> p.category)
-            .key((p) -> p.subcategory)
-            .key((p) -> p.subsubcategory)
-            #.key((p) -> p.name)
-            .rollup((ps) -> 
-              #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
-              ps.map (p) ->
-                key : p.code
-                name : p.name
-            )
-            .entries(
-              pu.provideWithPurposeCategories(
-                pu.groupPurposesByCode(data.rows)
-              )
-            )
+          # insert purpose into the tree of the categories
+          # by so that the purpose code corresponds to the prefix
+          insert = (p, tree) ->
+            if tree.values?
+              for e in tree.values
+                if p.code?.indexOf(e.code) is 0  # startsWith
+                  return insert(p, e)
 
-          data = aidutils.utils.aiddata.purposes.removeSingleChildNodes {
-            key : "AidData"
-            values : nested
-          }
+            tree.values ?= []
+            tree.values.push { name:p.name, code:p.code }
+            tree
 
-          callback null, data
+
+
+          insert(p, cats) for p in pu.groupPurposesByCode purposes
+
+          callback(null, cats)
+
+
+          # cats = pu.provideWithPurposeCategories pu.groupPurposesByCode data.rows
+
+          # nested = d3.nest()
+          #   .key((p) -> p.category)
+          #   .key((p) -> p.subcategory)
+          #   #.key((p) -> p.subsubcategory)
+          #   #.key((p) -> p.name)
+          #   # .rollup((ps) -> 
+          #   #   #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
+          #   #   ps.map (p) ->
+          #   #     key : p.code
+          #   #     name : p.name
+          #   # )
+          #   .entries(cats)
+
+          # data = aidutils.utils.aiddata.purposes.removeSingleChildNodes {
+          #   key : "AidData"
+          #   values : nested
+          # }
+
+
+          #callback null, data
 
 
 
@@ -210,26 +239,27 @@
           [ purposeTree, flowsByPurpose ] = results
 
           # provide the leaves (not the parent nodes!) with totals
+
           recurse = (tree) ->
             unless tree.values?
               # leaf nodes
-              tree =   
-                key : tree.key
+              t =   
+                key : tree.code
                 name : tree.name
-                #totals : flowsByPurpose[tree.key]
+                #totals : flowsByPurpose[tree.code]
 
               # flatten sum and count attrs to simplify "provideWithTotals"
-              for date, vals of flowsByPurpose[tree.key]
+              for date, vals of flowsByPurpose[tree.code]
                 for name, v of vals
-                  tree["#{name}_#{date}"] = v
+                  t["#{name}_#{date}"] = v
 
             else
-              tree =
-                key : tree.key
+              t =
+                #key : tree.code
                 name : tree.name
                 values : (recurse(n) for n in tree.values)
 
-            tree
+            t
 
           # the tree is deeply cloned 
           # so that the tree in the cache stays intact
@@ -377,7 +407,7 @@
               END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipientcode, 
               to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
                 AS sum_amount_usd_constant, 
-              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
+              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose_code
          FROM aiddata2  --limit 5
       """, (err, data) =>
         unless err?
@@ -405,49 +435,49 @@
 
 
 
-  @get '/flows.json': ->
-    pg.sql """
-       SELECT 
-              --aiddata2.year, 
-              to_char(COALESCE(commitment_date,  
-                      start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY'  --'YYYYMM' 
-              ) as date,
-              COALESCE(
-              CASE aiddata2.donorcode
-                  WHEN '' THEN aiddata2.donor
-                  ELSE aiddata2.donorcode
-              END, "substring"(aiddata2.donor, "position"(aiddata2.donor, '('))) AS donorcode, 
-              COALESCE(
-              CASE aiddata2.recipientcode
-                  WHEN '' THEN aiddata2.recipient
-                  ELSE aiddata2.recipientcode
-              END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipientcode, 
-              to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
-                AS sum_amount_usd_constant, 
-              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
-         FROM aiddata2  
+  # @get '/flows.json': ->
+  #   pg.sql """
+  #      SELECT 
+  #             --aiddata2.year, 
+  #             to_char(COALESCE(commitment_date,  
+  #                     start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY'  --'YYYYMM' 
+  #             ) as date,
+  #             COALESCE(
+  #             CASE aiddata2.donorcode
+  #                 WHEN '' THEN aiddata2.donor
+  #                 ELSE aiddata2.donorcode
+  #             END, "substring"(aiddata2.donor, "position"(aiddata2.donor, '('))) AS donorcode, 
+  #             COALESCE(
+  #             CASE aiddata2.recipientcode
+  #                 WHEN '' THEN aiddata2.recipient
+  #                 ELSE aiddata2.recipientcode
+  #             END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipientcode, 
+  #             to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
+  #               AS sum_amount_usd_constant, 
+  #             COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code) AS purpose_code
+  #        FROM aiddata2  
          
-         --limit 50
+  #        --limit 50
 
-      """, (err, data) =>
-        unless err?
+  #     """, (err, data) =>
+  #       unless err?
 
-          flows = d3.nest()
-            .key((r) -> r.donorcode)
-            .key((r) -> r.recipientcode)
-            .key((r) -> +r.date)
-            .key((r) -> r.purpose_code)
-            .rollup((list) -> 
-                if list.length == 1
-                  +list[0].sum_amount_usd_constant
-                else
-                  list.map (r) -> +r.sum_amount_usd_constant
-            )
-            .map(data.rows)
-          @send flows
+  #         flows = d3.nest()
+  #           .key((r) -> r.donorcode)
+  #           .key((r) -> r.recipientcode)
+  #           .key((r) -> +r.date)
+  #           .key((r) -> r.purpose_code)
+  #           .rollup((list) -> 
+  #               if list.length == 1
+  #                 +list[0].sum_amount_usd_constant
+  #               else
+  #                 list.map (r) -> +r.sum_amount_usd_constant
+  #           )
+  #           .map(data.rows)
+  #         @send flows
 
-        else
-          @next(err)
+  #       else
+  #         @next(err)
 
 
 
