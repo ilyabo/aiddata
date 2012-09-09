@@ -231,12 +231,11 @@ this.bubblesChart = ->
 
 
     state = initFlowData(conf)
-    state.selMagnAttrGrp = d3.keys(conf.flowMagnAttrs)[0]
     state.selAttrIndex = 0 # state.magnAttrs().length - 7  # state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
-    maxTotalMagnitudes = state.totalsMax[state.selMagnAttrGrp]
+    maxTotalMagnitudes = state.totalsMax
     maxTotalMagnitude = Math.max(
           d3.max(maxTotalMagnitudes.inbound), 
           d3.max(maxTotalMagnitudes.outbound))
@@ -274,7 +273,7 @@ this.bubblesChart = ->
 
 
     hasFlows = (node, flowDirection) -> 
-      totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
+      totals = node.totals?[flowDirection]
       (if totals? then d3.max(totals) > flowMagnitudeThreshold else false)
 
     nodesWithFlows = data.nodes.filter(
@@ -288,8 +287,8 @@ this.bubblesChart = ->
     nodes = nodesWithFlows.map (d) ->
       xy = projectNode(d)
 
-      maxin = d3.max(d.totals[state.selMagnAttrGrp].inbound ? [0])
-      maxout = d3.max(d.totals[state.selMagnAttrGrp].outbound ? [0])
+      maxin = d3.max(d.totals.inbound ? [0])
+      maxout = d3.max(d.totals.outbound ? [0])
 
       idToNode[d[conf.nodeIdAttr]] =
         data : d
@@ -325,6 +324,7 @@ this.bubblesChart = ->
       idToNode[id]
 
     links = []
+
     data.flows.forEach (f) ->
       src = nodeById(f[conf.flowOriginAttr])
       target = nodeById(f[conf.flowDestAttr])
@@ -480,8 +480,8 @@ this.bubblesChart = ->
     createNodeTimeSeries = (node, d, i) ->
       data = state.magnAttrs().map (attr, i) -> 
           date: dateFromMagnAttr(attr)
-          inbound: d.data.totals[state.selMagnAttrGrp]?.inbound?[i] ? 0
-          outbound: d.data.totals[state.selMagnAttrGrp]?.outbound?[i] ? 0
+          inbound: d.data.totals?.inbound?[i] ? 0
+          outbound: d.data.totals?.outbound?[i] ? 0
 
       if not tseriesPanel.contains("node" + i)
         tseries = tseriesPanel.addNew("node" + i, "tseries")
@@ -676,8 +676,8 @@ this.bubblesChart = ->
   updateNodeSizes = ->
     for n in nodes
       d = n.data
-      n.inbound = d.totals[state.selMagnAttrGrp].inbound?[state.selAttrIndex] ? 0
-      n.outbound = d.totals[state.selMagnAttrGrp].outbound?[state.selAttrIndex] ? 0
+      n.inbound = d.totals.inbound?[state.selAttrIndex] ? 0
+      n.outbound = d.totals.outbound?[state.selAttrIndex] ? 0
       n.rin = rscale(n.inbound)
       n.rout = rscale(n.outbound)
       n.r = Math.max(n.rin, n.rout)

@@ -12,17 +12,12 @@ root.utils.date =
 
 
 root.initFlowData = (conf) ->
-  state = 
-    selMagnAttrGrp : d3.keys(conf.flowMagnAttrs)[0]
+  state = {}
 
-  state.magnAttrs = (i) ->
-      magnAttrs = conf.flowMagnAttrs[state.selMagnAttrGrp]
-      if (i?) then magnAttrs.attrs[i] else magnAttrs.attrs
-  
+  state.magnAttrs = (i) -> if (i?) then conf.flowMagnAttrs[i] else conf.flowMagnAttrs    
   state.selMagnAttr = -> state.magnAttrs(state.selAttrIndex)
-
   state.numMagnAttrs = -> state.magnAttrs().length
-  state.maxTotalMagnitude = -> state.totalsMax[state.selMagnAttrGrp].max
+  state.maxTotalMagnitude = -> state.totalsMax.max
 
   state
 
@@ -150,31 +145,28 @@ root.provideNodesWithTotals =
     (data, conf) ->
       max = 0
       totals = {}
+      
       for flow in data.flows
+
         origin = flow[conf.flowOriginAttr]
         dest = flow[conf.flowDestAttr]
+        
+        o = totals[origin] ?= {}
+        d = totals[dest] ?= {}
 
-        totals[origin] ?= {}
-        totals[dest] ?= {}
+        o.outbound ?= []
+        d.inbound ?= []
 
-        for attrGroup, props of conf.flowMagnAttrs
-          
-          o = totals[origin][attrGroup] ?= {}
-          d = totals[dest][attrGroup] ?= {}
+        for attr,i in conf.flowMagnAttrs
+          o.outbound[i] ?= 0
+          d.inbound[i] ?= 0
 
-          o.outbound ?= []
-          d.inbound ?= []
-
-          for attr,i in props.attrs
-            o.outbound[i] ?= 0
-            d.inbound[i] ?= 0
-
-            magnitude = asNumber(flow[attr])
-            unless isNaN(magnitude)
-              o.outbound[i] += magnitude
-              d.inbound[i] += magnitude
-              if (o.outbound[i] > max) then max = o.outbound[i]
-              if (d.inbound[i] > max) then max = d.inbound[i]
+          magnitude = asNumber(flow[attr])
+          unless isNaN(magnitude)
+            o.outbound[i] += magnitude
+            d.inbound[i] += magnitude
+            if (o.outbound[i] > max) then max = o.outbound[i]
+            if (d.inbound[i] > max) then max = d.inbound[i]
 
       for node in data.nodes
         nodeId = node[conf.nodeIdAttr]
@@ -184,17 +176,17 @@ root.provideNodesWithTotals =
 root.calcMaxTotalMagnitudes = (data, conf) ->
     # max of totals
     totalsMax = {}
-    for attrGroup, props of conf.flowMagnAttrs
-      max = (dir, attr) -> ( 
-        d3.max(data.nodes, (node) -> node.totals?[attrGroup][dir]?[attr]) 
-      )
-      
-      max_out = (max('outbound', attr)  for attr of props.attrs)
-      max_in = (max('inbound', attr)  for attr of props.attrs)
 
-      totalsMax[attrGroup] =
-        outbound : max_out
-        inbound : max_in
-        max : Math.max(d3.max(max_out), d3.max(max_in))
+    max = (dir, attr) -> ( 
+      d3.max(data.nodes, (node) -> node.totals?[dir]?[attr]) 
+    )
+    
+    max_out = (max('outbound', attr)  for attr of conf.flowMagnAttrs)
+    max_in = (max('inbound', attr)  for attr of conf.flowMagnAttrs)
+
+    totalsMax =
+      outbound : max_out
+      inbound : max_in
+      max : Math.max(d3.max(max_out), d3.max(max_in))
     
     totalsMax

@@ -28,7 +28,7 @@ this.ffprintsChart = () ->
   mapProjPath = d3.geo.path().projection(mapProj)
   mapTitles = ["Origins", "Destinations"]
 
-  tooltipText = (value, nodeData, magnAttr, flowDirection, magnAttrGroup) ->
+  tooltipText = (value, nodeData, magnAttr, flowDirection) ->
     nodeData[conf.nodeLabelAttr] + ' in ' + magnAttr + ': <br>' + fmt(value)
  
 
@@ -97,7 +97,7 @@ this.ffprintsChart = () ->
 
     ndata = (fp) -> d3.select(fp.parentNode.parentNode).data()[0].data
 
-    totalsValues = (ndata) -> ndata.totals[state.selMagnAttrGrp][flowDirection]
+    totalsValues = (ndata) -> ndata.totals[flowDirection]
 
     totalsValueByAttr = (ndata, magnAttr) -> totalsValues(ndata)[state.magnAttrs().indexOf(magnAttr)]
 
@@ -383,7 +383,7 @@ this.ffprintsChart = () ->
 
       nodesWithFlows = data.nodes.filter(
         (node) -> 
-          totals = node.totals?[state.selMagnAttrGrp]?[flowDirection]
+          totals = node.totals?[flowDirection]
           (if totals? then d3.max(totals) > 0 else 0)
       )
 
@@ -452,8 +452,8 @@ this.ffprintsChart = () ->
           .sort((a,b) -> 
             # TODO: calc max vals in calcMaxTotalMagnitudes
             # and store in the nodesto improve performance
-            d3.max(a.data.totals[state.selMagnAttrGrp][flowDirection]) >
-            d3.max(b.data.totals[state.selMagnAttrGrp][flowDirection])
+            d3.max(a.data.totals[flowDirection]) >
+            d3.max(b.data.totals[flowDirection])
           )
           .append('g')
             .attr('class', 'node4scale')
@@ -633,7 +633,7 @@ this.ffprintsChart = () ->
           nd = ndata(this)
           magnAttr = d3.select(this).data()[0]
           value = totalsValueByAttr(nd, magnAttr)
-          tooltipText(value, nd, magnAttr, flowDirection, state.selMagnAttrGrp)
+          tooltipText(value, nd, magnAttr, flowDirection)
       })
 
 
@@ -672,7 +672,7 @@ this.ffprintsChart = () ->
             .attr('fill', (d, i) ->
               magnitudes = getMagnitudes(ndata(this))
               magnitudeColor(
-                if magnitudes? then magnitudes[state.selMagnAttrGrp][i] else 0
+                if magnitudes? then magnitudes[i] else 0
               )
             )
 
@@ -833,15 +833,13 @@ this.ffprintsChart = () ->
 
     for node in data.nodes
       nodeId = node[conf.nodeIdAttr]
-      totals = {}
-      for attrGroup, props of conf.flowMagnAttrs
-        totals[attrGroup] =
-          outbound: []
-          inbound: []
-        for attr, i in props.attrs
-          # TODO: different totals for different attrGroup should be used
-          totals[attrGroup].outbound[i] = +originTotals[nodeId]?[attr] ? 0
-          totals[attrGroup].inbound[i] = +destTotals[nodeId]?[attr] ? 0
+      totals =
+        outbound: []
+        inbound: []
+      for attr, i in conf.flowMagnAttrs
+        # TODO: different totals for different  should be used
+        totals.outbound[i] = +originTotals[nodeId]?[attr] ? 0
+        totals.inbound[i] = +destTotals[nodeId]?[attr] ? 0
 
       node.totals = totals
 
@@ -867,12 +865,12 @@ this.ffprintsChart = () ->
       flowsTree = d3.nest()
         .key((d) -> d[conf.flowOriginAttr])
         .key((d) -> d[conf.flowDestAttr])
-        .rollup((d) -> 
-          groups = {}
-          for attrGrp, attrs of conf.flowMagnAttrs
-            groups[attrGrp] = attrs.attrs.map((attr) -> +d[0][attr])
-          groups
-        )
+        # .rollup((d) -> 
+        #   groups = {}
+        #   for attrGrp, attrs of conf.flowMagnAttrs
+        #     groups[attrGrp] = attrs.attrs.map((attr) -> +d[0][attr])
+        #   groups
+        # )
         .map(data.flows)
 
     else
@@ -882,7 +880,7 @@ this.ffprintsChart = () ->
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
-    #totalsValues = makeNodeTotalsValuesList(data.nodes, state.selMagnAttrGrp)
+    #totalsValues = makeNodeTotalsValuesList(data.nodes, )
     # TODO: configurable color scale
 
     maxTotal = state.maxTotalMagnitude()

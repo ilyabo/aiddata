@@ -26,10 +26,7 @@ chart =
 
       return "<span class=sm>#{nodeData.name}</span><br>#{deed} in <b>#{year}</b><br>#{amount}"
     )
-    .flowMagnitudeAttrs
-      aid:
-        attrs: [1947..2011],
-        explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
+    .flowMagnitudeAttrs([1947..2011])
 
 $(document).ready ->
   #$("#useGeoNodePositions").button('toggle')

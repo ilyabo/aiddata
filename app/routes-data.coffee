@@ -101,12 +101,23 @@
     getFlows (err, table) => 
       if err? then @next err
       else
-        data = table.aggregate()
+        agg = table.aggregate()
           .sparse()
           .by("date", "donorcode", "recipientcode")
           .sum("sum_amount_usd_constant")
           .count()
-          .columns()
+
+        if @query.purpose?
+          purpose = @query.purpose
+
+          re = /^[0-9]{1,5}$/
+          if (purpose? and not re.test purpose)
+            @send { err: "Bad purpose" }
+            return
+
+          agg.where((get) -> get("purpose_code").indexOf(purpose) == 0)
+
+        data = agg.columns()
 
         @response.write "#{col for col of data}\n"
         csv()

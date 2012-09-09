@@ -62,10 +62,7 @@
         nodeLabelAttr: 'name'
         latAttr: 'Lat'
         lonAttr: 'Lon'
-        flowMagnAttrs:
-          aid:
-            attrs: years
-            explain: 'In #attr# there were #magnitude# ... from #origin# in #dest#'
+        flowMagnAttrs: years
         )
       .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
 
@@ -112,11 +109,9 @@
     loadData()
       .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
       .csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
-      #.csv('originTotals', "#{dynamicDataPath}aiddata-donor-totals.csv")
-      #.csv('destTotals', "#{dynamicDataPath}aiddata-recipient-totals.csv")
+      #.csv('flows', "dv/flows/by/od.csv")
       .json('map', "data/world-countries.json")
       .csv('countries', "data/aiddata-countries.csv")
-      #.csv('purposes', "aiddata-purposes-with-totals.csv/2007")
       .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
       .json('purposeTree', "purposes-with-totals.json")
       .onload (data) ->
@@ -216,10 +211,11 @@
     div id: 'loading', style:'margin-top:20px', -> "Loading view..."
     div id: 'ffprints', style:'margin-top:20px'
 
+    script src: 'libs/chroma/chroma.min.js'
+    script src: 'libs/chroma/chroma.colors.js'
     script src: 'js/fit-projection.js'
     script src: 'coffee/ffprints.js'
     script src: 'coffee/utils.js'
-    script src: 'libs/chroma/chroma.min.js'
 
     script src: "coffee/ffprints-#{@dataset}.js"
     
