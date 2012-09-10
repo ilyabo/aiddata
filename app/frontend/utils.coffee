@@ -22,6 +22,12 @@ root.initFlowData = (conf) ->
   state
 
 
+root.shorten = (str, maxlength) ->
+  if str.length > maxlength
+    str.substr(0, maxlength-2) + "..."
+  else
+    str
+
 
 root.isNumber = (n) ->
     !isNaN(parseFloat(n))  and  isFinite(n)

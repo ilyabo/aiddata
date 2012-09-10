@@ -147,8 +147,8 @@ fmt = d3.format(",.0f")
 
 
 
-    provideWithTotalAmounts : (tree) ->
-      provideWithTotals ["amount"], "values"
+    provideWithTotalAmount : (tree) ->
+      utils.aiddata.purposes.provideWithTotals ["amount"], "values"
 
 
       

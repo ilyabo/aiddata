@@ -325,7 +325,7 @@ this.bubblesChart = ->
 
     links = []
 
-    data.flows.forEach (f) ->
+    for f in data.flows
       src = nodeById(f[conf.flowOriginAttr])
       target = nodeById(f[conf.flowDestAttr])
       if src? and target?

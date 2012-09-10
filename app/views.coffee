@@ -66,6 +66,7 @@
         )
       .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
 
+
     barHierarchy = barHierarchyChart()
       .width(400)
       .barHeight(10)
@@ -76,11 +77,7 @@
       .values((d) -> d["sum_#{startYear}"] ? 0)
       # .values((d) -> d.totals[startYear].sum ? 0)
       #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
-      .labelsFormat((d) ->
-        name = d.name ? d.key
-        if name.length > 35 then name = name.substr(0, 32) + "..."
-        name
-      )
+      .labelsFormat((d) -> shorten(d.name ? d.key, 35))
       .labelsTooltipFormat((d) -> name = d.name ? d.key)
       .breadcrumbText(
         do ->
@@ -92,6 +89,26 @@
             percentageFormat(v(currentNode) / v(data)) + " of total)"
       )
 
+
+    groupFlowsByOD = (flowList) -> 
+      nested = d3.nest()
+        .key((d) -> d.donorcode)
+        .key((d) -> d.recipientcode)
+        .key((d) -> d.date)
+        .entries(flowList)
+
+      flows = []
+      for o in nested
+        for d in o.values
+          entry =
+            donor : o.key
+            recipient : d.key
+
+          for val in d.values
+            entry[val.key] = val.values[0].sum_amount_usd_constant
+
+          flows.push entry
+      flows
 
 
     timeSlider = timeSliderControl()
@@ -105,16 +122,20 @@
         bubbles.setSelDateTo(current, true)
         barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
 
-
     loadData()
       .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
-      .csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
-      #.csv('flows', "dv/flows/by/od.csv")
+      #.csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
+      .csv('flows', "dv/flows/by/od.csv")
       .json('map', "data/world-countries.json")
       .csv('countries', "data/aiddata-countries.csv")
       .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
       .json('purposeTree', "purposes-with-totals.json")
       .onload (data) ->
+
+
+        # list of flows with every year separated
+        #   -> list grouped by o/d, all years' values in one object
+        data.flows = groupFlowsByOD data.flows 
 
         provideCountryNodesWithCoords(
           data.nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
@@ -177,8 +198,9 @@
     script src: 'js/cubism.v1.my.js'
     script src: 'coffee/utils.js'
     #script src: 'js/cubism-aiddata.js'
-    script src: 'coffee/horizon-aiddata.js'
     script src: 'libs/chroma/chroma.min.js'
+    script src: 'libs/chroma/chroma.colors.js'
+    script src: 'coffee/horizon-aiddata.js'
 
 
 
