@@ -44,14 +44,14 @@ d3.json "data/cached/flows.json", (data) ->
 
   console.log "unnesting"
   flows = unnest(data)
-  console.log flows.length
+  #console.log flows.length
 
   data = null # let it be garbage collected
 
 
   maxAmount = d3.max(flows, (d) -> d.amount)
   dateExtent =  [parseDate(1947), new Date()] # d3.extent(flows, (d) -> d.date)
-  console.log "maxAmount= #{maxAmount}"
+  #console.log "maxAmount= #{maxAmount}"
 
 
   formatNumber = d3.format(",d")
