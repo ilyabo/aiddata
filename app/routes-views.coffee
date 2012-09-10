@@ -2,6 +2,8 @@
 
   @get '/': -> @render 'bubbles': {layout: 'bootstrap.eco'}
 
+  @get '/breaknsplit': -> @render breaknsplit: {layout: 'bootstrap.eco'}
+
   @get '/ffprints': -> @render ffprints: {layout: 'bootstrap.eco'}
 
   @get '/bubbles': -> @render bubbles: {layout: 'bootstrap.eco'}
@@ -21,7 +23,6 @@
   @get '/purpose-pack': -> @render purposePack: {layout: 'bootstrap.eco'}
 
   @get '/purpose-bars': -> @render purposeBars: {layout: 'bootstrap.eco'}
-
 
   @get '/us-donations': -> @render "us-donations": {layout: 'bootstrap.eco'}
 

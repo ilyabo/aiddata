@@ -1,5 +1,31 @@
 @include = ->
 
+
+  ############# break and split ###############
+
+  @view breaknsplit : ->
+
+
+    style '@import url("css/charts/time-series.css");'
+    script src: 'coffee/charts/time-series.js'
+    script src: 'coffee/utils.js'
+    script src: 'breaknsplit.js'
+
+    div id:"loading", -> "Loading..."
+
+
+  @coffee '/breaknsplit.js': ->
+
+    loadData()
+      .csv('flows', "dv/flows/by/od.csv")
+      .onload (data) ->
+
+        $("#loading").remove()
+
+
+
+
+
   
   ############# bubbles ###############
 
@@ -92,8 +118,8 @@
 
     groupFlowsByOD = (flowList) -> 
       nested = d3.nest()
-        .key((d) -> d.donorcode)
-        .key((d) -> d.recipientcode)
+        .key((d) -> d.donor)
+        .key((d) -> d.recipient)
         .key((d) -> d.date)
         .entries(flowList)
 

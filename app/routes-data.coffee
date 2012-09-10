@@ -20,10 +20,10 @@
 
     columns = 
       date : "ordinal"
-      donorcode : "nominal"
-      recipientcode : "nominal"
+      donor : "nominal"
+      recipient : "nominal"
       sum_amount_usd_constant : "numeric"
-      purpose_code : "nominal"
+      purpose : "nominal"
 
     dv.loadFromCsv '../data/static/data/cached/flows.csv', columns, callback
 
@@ -96,6 +96,68 @@
 
 
 
+  @get '/dv/flows/breaknsplit.csv': ->
+    getFlows (err, table) => 
+      if err? then @next err
+      else
+
+        agg = table.aggregate()
+          .sparse()
+          .sum("sum_amount_usd_constant")
+          .count()
+
+
+        breakby = ["date"]
+
+        if @query.breakby
+          for b in @query.breakby.split(",")
+            unless b in ["donor", "recipient", "purpose"]
+              @send { err: "Bad breakby" }
+              return
+
+            breakby.push b
+
+        agg.by.apply(this, breakby)
+
+
+        if @query.purpose?
+          purpose = @query.purpose
+          if (purpose? and not /^[0-9]{1,5}$/.test purpose)
+            @send { err: "Bad purpose" }
+            return
+
+        if @query.origin? or @query.dest?
+          [origin, dest] = [@query.origin, @query.dest]
+
+          re = /^[A-Za-z\-0-9\(\)]{2,10}$/
+          if (origin? and not re.test origin) or (dest and not re.test dest)
+            @send { err: "Bad origin/dest" }
+            return
+
+        if origin? or dest? or purpose?
+          agg.where((get) -> 
+            (not(origin) or get("donor") is origin) and 
+            (not(dest) or get("recipient") is dest) and
+            (not(purpose) or get("purpose").indexOf(purpose) == 0)
+          )
+
+
+
+
+        data = agg.columns()
+
+        @response.write "#{col for col of data}\n"
+        csv()
+          .from(data.date)
+          .toStream(@response)
+          .transform (d, i) -> vals[i] for col,vals of data
+
+
+
+
+
+
+
 
   @get '/dv/flows/by/od.csv': ->
     getFlows (err, table) => 
@@ -103,7 +165,7 @@
       else
         agg = table.aggregate()
           .sparse()
-          .by("date", "donorcode", "recipientcode")
+          .by("date", "donor", "recipient")
           .sum("sum_amount_usd_constant")
           .count()
 
@@ -115,7 +177,7 @@
             @send { err: "Bad purpose" }
             return
 
-          agg.where((get) -> get("purpose_code").indexOf(purpose) == 0)
+          agg.where((get) -> get("purpose").indexOf(purpose) == 0)
 
         data = agg.columns()
 
@@ -138,10 +200,10 @@
       if err? then @next err
       else
         agg = table.aggregate().sparse()
-          .by("date", "purpose_code")
+          .by("date", "purpose")
           .sum("sum_amount_usd_constant")
           .as("sum_amount_usd_constant", "sum")
-          .as("purpose_code", "code")
+          .as("purpose", "code")
           .count()
 
         if @query.origin? or @query.dest?
@@ -153,7 +215,7 @@
             return
               
           agg.where((get) -> 
-            (not(origin) or get("donorcode") is origin) and (not(dest) or get("recipientcode") is dest)
+            (not(origin) or get("donor") is origin) and (not(dest) or get("recipient") is dest)
           )
 
 
@@ -204,10 +266,10 @@
       if err? then callback err
       else
         data = table.aggregate().sparse()
-          .by("date", "purpose_code")
+          .by("date", "purpose")
           .sum("sum_amount_usd_constant")
           .as("sum_amount_usd_constant", "sum")
-          .as("purpose_code", "code")
+          .as("purpose", "code")
           .count()
           .columns()
 
@@ -410,15 +472,15 @@
               CASE aiddata2.donorcode
                   WHEN '' THEN aiddata2.donor
                   ELSE aiddata2.donorcode
-              END, "substring"(aiddata2.donor, "position"(aiddata2.donor, '('))) AS donorcode, 
+              END, "substring"(aiddata2.donor, "position"(aiddata2.donor, '('))) AS donor, 
               COALESCE(
               CASE aiddata2.recipientcode
                   WHEN '' THEN aiddata2.recipient
                   ELSE aiddata2.recipientcode
-              END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipientcode, 
+              END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipient, 
               to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
                 AS sum_amount_usd_constant, 
-              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose_code
+              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose
          FROM aiddata2  --limit 5
       """, (err, data) =>
         unless err?

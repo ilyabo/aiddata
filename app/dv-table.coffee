@@ -61,10 +61,8 @@ improveDv = (table) ->
   columnIndex = (name) ->
     for col,index in table
       if col.name is name
-        console.log "columnIndex(#{name}) == #{index}"
         return index
-    console.warn "Column '#{name}' not found. Available columns: #{(c.name for c in table)}"
-    return null
+    throw new Error "Column '#{name}' not found. Available columns: #{(c.name for c in table)}"
 
   table.aggregate = ->
     query = table.query
