@@ -60,7 +60,9 @@ improveDv = (table) ->
 
   columnIndex = (name) ->
     for col,index in table
-      if col.name is name then return index
+      if col.name is name
+        console.log "columnIndex(#{name}) == #{index}"
+        return index
     console.warn "Column '#{name}' not found. Available columns: #{(c.name for c in table)}"
     return null
 
@@ -68,22 +70,23 @@ improveDv = (table) ->
     query = table.query
     dims = []
     vals = []
-    rcols = []
+    aggbycols = []
+    sumcols = []
     agg = {}
     where = null
     rename = {}
     agg.sparse = -> query = table.sparse_query; agg
-    agg.count = -> vals.push dv.count(); rcols.push("count"); agg
+    agg.count = -> vals.push dv.count(); sumcols.push("count"); agg
 
     agg.by = (cols...) -> 
       for c in cols
-        rcols.push c
+        aggbycols.push c
         dims.push(columnIndex(c))
       agg
 
     pushVals = (columns, fn) ->
       for c in columns
-        rcols.push c
+        sumcols.push c
         vals.push fn(columnIndex(c))
       agg
 
@@ -105,6 +108,7 @@ improveDv = (table) ->
     agg.columns = ->
       columnsData = query { dims: dims, vals: vals, where: where }
       data = {}
+      rcols = aggbycols.concat sumcols
       for d, i in columnsData
         col = rcols[i]
         col = rename[col] if rename[col]?
