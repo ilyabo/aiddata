@@ -29,7 +29,7 @@ console.log ">>>>>>>>>> Importing AidData >>>>>>>>>>"
 
 fs = require 'fs'
 os = require '../../os-utils'
-dbconf = require '../../.dbconf'
+dbconf = require '../../config'
 mongo = require '../../app/mongo'
 linereader = require './linereader'
 d3 = require 'd3'

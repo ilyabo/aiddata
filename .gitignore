@@ -1,4 +1,5 @@
 .DS_Store
+config.coffee
 .dbconf.coffee
 .googan.coffee
 node_modules/

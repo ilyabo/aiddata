@@ -1,6 +1,6 @@
 @include = ->
 
-  googan = require '../.googan'
+  config = require '../config'
 
   @view 'bootstrap.eco': '''
     <% @title = "AidData" %>
@@ -107,7 +107,7 @@
 
           </div> <!-- /container -->
 
-          ''' + googan.snippet + '''
+          ''' + config.visitorTrackingCode + '''
 
 
         </body>

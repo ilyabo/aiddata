@@ -2,7 +2,7 @@
 pg = require 'pg'
 fs = require 'fs'
 
-pgurl = require('../.dbconf').postgres
+pgurl = require('../config').postgres
 ###
 try
   pgurl = fs.readFileSync(".pgurl", "ascii")

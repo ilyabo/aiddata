@@ -1,4 +1,6 @@
-require('zappa').run 3000, ->
+config = require '../config'
+
+require('zappa').run config.port, ->
   
 
   express = require('express')

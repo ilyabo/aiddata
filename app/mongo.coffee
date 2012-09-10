@@ -1,5 +1,5 @@
 mongodb = require 'mongodb'
-conf = require('../.dbconf').mongodb
+conf = require('../config').mongodb
 
 
 open = (callback) ->
