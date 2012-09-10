@@ -1,5 +1,7 @@
 @include = ->
 
+  googan = require '../.googan'
+
   @view 'bootstrap.eco': '''
     <% @title = "AidData" %>
     <!DOCTYPE html>
@@ -104,6 +106,8 @@
             <%- @body %>
 
           </div> <!-- /container -->
+
+          ''' + googan.snippet + '''
 
 
         </body>
