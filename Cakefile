@@ -36,6 +36,7 @@ forever = (action, options) ->
   util.run "NODE_ENV=#{options.environment} " +
       "node_modules/forever/bin/forever #{action} -c coffee " +
       " --sourceDir ./" +
+      " --pidFile forever.pid "+
       " -l aiddata.log "+
       #" -o logs/aiddata.out "+
       #" -e logs/aiddata.err "+
