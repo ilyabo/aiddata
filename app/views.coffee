@@ -8,17 +8,47 @@
 
     style '@import url("css/charts/time-series.css");'
     script src: 'coffee/charts/time-series.js'
+    script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
     script src: 'breaknsplit.js'
 
     div id:"loading", -> "Loading..."
 
+    div id:"tseries", class:"tseries"
+
 
   @coffee '/breaknsplit.js': ->
 
     loadData()
-      .csv('flows', "dv/flows/by/od.csv")
+      .csv('flows', "dv/flows/breaknsplit.csv")
       .onload (data) ->
+
+
+        tschart = timeSeriesChart()
+          .width(500)
+          .height(300)
+          .title("AidData: Total commitment amount by year")
+          .valueTickFormat(shortMagnitudeFormat)
+
+
+        datum = []
+
+        minDate = d3.time.format("%Y").parse("1942")
+        maxDate = Date.now()
+
+        for d in data.flows
+
+          date = utils.date.yearToDate(d.date)
+          if date?  and  (minDate <= date <= maxDate)
+            datum.push
+              date : date
+              outbound : +d.sum_amount_usd_constant
+
+
+        d3.select("#tseries").datum(datum).call(tschart)
+
+        
+
 
         $("#loading").remove()
 

@@ -11,7 +11,26 @@ this.timeSeriesChart = ->
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
 
-  chart = (selection) ->
+  chart = (selection) -> init(selection)
+
+  chart.valueTickFormat = (_) -> if (!arguments.length) then valueTickFormat else valueTickFormat = _; chart
+
+  chart.width = (_) -> if (!arguments.length) then width else width = _; chart
+
+  chart.height = (_) -> if (!arguments.length) then height else height = _; chart
+
+  chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
+
+  chart.title = (_) -> if (!arguments.length) then title else title = _; chart
+
+  chart.selectDate = (date) ->
+    tg.selectAll("line.selDate")
+      .attr("x1", x(date))
+      .attr("x2", x(date))
+
+
+  init = (selection) -> 
+
     data = selection.datum()
 
     margin = {top: 28, right: 8, bottom: 14, left: marginLeft}
@@ -145,21 +164,6 @@ this.timeSeriesChart = ->
 
 
 
-
-  chart.valueTickFormat = (_) -> if (!arguments.length) then valueTickFormat else valueTickFormat = _; chart
-
-  chart.width = (_) -> if (!arguments.length) then width else width = _; chart
-
-  chart.height = (_) -> if (!arguments.length) then height else height = _; chart
-
-  chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
-
-  chart.title = (_) -> if (!arguments.length) then title else title = _; chart
-
-  chart.selectDate = (date) ->
-    tg.selectAll("line.selDate")
-      .attr("x1", x(date))
-      .attr("x2", x(date))
 
 
 
