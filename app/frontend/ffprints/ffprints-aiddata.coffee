@@ -30,7 +30,7 @@ chart =
 
 $(document).ready ->
   #$("#useGeoNodePositions").button('toggle')
-  $('#radioset').buttonset();
+  #$('#radioset').buttonset();
 
   useForce = ->
     chart.forceK  0.2  # $("#slider").slider("option", "value")

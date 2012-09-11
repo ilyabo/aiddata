@@ -15,8 +15,6 @@
 
           <!-- Le styles -->
           <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet">
-          <link href="libs/jquery-ui-bootstrap/css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet">
-          <link href="libs/tipsy-new/stylesheets/tipsy.css" rel="stylesheet">
           <link href="css/layout.css" rel="stylesheet">
 
           <style>
@@ -93,13 +91,12 @@
             </div>
           </div>
 
-          <script src="js/browser-check.js"></script>
-          <script src="d3.v2.js"></script>
-          <script src="libs/jquery/jquery-1.7.1.min.js"></script>
-          <script src="libs/tipsy-new/javascripts/jquery.tipsy.js"></script>
 
+
+          <script src="js/browser-check.js"></script>
+          <script src="libs/jquery/jquery-1.7.1.min.js"></script>
           <script src="libs/bootstrap/js/bootstrap.min.js"></script>
-          <script src="libs/jquery-ui-bootstrap/js/jquery-ui-1.8.16.custom.min.js"></script>
+          <script src="d3.v2.js"></script>
 
           <div class="container">
 

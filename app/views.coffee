@@ -7,22 +7,63 @@
 
 
     style '@import url("css/charts/time-series.css");'
+    style '@import url("css/breaknsplit.css");'
     script src: 'coffee/charts/time-series.js'
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
+    script src: 'queue.js'
     script src: 'breaknsplit.js'
 
     div id:"loading", -> "Loading..."
+    div id:"error"
+    div id:"content", ->
 
-    div id:"tseries", class:"tseries"
+
+
+      div id:"outerTop", ->
+
+        div class:"row-fluid", ->
+
+          div class:"span6", ->
+            div id:"tseries", class:"tseries"
+
+    
+
+          div class:"span6", ->
+
+            div class:"row-fluid", ->
+              div class:"span2 prophdr", ->
+                div "Donors"
+              div class:"span2 prophdr", ->
+                div "Recipients"
+              div class:"span2 prophdr", ->
+                div "Purposes"
+
+            div class:"row-fluid", ->              
+              div class:"span2 bnsctl", ->
+                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
+              div class:"span2 bnsctl", ->
+                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
+              div class:"span2 bnsctl", ->
+                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
+
 
 
   @coffee '/breaknsplit.js': ->
 
-    loadData()
-      .csv('flows', "dv/flows/breaknsplit.csv")
-      .onload (data) ->
+    queue()
+      .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date")
+      .defer(loadJson, "purposes.json")
+      .await (err, data) ->
+        console.log data
+        unless data?
+          $("#loading").remove()
+          $("#error")
+            .addClass("alert-error alert")
+            .html("Could not load flow data")
+          return
 
+        [ flows, purposes ] = data
 
         tschart = timeSeriesChart()
           .width(500)
@@ -30,13 +71,12 @@
           .title("AidData: Total commitment amount by year")
           .valueTickFormat(shortMagnitudeFormat)
 
-
         datum = []
 
         minDate = d3.time.format("%Y").parse("1942")
         maxDate = Date.now()
 
-        for d in data.flows
+        for d in flows
 
           date = utils.date.yearToDate(d.date)
           if date?  and  (minDate <= date <= maxDate)
@@ -51,6 +91,7 @@
 
 
         $("#loading").remove()
+        $("#content").show()
 
 
 
@@ -91,6 +132,8 @@
 
     div id:"timeSlider"
 
+    style '@import url("libs/tipsy-new/stylesheets/tipsy.css");'
+    script src: "libs/tipsy-new/javascripts/jquery.tipsy.js"
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
@@ -288,6 +331,9 @@
     #div id:'slider', style:'width:300px;display:inline-block; margin-left:20px; margin-top:7px;'
     div id: 'loading', style:'margin-top:20px', -> "Loading view..."
     div id: 'ffprints', style:'margin-top:20px'
+
+    style '@import url("libs/tipsy-new/stylesheets/tipsy.css");'
+    script src: "libs/tipsy-new/javascripts/jquery.tipsy.js"
 
     script src: 'libs/chroma/chroma.min.js'
     script src: 'libs/chroma/chroma.colors.js'
