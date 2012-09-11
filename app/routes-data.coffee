@@ -1,6 +1,5 @@
 @include = ->
 
-
   _ = require 'underscore'
   fs = require 'fs'
   d3 = require 'd3'
@@ -14,6 +13,11 @@
   aidutils = require './frontend/utils-aiddata'
   caching = require './caching-loader'
 
+  cachedFlowsFile = if @app.settings.env is "development"
+    "flows-sample.csv"
+  else
+    "flows.csv"
+
 
 
   getFlows = caching.loader { preload : true }, (callback) ->
@@ -25,7 +29,8 @@
       sum_amount_usd_constant : "numeric"
       purpose : "nominal"
 
-    dv.loadFromCsv '../data/static/data/cached/flows.csv', columns, callback
+
+    dv.loadFromCsv "../data/static/data/cached/#{cachedFlowsFile}", columns, callback
 
 
 
@@ -107,11 +112,11 @@
           .count()
 
 
-        breakby = ["date"]
+        breakby = []
 
         if @query.breakby
           for b in @query.breakby.split(",")
-            unless b in ["donor", "recipient", "purpose"]
+            unless b in ["date", "donor", "recipient", "purpose"]
               @send { err: "Bad breakby" }
               return
 
@@ -146,9 +151,12 @@
 
         data = agg.columns()
 
+        anykey = d3.keys(data)[0]
+        anycolumn = data[anykey]
+
         @response.write "#{col for col of data}\n"
         csv()
-          .from(data.date)
+          .from(anycolumn)
           .toStream(@response)
           .transform (d, i) -> vals[i] for col,vals of data
 
