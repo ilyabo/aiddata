@@ -72,9 +72,10 @@ this.bubblesChart = ->
     tschart = timeSeriesChart()
       .width(tseriesw)
       .height(tseriesh)
+      .dotRadius(1)
       .marginLeft(tseriesMarginLeft)
       .title(title)
-      .valueTickFormat(shortMagnitudeFormat)
+      .ytickFormat(shortMagnitudeFormat)
 
     d3.select(tseriesDiv).datum(data).call(tschart)
 

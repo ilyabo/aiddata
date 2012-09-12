@@ -1,7 +1,13 @@
+#loading { margin-top:0.8em; }
 #content { display:none; }
 #outerTop { }
 
-.prophdr { text-align: center; font-weight: bold; padding:5px 10px;}
-.bnsctl  { text-align:center; padding:0px 10px;  }
+#outerTop .hdr { text-align:left; font-weight: bold; padding-left:2px; padding-bottom:2px;}
+#outerTop .fltr  { text-align:left;  }
+
+
+#outerTop select { margin:2px; width:120px; height:270px; font-size:7pt; }
+
+/*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 
 #error { width:200px; }

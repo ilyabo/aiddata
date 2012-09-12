@@ -41,15 +41,24 @@
       .defer((cb) ->
         fs.readFile 'data/static/data/purpose-categories.json', (err, result) ->
           result = JSON.parse(result) unless err?
+          console.log "Purpose categories file loaded"
           cb(err, result)
       )
-      .defer(
-        pg.sql 
+      .defer((cb) ->
+        console.log "Loading category list from postgres..."
+        pg.sql(
           "select
               distinct(coalesced_purpose_code) as code,
               coalesced_purpose_name as name
             from aiddata2
-            order by coalesced_purpose_name"
+            order by coalesced_purpose_name", 
+            (err, data) ->
+              if err?
+                console.log "Category list couldn't be loaded: " + err
+              else
+                console.log "Category list loaded from postgres"
+              cb(err, data)
+        )
       )
       .await (err, results) =>
         if err? then callback(err)
@@ -72,6 +81,7 @@
 
           insert(p, cats) for p in pu.groupPurposesByCode purposes
 
+          console.log "Purpose tree was built"
           callback(null, cats)
 
 
@@ -112,42 +122,51 @@
           .count()
 
 
-        breakby = []
 
-        if @query.breakby
-          for b in @query.breakby.split(",")
-            unless b in ["date", "donor", "recipient", "purpose"]
-              @send { err: "Bad breakby" }
-              return
+        # if @query.breakby
+        #   breakby = @query.breakby.split(",")
+          
+        #   for b in breakby
+        #     unless b in ["date", "donor", "recipient", "purpose"]
+        #       @send { err: "Bad breakby" }
+        #       return
+        #     breakby.push b
 
-            breakby.push b
-
-        agg.by.apply(this, breakby)
+        #   agg.by.apply(this, breakby)
 
 
-        if @query.purpose?
-          purpose = @query.purpose
-          if (purpose? and not /^[0-9]{1,5}$/.test purpose)
-            @send { err: "Bad purpose" }
-            return
+        # if @query.purpose?
+        #   purpose = @query.purpose
+        #   if (purpose? and not /^[0-9]{1,5}$/.test purpose)
+        #     @send { err: "Bad purpose" }
+        #     return
 
-        if @query.origin? or @query.dest?
-          [origin, dest] = [@query.origin, @query.dest]
+        # #console.log @query.donor
+        # if @query.donor? or @query.recipient?
+        #   [donor, recipient] = [@query.donor, @query.recipient]
 
-          re = /^[A-Za-z\-0-9\(\)]{2,10}$/
-          if (origin? and not re.test origin) or (dest and not re.test dest)
-            @send { err: "Bad origin/dest" }
-            return
+        #   re = /^[A-Za-z\-0-9\(\)]{2,10}$/
+        #   if (donor? and not re.test donor) or (recipient and not re.test recipient)
+        #     @send { err: "Bad donor/recipient" }
+        #     return
 
-        if origin? or dest? or purpose?
+        # if donor? or recipient? or purpose?
+        #   agg.where((get) -> 
+        #     (not(donor) or get("donor") is donor) and 
+        #     (not(recipient) or get("recipient") is recipient) and
+        #     (not(purpose) or get("purpose").indexOf(purpose) == 0)
+        #   )
+
+
+        agg.by.apply(this, @query.breakby.split(","))
+
+        if @query.filter?
+          filter = JSON.parse @query.filter
           agg.where((get) -> 
-            (not(origin) or get("donor") is origin) and 
-            (not(dest) or get("recipient") is dest) and
-            (not(purpose) or get("purpose").indexOf(purpose) == 0)
+            for prop, values of filter
+              return false unless get(prop) in values
+            return true
           )
-
-
-
 
         data = agg.columns()
 
