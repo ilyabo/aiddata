@@ -12,86 +12,79 @@
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
     script src: 'queue.js'
-    script src: 'breaknsplit.js'
+    script src: 'coffee/breaknsplit.js'
 
-    div id:"loading", -> "Loading..."
-    div id:"error"
+
+    div class:"row-fluid", ->
+
+      table ->
+        td ->
+          div class:"btn-toolbar", ->
+            div class:"btn-group", ->
+              button class:"btn btn-mini", disabled:"disabled", ->
+                i class:"icon-chevron-left"
+              button class:"btn btn-mini", disabled:"disabled", ->
+                i class:"icon-chevron-right"
+
+        td ->
+          div id:"loading", -> "Loading..."
+        td ->
+          div id:"error"
+
     div id:"content", ->
 
-
-
       div id:"outerTop", ->
+        # div class:"row", ->
+        #   div class:"span6", ->
+        #     div class:"row", ->    
+        #       div class:"fltr span2", ->
+        #         div class:"hdr", -> "Donors"
+        #         select id:"donorsList", size:"10", multiple:"multiple"
+        #         div class:"btn-group",->
+        #           button class:"btn btn-mini", -> "Filter"
+        #           button class:"btn btn-mini",-> "Break&nbsp;down"
+        #       div class:"fltr span2", ->
+        #         div class:"hdr", -> "Recipients"
+        #         select id:"recipientList", size:"10", multiple:"multiple"
+        #         div class:"btn-group",->
+        #           button class:"btn btn-mini", -> "Filter"
+        #           button class:"btn btn-mini", -> "Break&nbsp;down"
+        #       div class:"fltr span2", ->
+        #         div class:"hdr", -> "Purposes"
+        #         select id:"purposeList", size:"10", multiple:"multiple"
+        #         div class:"btn-group",->
+        #           button class:"btn btn-mini", -> "Filter"
+        #           button class:"btn btn-mini", -> "Break&nbsp;down"
+          # div class:"span6", ->
+          #   div id:"tseries", class:"tseries"
 
-        div class:"row-fluid", ->
+        table ->
+          tr ->
+            td -> div class:"hdr", -> "Donors"
+            td -> div class:"hdr", -> "Recipients"
+            td -> div class:"hdr", -> "Purposes"
+            td rowspan:"3", -> div id:"tseries", class:"tseries"
 
-          div class:"span6", ->
-            div id:"tseries", class:"tseries"
+          tr ->
+            td -> select id:"donorsList", size:"10", multiple:"multiple"
+            td -> select id:"recipientList", size:"10", multiple:"multiple"
+            td -> select id:"purposeList", size:"10", multiple:"multiple"
 
-    
-
-          div class:"span6", ->
-
-            div class:"row-fluid", ->
-              div class:"span2 prophdr", ->
-                div "Donors"
-              div class:"span2 prophdr", ->
-                div "Recipients"
-              div class:"span2 prophdr", ->
-                div "Purposes"
-
-            div class:"row-fluid", ->              
-              div class:"span2 bnsctl", ->
-                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
-              div class:"span2 bnsctl", ->
-                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
-              div class:"span2 bnsctl", ->
-                button class:"btn btn-mini","data-toggle":"dropdown", -> "Break&nbsp;down"
-
-
-
-  @coffee '/breaknsplit.js': ->
-
-    queue()
-      .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date")
-      .defer(loadJson, "purposes.json")
-      .await (err, data) ->
-        console.log data
-        unless data?
-          $("#loading").remove()
-          $("#error")
-            .addClass("alert-error alert")
-            .html("Could not load flow data")
-          return
-
-        [ flows, purposes ] = data
-
-        tschart = timeSeriesChart()
-          .width(500)
-          .height(300)
-          .title("AidData: Total commitment amount by year")
-          .valueTickFormat(shortMagnitudeFormat)
-
-        datum = []
-
-        minDate = d3.time.format("%Y").parse("1942")
-        maxDate = Date.now()
-
-        for d in flows
-
-          date = utils.date.yearToDate(d.date)
-          if date?  and  (minDate <= date <= maxDate)
-            datum.push
-              date : date
-              outbound : +d.sum_amount_usd_constant
+          tr ->
+            td ->
+                div class:"btn-group",->
+                  button id:"donorsFilter",class:"btn btn-mini", -> "Filter"
+                  button class:"btn btn-mini", -> "Break&nbsp;down"
+            td ->
+                div class:"btn-group",->
+                  button id:"recipientsFilter",class:"btn btn-mini", -> "Filter"
+                  button class:"btn btn-mini", -> "Break&nbsp;down"
+            td ->
+                div class:"btn-group",->
+                  button class:"btn btn-mini", -> "Filter"
+                  button class:"btn btn-mini", -> "Break&nbsp;down"
 
 
-        d3.select("#tseries").datum(datum).call(tschart)
-
-        
-
-
-        $("#loading").remove()
-        $("#content").show()
 
 
 
@@ -143,137 +136,7 @@
     script src: "coffee/charts/bar-hierarchy.js"
     script src: "coffee/charts/time-series.js"
     script src: "coffee/charts/time-slider.js"
-    script src: "bubbles.js"
-
-
-
-  @coffee '/bubbles.js': ->
-
-    years = [1947..2011]
-    startYear = 2007
-
-    # Bubbles
-    bubbles = bubblesChart()
-      .conf(
-        flowOriginAttr: 'donor'
-        flowDestAttr: 'recipient'
-        nodeIdAttr: 'code'
-        nodeLabelAttr: 'name'
-        latAttr: 'Lat'
-        lonAttr: 'Lon'
-        flowMagnAttrs: years
-        )
-      .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
-
-
-    barHierarchy = barHierarchyChart()
-      .width(400)
-      .barHeight(10)
-      .labelsWidth(200)
-      .childrenAttr("values")
-      .nameAttr("name")
-      .valueFormat(formatMagnitude)
-      .values((d) -> d["sum_#{startYear}"] ? 0)
-      # .values((d) -> d.totals[startYear].sum ? 0)
-      #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
-      .labelsFormat((d) -> shorten(d.name ? d.key, 35))
-      .labelsTooltipFormat((d) -> name = d.name ? d.key)
-      .breadcrumbText(
-        do ->
-          percentageFormat = d3.format(",.2%")
-          (currentNode) ->
-            v = barHierarchy.values()
-            data = currentNode; (data = data.parent while data.parent?)
-            formatMagnitude(v(currentNode)) + " (" + 
-            percentageFormat(v(currentNode) / v(data)) + " of total)"
-      )
-
-
-    groupFlowsByOD = (flowList) -> 
-      nested = d3.nest()
-        .key((d) -> d.donor)
-        .key((d) -> d.recipient)
-        .key((d) -> d.date)
-        .entries(flowList)
-
-      flows = []
-      for o in nested
-        for d in o.values
-          entry =
-            donor : o.key
-            recipient : d.key
-
-          for val in d.values
-            entry[val.key] = val.values[0].sum_amount_usd_constant
-
-          flows.push entry
-      flows
-
-
-    timeSlider = timeSliderControl()
-      .min(utils.date.yearToDate(years[0]))
-      .max(utils.date.yearToDate(years[years.length - 1]))
-      .step(d3.time.year)
-      .format(d3.time.format("%Y"))
-      .width(250 - 30 - 8) # timeSeries margins
-      .height(10)
-      .on "change", (current, old) ->
-        bubbles.setSelDateTo(current, true)
-        barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
-
-    loadData()
-      .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
-      #.csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
-      .csv('flows', "dv/flows/by/od.csv")
-      .json('map', "data/world-countries.json")
-      .csv('countries', "data/aiddata-countries.csv")
-      .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
-      .json('purposeTree', "purposes-with-totals.json")
-      .onload (data) ->
-
-
-        # list of flows with every year separated
-        #   -> list grouped by o/d, all years' values in one object
-        data.flows = groupFlowsByOD data.flows 
-
-        provideCountryNodesWithCoords(
-          data.nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
-          data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
-        )
-
-        d3.select("#bubblesChart")
-          .datum(data)
-          .call(bubbles)
-
-
-        d3.select("#timeSlider")
-          .call(timeSlider)
-
-        # purposes = d3.nest()
-        #   .key((d) -> d.date)
-        #   .map(data.purposes)
-
-        valueAttrs = do ->
-          arr = []
-          for y in years
-            for attr in ["sum", "count"]
-              arr.push "#{attr}_#{y}"
-          arr
-
-        utils.aiddata.purposes.provideWithTotals(data.purposeTree, valueAttrs, "values", "totals")
-
-        d3.select("#purposeBars")
-          .datum(data.purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
-          .call(barHierarchy)
-
-        bubbles.setSelDateTo(utils.date.yearToDate(startYear), true)
-
-        $("#loading").remove()
-  
-
-
-
-
+    script src: "coffee/bubbles.js"
 
 
 
@@ -476,7 +339,6 @@
 
   @view "us-donations": ->
     style '@import url("css/charts/time-series.css");'
-    style '@import url("css/bubbles.css");'
 
     div id:"tseries2", class:"tseries", style:"margin-bottom:40px"
     div id:"tseries3", class:"tseries", style:"margin-bottom:40px"
@@ -485,80 +347,5 @@
     script src: "coffee/charts/time-series.js"
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
-    script src: "us-donations.js"
-
-
-  @coffee '/us-donations.js': ->
-   $ ->
-      tschart1 = timeSeriesChart()
-        .width(800)
-        .height(300)
-        .marginLeft(200)
-        #.title("Total US donations (blue, nominal US$) as percentage of US GDP (red, current US$)")
-        .title("Total US foreign aid donations as percentage of US GDP")
-        .valueTickFormat(d3.format(",.2%"))
-
-
-      tschart2 = timeSeriesChart()
-        .width(800)
-        .height(300)
-        .marginLeft(200)
-        .title("US GDP (red, current US$), total US donations (blue, nominal US$)")
-        .valueTickFormat(formatMagnitude)
-
-
-      tschart3 = timeSeriesChart()
-        .width(800)
-        .height(300)
-        .marginLeft(200)
-        .title("Total US donations (blue, nominal US$)")
-        .valueTickFormat(formatMagnitude)
-
-
-
-      loadData()
-        .json('gdp', "wb.json/NY.GDP.MKTP.CD/USA")
-        #.json('donated', "aiddata-donor-totals.json/USA")
-        .json('donated', "aiddata-donor-totals-nominal.json/USA")
-        .onload (data) ->
-          
-          
-          datum1 = []
-          datum2 = []
-          datum3 = []
-
-          donated = {}
-          donated[d.date] = d.sum_amount_usd_nominal  for d in data.donated
-
-          for y, o of data.gdp
-            year = utils.date.yearToDate(y)
-
-            if (donated[y]?)
-              datum1.push
-                date : year
-                outbound : +(donated[y]) / o.value 
-
-            datum2.push
-              date : year
-              inbound : +o.value 
-              outbound : +donated[y]
-
-            datum3.push
-              date : year
-              outbound : +donated[y]
-
-
-          d3.select("#tseries1")
-            .datum(datum1).call(tschart1)
-            .append("div")
-              .attr("class", "credits")
-              .attr("style", "font-size:10px; color:#ccc; text-align:center;")
-              .text("Based on data from AidData.org and World Bank")
-
-          d3.select("#tseries2").datum(datum2).call(tschart2)
-          d3.select("#tseries3").datum(datum3).call(tschart3)
-
-
-
-
+    script src: "coffee/us-donations.js"
 
