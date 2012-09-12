@@ -5,12 +5,12 @@ div.tseries { }
 
 .tseries .title { fill:#666; font-size:11px; font-weight:normal;}
 .tseries .line { fill: none; stroke-width: 1.5px; }
-.tseries .in .line { stroke: #B2182B; opacity:.5; }
-.tseries .out .line { stroke: #2166AC; opacity:.5;}
+.tseries .inbound .line { stroke: #B2182B; opacity:.5; }
+.tseries .outbound .line { stroke: #2166AC; opacity:.5;}
 
-.tseries circle.selAttrValue  { stroke-width:1.5; stroke:#666; }
-.tseries .in circle.selAttrValue  { fill:#da969f; }
-.tseries .out circle.selAttrValue  { fill:#a1c0de; }
+.tseries .dot  { stroke-width:1.5; fill:#fff; }
+.tseries .inbound .dot  { stroke:#da969f; }
+.tseries .outbound .dot  { stroke:#a1c0de; }
 
 
 .tseries svg  { }
