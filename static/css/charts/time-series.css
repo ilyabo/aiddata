@@ -5,12 +5,18 @@ div.tseries { }
 
 .tseries .title { fill:#666; font-size:11px; font-weight:normal;}
 .tseries .line { fill: none; stroke-width: 1.5px; }
-.tseries .inbound .line { stroke: #B2182B; opacity:.5; }
-.tseries .outbound .line { stroke: #2166AC; opacity:.5;}
-
 .tseries .dot  { stroke-width:1.5; fill:#fff; }
-.tseries .inbound .dot  { stroke:#da969f; }
-.tseries .outbound .dot  { stroke:#a1c0de; }
+
+/* chroma.brewer.Set1 */
+.tseries .p1 .line, .tseries .p1 .dot { stroke: #e41a1c; }
+.tseries .p2 .line, .tseries .p2 .dot { stroke: #377eb8; }
+.tseries .p3 .line, .tseries .p3 .dot { stroke: #4daf4a; }
+.tseries .p4 .line, .tseries .p4 .dot { stroke: #984ea3; }
+.tseries .p5 .line, .tseries .p5 .dot { stroke: #ff7f00; }
+.tseries .p6 .line, .tseries .p6 .dot { stroke: #ffff33; }
+.tseries .p7 .line, .tseries .p7 .dot { stroke: #a65628; }
+.tseries .p8 .line, .tseries .p8 .dot { stroke: #f781bf; }
+.tseries .p9 .line, .tseries .p9 .dot { stroke: #999999; }
 
 
 .tseries svg  { }

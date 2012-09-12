@@ -163,10 +163,10 @@ this.timeSeriesChart = ->
 
 
 
-    for prop in props
+    for prop, pi in props
       line = liner(prop)
       g = vis.append("g")
-        .attr("class", prop)
+        .attr("class", "#{prop} p#{pi+1}")
 
       g.append("path")
         .attr("class", "line")

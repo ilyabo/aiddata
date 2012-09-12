@@ -47,6 +47,15 @@ text-align:center;
 }
 
 
+.tseries .inbound .line { stroke: #B2182B; opacity:.5; }
+.tseries .outbound .line { stroke: #2166AC; opacity:.5;}
+
+.tseries .dot  { stroke-width:1.5; fill:#fff; }
+.tseries .inbound .dot  { stroke:#da969f; }
+.tseries .outbound .dot  { stroke:#a1c0de; }
+
+
+
 #yearSliderOuter {
   margin: 0 auto;
   display:none;
