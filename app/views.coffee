@@ -18,7 +18,7 @@
     div class:"row-fluid", ->
 
       table ->
-        td ->
+        td style:"white-space:nowrap", ->
           div class:"btn-toolbar", ->
             div class:"btn-group", ->
               button class:"btn btn-mini", disabled:"disabled", ->
@@ -26,8 +26,10 @@
               button class:"btn btn-mini", disabled:"disabled", ->
                 i class:"icon-chevron-right"
 
+        td style:"width:30px", ->
+          div id:"loading", -> img src:"images/loading.gif"
         td ->
-          div id:"loading", -> "Loading..."
+          div id:"status"
         td ->
           div id:"error"
 

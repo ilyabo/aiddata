@@ -1,5 +1,7 @@
-#loading { margin-top:0.8em; }
+#loading { padding-left:.5em; }
 #content { display:none; }
+#status { font-size:9pt;}
+#status .filter { font-size:8pt;}
 #outerTop { }
 
 #outerTop .hdr { text-align:left; font-weight: bold; padding-left:2px; padding-bottom:2px;}

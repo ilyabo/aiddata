@@ -28,15 +28,20 @@ query = do ->
       if (!arguments.length) then breakDownBy else breakDownBy = prop; q
 
     q.describe = () ->
-      dataset + ": " +
+      "Showing totals for " +
+      dataset + " " + valueProp + "." + 
+      "<div class=\"filter\">Selected " +
       (for prop in props
         if prop of filters
           len = filters[prop].length
-          len + " " + prop + (if len > 1 then "s")
+          len + " " + prop + 
+            (if len > 1 then "s" else "") +
+            (if len < 5 then " ("+filters[prop].join(", ")+")" else "")
         else
           "all #{prop}s"
       ).join(", ") + 
-      (if breakDownBy? then ", broken down by #{breakDownBy}s")
+      (if breakDownBy? then ", broken down by #{breakDownBy}s" else "") + 
+      ".</div>"
 
     makeUrl = () ->
       url = baseUrl + "?breakby=date"
@@ -114,7 +119,7 @@ tschart = timeSeriesChart()
 
 
 loadQuery = (q) -> 
-  $("#loading").show()
+  $("#loading").fadeIn()
 
   q.load (err, data) ->
     #console.log data
@@ -124,12 +129,13 @@ loadQuery = (q) ->
       #d3.select("#tseries").datum(data)
       #tschart.update(d3.select("#tseries"))
       
-      console.log data
+      #console.log data
       d3.select("#tseries").datum(data).call(tschart)
+      $("#status").html(q.describe())
 
       #d3.select("#tseries").datum(prepareLoadedDataForUse(flows)).call(tschart)
 
-    $("#loading").hide()
+    $("#loading").fadeOut()
 
 
 
@@ -207,6 +213,5 @@ queue()
 
 
 
-    $("#loading").hide()
     $("#content").show()
 

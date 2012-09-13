@@ -46,11 +46,13 @@ this.timeSeriesChart = ->
 
 
   chart.update = (selection) ->
-    vis.selectAll("path.line").remove()
-    vis.selectAll("circle.dot").remove()
+    # vis.selectAll("path.line").remove()
+    # vis.selectAll("circle.dot").remove()
+
+    vis.selectAll("g.prop").remove()
 
     data = selection.datum()
-    svg.datum(data)
+    vis.datum(data)
     updateScaleDomains(data)
 
     vis.selectAll(".x.axis")
@@ -63,7 +65,7 @@ this.timeSeriesChart = ->
     #      .duration(updateDuration)
           .call yAxis
 
-    enter(data)
+    #enter(data)
     update(data)
 
 
@@ -74,7 +76,7 @@ this.timeSeriesChart = ->
       line = lineDrawer(prop)
 
       g = vis.append("g")
-        .attr("class", "#{prop} p#{pi+1}")
+        .attr("class", "prop #{prop} p#{pi+1}")
 
       g.append("path")
         .attr("class", "line")
@@ -91,7 +93,7 @@ this.timeSeriesChart = ->
 
 
   update = (data, duration = updateDuration) ->
-    vis.datum(data)
+    #vis.datum(data)
 
     dates = data.map (d) -> d[dateProp]
 
@@ -102,12 +104,22 @@ this.timeSeriesChart = ->
 
     for prop, pi in propsOf(data)
       line = lineDrawer(prop)
-      g = vis.select("g.#{prop}")
+
+
+      g = vis.append("g")
+        .attr("class", "prop #{prop} p#{pi+1}")
+
+      g.append("path")
+        .attr("class", "line")
+        .attr("d", line)
+
+
+      # g = vis.select("g.#{prop}")
       
-      g.select("path")
-          #.transition()
-           # .duration(duration)
-          .attr("d", line)
+      # g.select("path")
+      #     #.transition()
+      #      # .duration(duration)
+      #     .attr("d", line)
 
 
       if showDots
@@ -251,7 +263,7 @@ this.timeSeriesChart = ->
     $(selDateLine[0]).bind("updateYear", updateYear)
     ###
 
-    enter(data)
+    #enter(data)
     update(data, 0)
 
     vis.append("rect")
