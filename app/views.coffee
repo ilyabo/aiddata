@@ -96,7 +96,7 @@
                   button class:"breakdown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
                   button class:"reset btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
-
+        div id:"splitPanel"
 
 
 

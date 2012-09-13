@@ -55,6 +55,10 @@ queryHistory = do ->
 
 
 
+dateFormat = d3.time.format("%Y")
+minDate = dateFormat.parse("1942")
+maxDate = Date.now()
+
 
 query = do -> 
   baseUrl = "dv/flows/breaknsplit.csv"
@@ -63,7 +67,6 @@ query = do ->
     filters = {}
     numFilters = 0
     breakDownBy = null
-    dateFormat = d3.time.format("%Y")
 
 
     q = () ->
@@ -173,10 +176,8 @@ query = do ->
             else
               prepareValues(csv)
 
-          minDate = dateFormat.parse("1942")
-          maxDate = Date.now()
 
-          datum = datum.filter (d) -> (minDate <= d.date <= maxDate)
+          datum = datum.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
 
           callback(null, datum)
 
@@ -197,6 +198,15 @@ tschart = timeSeriesChart()
   .ytickFormat(formatMagnitudeLong)
 
 
+createSmallTimeSeriesChart = (title) ->
+  timeSeriesChart()
+    .width(200)
+    .height(150)
+    .dotRadius(1)
+    .marginLeft(70)
+    .title(title)
+    .ytickFormat(shortMagnitudeFormat)
+
 
 propertyData = null  # is initialized below
 
@@ -210,9 +220,9 @@ syncFiltersWithQuery = ->
     prop = $(this).data("prop")
 
     filter = q?.filter(prop)
-    list = filter ? (propertyData[prop].map (d) -> d[prop])
+    values = filter ? (propertyData[prop].map (d) -> d[prop])
 
-    $(this).append("<option>#{d}</option>") for d in list
+    $(this).append("<option>#{d}</option>") for d in values
 
   
 updateCallback = (err, data) ->
@@ -232,18 +242,28 @@ updateCallback = (err, data) ->
     # update the view
     d3.select("#tseries").datum(data).call(tschart)
 
-    $("#status").html(queryHistory.current().describe())
+    q = queryHistory.current()
+    $("#status").html(q.describe())
 
     $("#backButton").attr("disabled", queryHistory.isBackEmpty())
     $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
     syncFiltersWithQuery()
+    
+    # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
   $("#loading").fadeOut()
 
 
 
+# splitBy = (prop) ->
+#   panel = d3.select("#splitPanel")
+#   panel.selectAll("svg").remove()
 
-
+#   values = filter ? (propertyData[prop].map (d) -> d[prop])
+#   for v in values
+#     chart = createSmallTimeSeriesChart(v)
+#     data = 
+#     d3.select("#splitPanel").datum(data).call(chart)
 
 
 queue()
