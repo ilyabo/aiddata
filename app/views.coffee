@@ -17,21 +17,28 @@
 
     div class:"row-fluid", ->
 
-      table ->
+      table  ->
         td style:"white-space:nowrap", ->
           div class:"btn-toolbar", ->
             div class:"btn-group", ->
-              button class:"btn btn-mini", disabled:"disabled", ->
+              button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
                 i class:"icon-chevron-left"
-              button class:"btn btn-mini", disabled:"disabled", ->
+              button id:"forwardButton",class:"btn btn-mini", disabled:"disabled", ->
                 i class:"icon-chevron-right"
 
         td style:"width:30px", ->
           div id:"loading", -> img src:"images/loading.gif"
         td ->
-          div id:"status"
+          div id:"status", class:"alert alert-info"
         td ->
-          div id:"error"
+          div id:"error", class:"alert-error alert", ->
+            button type:"button", class:"close", 'data-dismiss':"alert", -> "×"
+            span id:"errorText"
+
+          div id:"warn", class:"alert", ->
+            button type:"button", class:"close", 'data-dismiss':"alert", -> "×"
+            span id:"warningText"
+
 
     div id:"content", ->
 
@@ -68,22 +75,22 @@
             td rowspan:"3", -> div id:"tseries", class:"tseries"
 
           tr ->
-            td -> select id:"donorsList", size:"10", multiple:"multiple"
-            td -> select id:"recipientList", size:"10", multiple:"multiple"
-            td -> select id:"purposeList", size:"10", multiple:"multiple"
+            td -> select id:"donorList", class:"filter", 'data-prop':"donor", size:"10", multiple:"multiple"
+            td -> select id:"recipientList", class:"filter",'data-prop':"recipient",  size:"10", multiple:"multiple"
+            td -> select id:"purposeList", class:"filter", 'data-prop':"purpose", size:"10", multiple:"multiple"
 
           tr ->
             td ->
                 div class:"btn-group",->
-                  button id:"donorsFilter",class:"btn btn-mini", -> "Filter"
+                  button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
                   button class:"btn btn-mini", -> "Break&nbsp;down"
             td ->
                 div class:"btn-group",->
-                  button id:"recipientsFilter",class:"btn btn-mini", -> "Filter"
+                  button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
                   button class:"btn btn-mini", -> "Break&nbsp;down"
             td ->
                 div class:"btn-group",->
-                  button class:"btn btn-mini", -> "Filter"
+                  button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
                   button class:"btn btn-mini", -> "Break&nbsp;down"
 
 

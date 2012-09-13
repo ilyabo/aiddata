@@ -1,4 +1,61 @@
 
+queryHistory = do ->
+
+  current = null
+  history = []
+  forwardHistory = []
+
+  load = (q, callback, updateHistory, clearForwardHistory) ->
+
+    q.load (err, data) ->
+
+        if clearForwardHistory
+          forwardHistory = []
+
+        if updateHistory
+          if current?
+            history.push(current)
+
+        current = q.copy()
+
+        #console.log( history.map((d)->d.filters()), current?.filters(), forwardHistory.map((d)->d.filters()))
+
+
+        if callback? then callback(null, data)
+
+
+  top = -> 
+      if history.length > 0
+        history[history.length - 1]
+      else
+        null
+
+  {
+    top : top
+
+    current : -> current?.copy()
+
+    back : (callback) ->
+      if history.length > 0
+        top = history.pop()
+        forwardHistory.push(current)
+        load(top.copy(), callback, false, false)
+
+    forward : (callback) ->
+      if forwardHistory.length > 0
+        top = forwardHistory.pop()
+        load(top.copy(), callback, true, false)
+
+    isBackEmpty : -> history.length is 0
+
+    isForwardEmpty : -> forwardHistory.length is 0
+
+    load : (q, callback) -> load(q, callback, true, true)
+  }
+
+
+
+
 query = do -> 
   baseUrl = "dv/flows/breaknsplit.csv"
 
@@ -11,17 +68,31 @@ query = do ->
 
     q = () ->
 
+    q.copy = ->
+      cpy = query(dataset, props, valueProp)
+      for p,v of filters
+        cpy.addFilter(p, v)
+      cpy.breakDownBy(breakDownBy) if breakDownBy?
+      cpy
+
     check = (prop) ->
       unless prop in props
         throw new Error("Illegal property '#{prop}'")
 
     q.addFilter = (prop, values) ->
       check prop
-      unless prop of filters
-        numFilters++
-      filters[prop] = values.slice(); q
+      if values.length > 0
+        unless prop of filters
+          numFilters++
+        filters[prop] = values.slice(); q
 
-    q.filter = (prop) -> check prop; filters[prop].slice()
+    q.filter = (prop) -> check prop; filters[prop]?.slice()
+
+    q.filters = -> 
+      all = {}
+      for p,v of filters
+        all[p] = v.slice()
+      all
 
     q.breakDownBy = (prop) ->
       check prop
@@ -29,7 +100,8 @@ query = do ->
 
     q.describe = () ->
       "Showing totals for " +
-      dataset + " " + valueProp + "." + 
+      dataset + "'s " + valueProp + " over time" +
+      (if breakDownBy? then " broken down by #{breakDownBy}s" else "") + "." + 
       "<div class=\"filter\">Selected " +
       (for prop in props
         if prop of filters
@@ -40,7 +112,6 @@ query = do ->
         else
           "all #{prop}s"
       ).join(", ") + 
-      (if breakDownBy? then ", broken down by #{breakDownBy}s" else "") + 
       ".</div>"
 
     makeUrl = () ->
@@ -85,7 +156,7 @@ query = do ->
       #console.log q.describe()
       #console.log makeUrl()
       d3.csv makeUrl(), (csv) ->
-        unless csv? and csv.length > 0
+        unless csv? #and csv.length > 0
           callback(new Error("Couldn't load csv"), null)
         else
           datum =
@@ -110,7 +181,7 @@ query = do ->
 
 tschart = timeSeriesChart()
   .width(550)
-  .height(300)
+  .height(200)
   .yticks(7)
   .marginLeft(100)
   .title("AidData: Total commitment amount by year")
@@ -118,28 +189,48 @@ tschart = timeSeriesChart()
 
 
 
-loadQuery = (q) -> 
-  $("#loading").fadeIn()
+propertyData = null  # is initialized below
 
-  q.load (err, data) ->
-    #console.log data
-    if err?
-      $("#error").addClass("alert-error alert").html("Could not load flow data")
-    else
-      #d3.select("#tseries").datum(data)
-      #tschart.update(d3.select("#tseries"))
-      
-      #console.log data
-      d3.select("#tseries").datum(data).call(tschart)
-      $("#status").html(q.describe())
+syncFiltersWithQuery = ->
+  q = queryHistory.current()
 
-      #d3.select("#tseries").datum(prepareLoadedDataForUse(flows)).call(tschart)
+  $("select.filter").each ->
 
-    $("#loading").fadeOut()
+    $(this).find("option").remove()
+
+    prop = $(this).data("prop")
+
+    filter = q?.filter(prop)
+    list = filter ? (propertyData[prop].map (d) -> d[prop])
+
+    $(this).append("<option>#{d}</option>") for d in list
+
+  
+updateCallback = (err, data) ->
+  if err?
+    $("#errorText").html("<h4>Oh snap!</h4>I could not load the data from the server")
+    $("#error").fadeIn().delay(5000).fadeOut()
+    if callback? then callback("Could not load data from the server")
+
+  else if data?.length is 0
+    $("#warningText").html("The result of your filter query is empty")
+    $("#warn").fadeIn().delay(5000).fadeOut()
+    if callback? then callback("Empty query")
+
+  else
+    # update the view
+    d3.select("#tseries").datum(data).call(tschart)
+
+    $("#status").html(queryHistory.current().describe())
+
+    $("#backButton").attr("disabled", queryHistory.isBackEmpty())
+    $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
+
+    syncFiltersWithQuery()
+
+  $("#loading").fadeOut()
 
 
-
-loadQuery query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant")
 
 
 
@@ -163,12 +254,30 @@ queue()
     #console.log data
 
 
-      
+
     [ donors, recipients, purposes, purposeTree ] = data
 
-    $("#donorsList").append("<option>#{d.donor}</option>") for d in donors
-    $("#recipientList").append("<option>#{d.recipient}</option>") for d in recipients
-    $("#purposeList").append("<option>#{d.purpose}</option>") for d in purposes
+    propertyData =
+      donor : donors
+      recipient : recipients
+      purpose : purposes
+
+
+    queryHistory.load(
+      query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant"),
+      updateCallback
+    )
+
+
+
+
+
+
+
+    
+    # $("#donorList").append("<option>#{d.donor}</option>") for d in donors
+    # $("#recipientList").append("<option>#{d.recipient}</option>") for d in recipients
+    # $("#purposeList").append("<option>#{d.purpose}</option>") for d in purposes
 
 
 
@@ -192,26 +301,41 @@ queue()
 
 
 
+    $("button.filter").click ->
+      prop = $(this).data("prop")
+      unless prop?
+        throw new Error("Now data-prop attr on select element")
+
+      list = $("##{prop}List")
+      selection = $.makeArray(list.find(":selected")).map (d) -> d.value
+
+      unless selection.length is 0
+        q = queryHistory.current().copy()
+        q.addFilter(prop, selection)
+
+        $("#loading").fadeIn()
+
+        queryHistory.load q, (err, data) ->
+          updateCallback(err, data)
+          # unless err?
+          #   list.find("option").each ->
+          #     unless $(this).text() in selection
+          #       $(this).remove()
+
+
+    $("#backButton").click ->
+      $("#loading").fadeIn()
+      queryHistory.back(updateCallback)
+
+
+    $("#forwardButton").click ->
+      $("#loading").fadeIn()
+      queryHistory.forward(updateCallback)
 
 
 
 
 
 
-    $("#donorsFilter").click -> loadQuery(query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant")
-      .addFilter("recipient", ["IND", "RUS"])
-      .breakDownBy("recipient"))
-
-
-    $("#recipientsFilter").click -> loadQuery(query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant")
-      .addFilter("donor", ["DEU", "USA", "NOR"])
-      .breakDownBy("donor"))
-
-
-
-
-
-
-
-    $("#content").show()
+    $("#content").fadeIn()
 

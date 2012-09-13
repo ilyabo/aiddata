@@ -1,8 +1,10 @@
 #loading { padding-left:.5em; }
-#content { display:none; }
-#status { font-size:9pt;}
+#content { display:none; margin-top:1.4em;}
+#status { font-size:9pt; margin-bottom:0;}
 #status .filter { font-size:8pt;}
 #outerTop { }
+#error, #warn { display:none; }
+button.close { border:none; background:none; padding: 0;}
 
 #outerTop .hdr { text-align:left; font-weight: bold; padding-left:2px; padding-bottom:2px;}
 #outerTop .fltr  { text-align:left;  }
