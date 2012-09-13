@@ -10,6 +10,7 @@ this.timeSeriesChart = ->
   xticks = yticks = null
   marginLeft = 40
   ytickFormat = d3.format(",.0f")
+  maxPropertyClasses = 9
 
 
   # data is expected to be in the following form:
@@ -76,7 +77,7 @@ this.timeSeriesChart = ->
       line = lineDrawer(prop)
 
       g = vis.append("g")
-        .attr("class", "prop #{prop} p#{pi+1}")
+        .attr("class", "prop #{prop} p#{((pi % maxPropertyClasses) + 1)}")
 
       g.append("path")
         .attr("class", "line")
@@ -107,7 +108,7 @@ this.timeSeriesChart = ->
 
 
       g = vis.append("g")
-        .attr("class", "prop #{prop} p#{pi+1}")
+        .attr("class", "prop #{prop} p#{((pi % maxPropertyClasses) + 1)}")
 
       g.append("path")
         .attr("class", "line")

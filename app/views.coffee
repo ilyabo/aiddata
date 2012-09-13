@@ -32,11 +32,11 @@
           div id:"status", class:"alert alert-info"
         td ->
           div id:"error", class:"alert-error alert", ->
-            button type:"button", class:"close", 'data-dismiss':"alert", -> "×"
+            button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
             span id:"errorText"
 
           div id:"warn", class:"alert", ->
-            button type:"button", class:"close", 'data-dismiss':"alert", -> "×"
+            button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
             span id:"warningText"
 
 
@@ -83,18 +83,18 @@
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
-                  button class:"reset btn btn-mini", 'data-prop':"donor", -> "Reset"
                   button class:"breakdown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"donor", -> "&times;"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
-                  button class:"reset btn btn-mini", 'data-prop':"recipient", -> "Reset"
                   button class:"breakdown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"recipient", -> "&times;"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
-                  button class:"reset btn btn-mini", 'data-prop':"purpose", -> "Reset"
                   button class:"breakdown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
 
 

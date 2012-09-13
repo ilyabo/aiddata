@@ -101,8 +101,10 @@ query = do ->
       all
 
     q.breakDownBy = (prop) ->
-      check prop
-      if (!arguments.length) then breakDownBy else breakDownBy = prop; q
+      if (!arguments.length) then breakDownBy else check prop; breakDownBy = prop; q
+
+    q.resetBreakDownBy = ->
+      breakDownBy = null; q
 
     q.describe = () ->
       "Showing totals for " +
@@ -189,6 +191,7 @@ tschart = timeSeriesChart()
   .width(550)
   .height(200)
   .yticks(7)
+  .dotRadius(1)
   .marginLeft(100)
   #.title("AidData: Total commitment amount by year")
   .ytickFormat(formatMagnitudeLong)
@@ -309,22 +312,37 @@ queue()
       selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
       selection = $.makeArray(selectedOptions).map (d) -> d.value
 
+    load = (q) ->
+      $("#loading").fadeIn()
+      queryHistory.load(q, updateCallback)
+
     filter = (prop, selection) ->
       unless selection.length is 0
         q = queryHistory.current().copy()
         q.addFilter(prop, selection)
-        $("#loading").fadeIn()
-        queryHistory.load(q, updateCallback)
+        load q
 
-    removeFilter = (prop) ->
+    reset = (prop) ->
       q = queryHistory.current().copy()
-      if q.filter(prop)?
-        q.removeFilter(prop)
-        $("#loading").fadeIn()
-        queryHistory.load(q, updateCallback)
+      
+      if q.filter(prop)? or (q.breakDownBy() is prop)
+
+        if q.filter(prop)?
+          q.removeFilter(prop)
+
+        if (q.breakDownBy() is prop)
+          q.resetBreakDownBy()
+        
+        load q
+
+    breakDownBy = (prop) ->
+      q = queryHistory.current().copy()
+      unless q.breakDownBy is prop
+        q.breakDownBy(prop)
+        load q
 
 
-    $("button.breakdown").click ->
+    $("button.breakdown").click -> breakDownBy($(this).data("prop"))
 
 
     $("button.filter").click ->
@@ -333,9 +351,7 @@ queue()
       filter(prop, selection)
 
 
-    $("button.reset").click ->
-      removeFilter($(this).data("prop"))
-
+    $("button.reset").click -> reset($(this).data("prop"))
 
 
     $("#backButton").click ->
