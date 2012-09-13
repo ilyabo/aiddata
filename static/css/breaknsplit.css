@@ -3,14 +3,14 @@
 #status { font-size:9pt; margin-bottom:0;}
 #status .filter { font-size:8pt;}
 #outerTop { }
-#error, #warn { display:none; }
+#error, #warn, #status { display:none; }
 button.close { border:none; background:none; padding: 0;}
 
 #outerTop .hdr { text-align:left; font-weight: bold; padding-left:2px; padding-bottom:2px;}
 #outerTop .fltr  { text-align:left;  }
 
 
-#outerTop select { margin:2px; width:120px; height:270px; font-size:7pt; }
+#outerTop select { margin:2px; width:150px; height:270px; font-size:7pt; }
 
 /*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 

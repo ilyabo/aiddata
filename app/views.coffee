@@ -83,15 +83,18 @@
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
-                  button class:"btn btn-mini", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"donor", -> "Reset"
+                  button class:"breakdown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
-                  button class:"btn btn-mini", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"recipient", -> "Reset"
+                  button class:"breakdown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
-                  button class:"btn btn-mini", -> "Break&nbsp;down"
+                  button class:"reset btn btn-mini", 'data-prop':"purpose", -> "Reset"
+                  button class:"breakdown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
 
 
 

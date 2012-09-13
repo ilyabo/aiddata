@@ -86,6 +86,12 @@ query = do ->
           numFilters++
         filters[prop] = values.slice(); q
 
+    q.removeFilter = (prop) ->
+      check prop
+      if prop of filters
+        numFilters--
+      delete filters[prop]; q
+
     q.filter = (prop) -> check prop; filters[prop]?.slice()
 
     q.filters = -> 
@@ -184,7 +190,7 @@ tschart = timeSeriesChart()
   .height(200)
   .yticks(7)
   .marginLeft(100)
-  .title("AidData: Total commitment amount by year")
+  #.title("AidData: Total commitment amount by year")
   .ytickFormat(formatMagnitudeLong)
 
 
@@ -218,6 +224,8 @@ updateCallback = (err, data) ->
     if callback? then callback("Empty query")
 
   else
+    $("#warn").hide()
+    $("#error").hide()
     # update the view
     d3.select("#tseries").datum(data).call(tschart)
 
@@ -225,7 +233,6 @@ updateCallback = (err, data) ->
 
     $("#backButton").attr("disabled", queryHistory.isBackEmpty())
     $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
-
     syncFiltersWithQuery()
 
   $("#loading").fadeOut()
@@ -298,29 +305,37 @@ queue()
     #   datum
 
 
+    selectedFilterOptions = (prop) ->
+      selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
+      selection = $.makeArray(selectedOptions).map (d) -> d.value
 
+    filter = (prop, selection) ->
+      unless selection.length is 0
+        q = queryHistory.current().copy()
+        q.addFilter(prop, selection)
+        $("#loading").fadeIn()
+        queryHistory.load(q, updateCallback)
+
+    removeFilter = (prop) ->
+      q = queryHistory.current().copy()
+      if q.filter(prop)?
+        q.removeFilter(prop)
+        $("#loading").fadeIn()
+        queryHistory.load(q, updateCallback)
+
+
+    $("button.breakdown").click ->
 
 
     $("button.filter").click ->
       prop = $(this).data("prop")
-      unless prop?
-        throw new Error("Now data-prop attr on select element")
+      selection = selectedFilterOptions(prop)
+      filter(prop, selection)
 
-      list = $("##{prop}List")
-      selection = $.makeArray(list.find(":selected")).map (d) -> d.value
 
-      unless selection.length is 0
-        q = queryHistory.current().copy()
-        q.addFilter(prop, selection)
+    $("button.reset").click ->
+      removeFilter($(this).data("prop"))
 
-        $("#loading").fadeIn()
-
-        queryHistory.load q, (err, data) ->
-          updateCallback(err, data)
-          # unless err?
-          #   list.find("option").each ->
-          #     unless $(this).text() in selection
-          #       $(this).remove()
 
 
     $("#backButton").click ->
@@ -338,4 +353,5 @@ queue()
 
 
     $("#content").fadeIn()
+    $("#status").fadeIn()
 
