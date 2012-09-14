@@ -189,14 +189,17 @@ query = do ->
 
 
 tschart = timeSeriesChart()
-  .width(550)
+  .width(500)
   .height(200)
-  .yticks(7)
+  .xticks(7)
   .yticks(7)
   .dotRadius(1)
   .marginLeft(100)
   #.title("AidData: Total commitment amount by year")
   .ytickFormat(formatMagnitudeLong)
+  .showLegend(true)
+  .legendWidth(250)
+  .legendHeight(250)
 
 
 createSmallTimeSeriesChart = (title) ->

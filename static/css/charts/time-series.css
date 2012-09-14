@@ -7,17 +7,6 @@ div.tseries { }
 .tseries .line { fill: none; stroke-width: 1.5px; }
 .tseries .dot  { stroke-width:1.5; fill:#fff; }
 
-/* chroma.brewer.Set1 */
-.tseries .p1 .line, .tseries .p1 .dot { stroke: #e41a1c; }
-.tseries .p2 .line, .tseries .p2 .dot { stroke: #377eb8; }
-.tseries .p3 .line, .tseries .p3 .dot { stroke: #4daf4a; }
-.tseries .p4 .line, .tseries .p4 .dot { stroke: #984ea3; }
-.tseries .p5 .line, .tseries .p5 .dot { stroke: #ff7f00; }
-.tseries .p6 .line, .tseries .p6 .dot { stroke: #ffff33; }
-.tseries .p7 .line, .tseries .p7 .dot { stroke: #a65628; }
-.tseries .p8 .line, .tseries .p8 .dot { stroke: #f781bf; }
-.tseries .p9 .line, .tseries .p9 .dot { stroke: #999999; }
-
 
 .tseries svg  { }
 
@@ -55,3 +44,7 @@ div.tseries { }
   font-size:9px;
   fill:gray;
 }
+
+.tseries .legendItem text { font-size:7pt; fill:#666; dominant-baseline: central;}
+
+.tseries .legendItem rect { stroke-width:.5px; stroke:#666;}

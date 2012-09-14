@@ -11,6 +11,15 @@ this.timeSeriesChart = ->
   marginLeft = 40
   ytickFormat = d3.format(",.0f")
   maxPropertyClasses = 9
+  showLegend = false
+  legendWidth = 150
+  legendHeight = 200
+  legendItemHeight = 15
+  legendItemWidth = 80
+
+  # borrowed from chroma.js: chroma.brewer.Set3
+  propColors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", 
+  "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
 
   # data is expected to be in the following form:
@@ -40,6 +49,14 @@ this.timeSeriesChart = ->
 
   chart.ytickFormat = (_) -> if (!arguments.length) then ytickFormat else ytickFormat = _; chart
 
+  chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
+
+  chart.legendWidth = (_) -> if (!arguments.length) then legendWidth else legendWidth = _; chart
+
+  chart.legendHeight = (_) -> if (!arguments.length) then legendHeight else legendHeight = _; chart
+
+  chart.propColors = (_) -> if (!arguments.length) then propColors else propColors = _; chart
+
   chart.selectDate = (date) ->
     vis.selectAll("line.selDate")
       .attr("x1", x(date))
@@ -51,6 +68,7 @@ this.timeSeriesChart = ->
     # vis.selectAll("circle.dot").remove()
 
     vis.selectAll("g.prop").remove()
+    vis.selectAll("g.legend").remove()
 
     data = selection.datum()
     vis.datum(data)
@@ -70,26 +88,27 @@ this.timeSeriesChart = ->
     update(data)
 
 
-  enter = (data) ->
-    # dates = data.map (d) -> d[dateProp]
+  # enter = (data) ->
+  #   # dates = data.map (d) -> d[dateProp]
 
-    for prop, pi in propsOf(data)
-      line = lineDrawer(prop)
+  #   for prop, pi in propsOf(data)
+  #     line = lineDrawer(prop)
 
-      g = vis.append("g")
-        .attr("class", "prop #{prop} p#{((pi % maxPropertyClasses) + 1)}")
+  #     g = vis.append("g")
+  #       .attr("class", "prop #{prop}")
 
-      g.append("path")
-        .attr("class", "line")
-        .attr("d", line)
+  #     g.append("path")
+  #       .attr("class", "line")
+  #       .attr("d", line)
+  #       .attr("stroke", propColors[pi % propColors.length])
 
-      # if showDots
-      #   dots = g.selectAll("circle.dot")
-      #     .data(dates.filter (d) -> (not isNaN(y(nested[d]?[prop]))))
+  #     # if showDots
+  #     #   dots = g.selectAll("circle.dot")
+  #     #     .data(dates.filter (d) -> (not isNaN(y(nested[d]?[prop]))))
 
-      #   dots.enter().append("circle")
-      #     .attr("class", "dot")
-      #     .attr("r", dotRadius)
+  #     #   dots.enter().append("circle")
+  #     #     .attr("class", "dot")
+  #     #     .attr("r", dotRadius)
 
 
 
@@ -103,16 +122,19 @@ this.timeSeriesChart = ->
       .rollup((a) -> a[0])  # assuming unique values for each date
       .map(data)
 
-    for prop, pi in propsOf(data)
+    props = propsOf data
+
+    for prop, pi in props
       line = lineDrawer(prop)
 
 
       g = vis.append("g")
-        .attr("class", "prop #{prop} p#{((pi % maxPropertyClasses) + 1)}")
+        .attr("class", "prop #{prop}")
 
       g.append("path")
         .attr("class", "line")
         .attr("d", line)
+        .attr("stroke", propColors[pi % propColors.length])
 
 
       # g = vis.select("g.#{prop}")
@@ -132,12 +154,47 @@ this.timeSeriesChart = ->
         dots.enter().append("circle")
           .attr("class", "dot")
           .attr("r", dotRadius)
+          .attr("stroke", propColors[pi % propColors.length])
 
         dots
           .attr("cx", (d) -> x(d))
           .attr("cy", (d) -> y(nested[d][prop]))
 
         dots.exit().remove()
+
+
+
+    if showLegend
+
+      legend = vis.append("g")
+        .attr("class", "legend")
+        .attr("transform", "translate(#{width - marginLeft + 5},10)")
+
+
+      colSize = Math.floor(legendHeight/legendItemHeight)
+
+      item = legend.selectAll("g.legendItem")
+        .data(props)
+      .enter().append("g")
+        .attr("class", "legendItem")
+        .attr("transform", (d, i) -> 
+          col = Math.floor(i/colSize) 
+          row = i % colSize
+          "translate(#{col * legendItemWidth},#{row * legendItemHeight})")
+
+      item.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 8)
+        .attr("height", 8)
+        .attr("fill", (d, pi) -> propColors[pi % propColors.length])
+
+      item.append("text")
+        .attr("x", 13)
+        .attr("y", 4)
+        .text((d, i) -> props[i])
+        
+
 
 
 
@@ -220,8 +277,10 @@ this.timeSeriesChart = ->
 
     svg = selection
       .append("svg")
-        .attr("width", w + margin.left + margin.right)
-        .attr("height", h + margin.top + margin.bottom)
+        .attr("width", w + margin.left + margin.right + 
+                      (if showLegend then legendWidth else 0))
+        .attr("height", 
+          Math.max(h + margin.top + margin.bottom, legendHeight + margin.top + margin.bottom))
     
     svg.append("text")  
       .attr("class", "title")
