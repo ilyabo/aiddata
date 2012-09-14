@@ -111,8 +111,7 @@ query = do ->
 
     q.describe = () ->
       "Showing totals for " +
-      dataset + "'s " + valueProp + " over time" +
-      (if breakDownBy? then " broken down by #{breakDownBy}s" else "") + "." + 
+      dataset + "'s <em>" + valueProp + "</em> over time." +
       "<div class=\"filter\">Selected " +
       (for prop in props
         if prop of filters
@@ -123,7 +122,13 @@ query = do ->
         else
           "all #{prop}s"
       ).join(", ") + 
-      ".</div>"
+      "." +
+      (if breakDownBy?
+        " Broken down by <b>#{breakDownBy}s</b>.</div>" 
+      else 
+        "") +
+      "</div>"
+
 
     makeUrl = () ->
       url = baseUrl + "?breakby=date"
@@ -201,6 +206,7 @@ tschart = timeSeriesChart()
   .legendWidth(250)
   #.legendHeight(250)
   .propColors(chroma.brewer.Set1)
+  #.propColors([chroma.brewer.Set1[1]])
 
 
 createSmallTimeSeriesChart = (title) ->
@@ -229,7 +235,27 @@ syncFiltersWithQuery = ->
 
     $(this).append("<option>#{d}</option>") for d in values
 
-  
+
+updateCtrlButtons = ->
+
+  q = queryHistory.current()
+
+  $("div.btn-group.filter").each ->
+    prop = $(this).data("prop")
+    if q.filter(prop)?
+      $(this).addClass("applied")
+    else
+      $(this).removeClass("applied")
+
+  $("div.btn-group.breakDown").each ->
+    prop = $(this).data("prop")
+    if q.breakDownBy() is prop
+      $(this).addClass("applied")
+    else
+      $(this).removeClass("applied")
+
+
+
 updateCallback = (err, data) ->
   if err?
     $("#errorText").html("<h4>Oh snap!</h4>I could not load the data from the server")
@@ -253,6 +279,7 @@ updateCallback = (err, data) ->
     $("#backButton").attr("disabled", queryHistory.isBackEmpty())
     $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
     syncFiltersWithQuery()
+    updateCtrlButtons()
     
     # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
@@ -359,20 +386,31 @@ queue()
         q.resetBreakDownBy()
       load q
 
-    breakDownBy = (prop) ->
+    breakDownBy = (prop, selection) ->
       q = queryHistory.current().copy()
-      unless q.breakDownBy is prop
+
+      changed = false
+
+      if selection.length > 0
+        q.addFilter(prop, selection)
+        changed = true
+      
+      if q.breakDownBy isnt prop
         q.breakDownBy(prop)
-        load q
+        changed = true
+
+      load q if changed
+        
 
 
-    $("button.breakdown").click -> breakDownBy($(this).data("prop"))
+    $("button.breakDown").click ->
+      prop = $(this).data("prop")
+      breakDownBy($(this).data("prop"), selectedFilterOptions(prop))
 
 
     $("button.filter").click ->
       prop = $(this).data("prop")
-      selection = selectedFilterOptions(prop)
-      filter(prop, selection)
+      filter(prop, selectedFilterOptions(prop))
 
 
     $("button.resetFilter").click -> resetFilter($(this).data("prop"))

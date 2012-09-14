@@ -19,8 +19,8 @@
 
     div class:"row-fluid", ->
 
-      table  ->
-        td style:"white-space:nowrap", ->
+      table ->
+        td class:"backForwardBtns", ->
           div class:"btn-toolbar", ->
             div class:"btn-group", ->
               button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
@@ -68,7 +68,7 @@
         #           button class:"btn btn-mini", -> "Break&nbsp;down"
           # div class:"span6", ->
           #   div id:"tseries", class:"tseries"
-
+ 
         table ->
           tr ->
             td -> div class:"hdr", -> "Donors"
@@ -83,25 +83,25 @@
 
           tr class:"ctls",->
             td ->
-                div class:"btn-group",->
+                div class:"btn-group filter",'data-prop':"donor",->
                   button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
                   button class:"resetFilter btn btn-mini", 'data-prop':"donor", -> "&times;"
-                div class:"btn-group",->
-                  button class:"breakdown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
+                div class:"btn-group breakDown",'data-prop':"donor",->
+                  button class:"breakDown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
                   button class:"resetBreakDown btn btn-mini", 'data-prop':"donor", -> "&times;"
             td ->
-                div class:"btn-group",->
+                div class:"btn-group filter",'data-prop':"recipient",->
                   button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
                   button class:"resetFilter btn btn-mini", 'data-prop':"recipient", -> "&times;"
-                div class:"btn-group",->
-                  button class:"breakdown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
+                div class:"btn-group breakDown",'data-prop':"recipient",->
+                  button class:"breakDown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
                   button class:"resetBreakDown btn btn-mini", 'data-prop':"recipient", -> "&times;"
             td ->
-                div class:"btn-group",->
+                div class:"btn-group filter",'data-prop':"purpose",->
                   button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
                   button class:"resetFilter btn btn-mini", 'data-prop':"purpose", -> "&times;"
-                div class:"btn-group",->
-                  button class:"breakdown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
+                div class:"btn-group breakDown",'data-prop':"purpose",->
+                  button class:"breakDown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
                   button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
         div id:"splitPanel"
