@@ -192,6 +192,7 @@ tschart = timeSeriesChart()
   .width(550)
   .height(200)
   .yticks(7)
+  .yticks(7)
   .dotRadius(1)
   .marginLeft(100)
   #.title("AidData: Total commitment amount by year")
@@ -342,18 +343,17 @@ queue()
         q.addFilter(prop, selection)
         load q
 
-    reset = (prop) ->
+    resetFilter = (prop) ->
       q = queryHistory.current().copy()
-      
-      if q.filter(prop)? or (q.breakDownBy() is prop)
-
-        if q.filter(prop)?
-          q.removeFilter(prop)
-
-        if (q.breakDownBy() is prop)
-          q.resetBreakDownBy()
-        
+      if q.filter(prop)?
+        q.removeFilter(prop)
         load q
+
+    resetBreakDown = (prop) ->
+      q = queryHistory.current().copy()
+      if (q.breakDownBy() is prop)
+        q.resetBreakDownBy()
+      load q
 
     breakDownBy = (prop) ->
       q = queryHistory.current().copy()
@@ -371,7 +371,8 @@ queue()
       filter(prop, selection)
 
 
-    $("button.reset").click -> reset($(this).data("prop"))
+    $("button.resetFilter").click -> resetFilter($(this).data("prop"))
+    $("button.resetBreakDown").click -> resetBreakDown($(this).data("prop"))
 
 
     $("#backButton").click ->

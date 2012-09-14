@@ -79,22 +79,28 @@
             td -> select id:"recipientList", class:"filter",'data-prop':"recipient",  size:"10", multiple:"multiple"
             td -> select id:"purposeList", class:"filter", 'data-prop':"purpose", size:"10", multiple:"multiple"
 
-          tr ->
+          tr class:"ctls",->
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
+                  button class:"resetFilter btn btn-mini", 'data-prop':"donor", -> "&times;"
+                div class:"btn-group",->
                   button class:"breakdown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
-                  button class:"reset btn btn-mini", 'data-prop':"donor", -> "&times;"
+                  button class:"resetBreakDown btn btn-mini", 'data-prop':"donor", -> "&times;"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
+                  button class:"resetFilter btn btn-mini", 'data-prop':"recipient", -> "&times;"
+                div class:"btn-group",->
                   button class:"breakdown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
-                  button class:"reset btn btn-mini", 'data-prop':"recipient", -> "&times;"
+                  button class:"resetBreakDown btn btn-mini", 'data-prop':"recipient", -> "&times;"
             td ->
                 div class:"btn-group",->
                   button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
+                  button class:"resetFilter btn btn-mini", 'data-prop':"purpose", -> "&times;"
+                div class:"btn-group",->
                   button class:"breakdown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
-                  button class:"reset btn btn-mini", 'data-prop':"purpose", -> "&times;"
+                  button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
         div id:"splitPanel"
 
