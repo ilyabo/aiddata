@@ -12,6 +12,8 @@
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
     script src: 'queue.js'
+    script src: 'libs/chroma/chroma.min.js'
+    script src: 'libs/chroma/chroma.colors.js'
     script src: 'coffee/breaknsplit.js'
 
 

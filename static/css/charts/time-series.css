@@ -31,8 +31,7 @@ div.tseries { }
 .tseries line.selDate { stroke:#000; opacity:.3; }
 
 .tseries .y.axis line, #tseries .y.axis path {
-  stroke:#eee;
-  stroke-width:1;
+  stroke:#eee; stroke-width:1;
 }
 
 .tseries .x.axis line {

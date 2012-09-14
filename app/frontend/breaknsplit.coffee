@@ -189,8 +189,8 @@ query = do ->
 
 
 tschart = timeSeriesChart()
-  .width(500)
-  .height(200)
+  .width(600)
+  .height(300)
   .xticks(7)
   .yticks(7)
   .dotRadius(1)
@@ -199,7 +199,8 @@ tschart = timeSeriesChart()
   .ytickFormat(formatMagnitudeLong)
   .showLegend(true)
   .legendWidth(250)
-  .legendHeight(250)
+  #.legendHeight(250)
+  .propColors(chroma.brewer.Set1)
 
 
 createSmallTimeSeriesChart = (title) ->

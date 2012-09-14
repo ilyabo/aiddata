@@ -13,13 +13,16 @@ this.timeSeriesChart = ->
   maxPropertyClasses = 9
   showLegend = false
   legendWidth = 150
-  legendHeight = 200
+  legendHeight = null  # will be set to height by default
   legendItemHeight = 15
   legendItemWidth = 80
+  legendMarginLeft = 20
+  legendMarginTop = 0
 
-  # borrowed from chroma.js: chroma.brewer.Set3
-  propColors = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", 
-  "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
+  # borrowed from chroma.js: chroma.brewer.Set1
+  propColors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
+  # Set3 (more pastel colors):
+  #  ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
 
   # data is expected to be in the following form:
@@ -168,7 +171,7 @@ this.timeSeriesChart = ->
 
       legend = vis.append("g")
         .attr("class", "legend")
-        .attr("transform", "translate(#{width - marginLeft + 5},10)")
+        .attr("transform", "translate(#{width - marginLeft + legendMarginLeft},#{legendMarginTop})")
 
 
       colSize = Math.floor(legendHeight/legendItemHeight)
@@ -252,6 +255,8 @@ this.timeSeriesChart = ->
     props = propsOf(data)
 
     margin = {top: 28, right: 8, bottom: 14, left: marginLeft}
+
+    legendHeight ?= height
 
     w = width - margin.left - margin.right
     h = height - margin.top - margin.bottom
