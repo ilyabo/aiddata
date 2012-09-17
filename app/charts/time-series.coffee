@@ -18,6 +18,7 @@ this.timeSeriesChart = ->
   legendItemWidth = 80
   legendMarginLeft = 20
   legendMarginTop = 0
+  properties = null
 
   # borrowed from chroma.js: chroma.brewer.Set1
   propColors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
@@ -31,6 +32,9 @@ this.timeSeriesChart = ->
   chart = (selection) -> init(selection)
 
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
+
+  # which properties to visualize
+  chart.properties = (_) -> if (!arguments.length) then properties else properties = _; chart
 
   chart.width = (_) -> if (!arguments.length) then width else width = _; chart
 
@@ -125,7 +129,7 @@ this.timeSeriesChart = ->
       .rollup((a) -> a[0])  # assuming unique values for each date
       .map(data)
 
-    props = propsOf data
+    props = properties ? propsOf data
 
     for prop, pi in props
       line = lineDrawer(prop)
@@ -252,11 +256,11 @@ this.timeSeriesChart = ->
 
     data = selection.datum()
 
-    props = propsOf(data)
+    props = properties ? propsOf(data)
 
     margin = {top: 28, right: 8, bottom: 14, left: marginLeft}
 
-    legendHeight ?= height
+    legendHeight ?= height - margin.top - margin.bottom
 
     w = width - margin.left - margin.right
     h = height - margin.top - margin.bottom

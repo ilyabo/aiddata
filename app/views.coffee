@@ -74,7 +74,8 @@
             td -> div class:"hdr", -> "Donors"
             td -> div class:"hdr", -> "Recipients"
             td -> div class:"hdr", -> "Purposes"
-            td rowspan:"3", -> div id:"tseries", class:"tseries"
+            td rowspan:"2", -> 
+              div id:"tseries", class:"tseries"
 
           tr ->
             td -> select id:"donorList", class:"filter", 'data-prop':"donor", size:"10", multiple:"multiple"
@@ -104,7 +105,10 @@
                   button class:"breakDown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
                   button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
-        div id:"splitPanel"
+            td class:"split", ->
+              div class:"split btn-group",->
+                button id:"split",class:"split btn btn-mini", -> "Split in multiple"
+        div id:"splitPanel", class:"tseries"
 
 
 

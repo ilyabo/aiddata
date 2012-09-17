@@ -67,7 +67,7 @@ query = do ->
     filters = {}
     numFilters = 0
     breakDownBy = null
-
+    split = false
 
     q = () ->
 
@@ -76,6 +76,7 @@ query = do ->
       for p,v of filters
         cpy.addFilter(p, v)
       cpy.breakDownBy(breakDownBy) if breakDownBy?
+      cpy.split(split)
       cpy
 
     check = (prop) ->
@@ -97,6 +98,13 @@ query = do ->
 
     q.filter = (prop) -> check prop; filters[prop]?.slice()
 
+    q.split = (_) ->
+      if (!arguments.length)
+        split
+      else
+        if breakDownBy? then split = (if _ then true else false)       
+        q
+
     q.filters = -> 
       all = {}
       for p,v of filters
@@ -107,7 +115,7 @@ query = do ->
       if (!arguments.length) then breakDownBy else check prop; breakDownBy = prop; q
 
     q.resetBreakDownBy = ->
-      breakDownBy = null; q
+      breakDownBy = null; split = false; q
 
     q.describe = () ->
       "Showing totals for " +
@@ -195,7 +203,7 @@ query = do ->
 
 tschart = timeSeriesChart()
   .width(600)
-  .height(300)
+  .height(230)
   .xticks(7)
   .yticks(7)
   .dotRadius(1)
@@ -209,11 +217,14 @@ tschart = timeSeriesChart()
   #.propColors([chroma.brewer.Set1[1]])
 
 
-createSmallTimeSeriesChart = (title) ->
+createSmallTimeSeriesChart = (title, prop) ->
   timeSeriesChart()
     .width(200)
-    .height(150)
+    .height(100)
+    .xticks(3)
+    .yticks(3)
     .dotRadius(1)
+    .properties([prop])
     .marginLeft(70)
     .title(title)
     .ytickFormat(shortMagnitudeFormat)
@@ -254,6 +265,15 @@ updateCtrlButtons = ->
     else
       $(this).removeClass("applied")
 
+  $("#split").attr("disabled", not (q.breakDownBy()?))
+
+  if q.split()
+    $("#split")
+      .addClass("applied")
+  else
+    $("#split")
+      .removeClass("applied")
+
 
 
 updateCallback = (err, data) ->
@@ -280,6 +300,8 @@ updateCallback = (err, data) ->
     $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
     syncFiltersWithQuery()
     updateCtrlButtons()
+
+    updateSplitPanel()
     
     # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
@@ -287,15 +309,29 @@ updateCallback = (err, data) ->
 
 
 
-# splitBy = (prop) ->
-#   panel = d3.select("#splitPanel")
-#   panel.selectAll("svg").remove()
+updateSplitPanel = ->
+  
+  panel = d3.select("#splitPanel")
+  panel.datum(null) 
+  panel.selectAll("svg").remove()
 
-#   values = filter ? (propertyData[prop].map (d) -> d[prop])
-#   for v in values
-#     chart = createSmallTimeSeriesChart(v)
-#     data = 
-#     d3.select("#splitPanel").datum(data).call(chart)
+  q = queryHistory.current()
+  prop = q.breakDownBy()
+  
+  if q.split() and prop?
+
+    data = d3.select("#tseries").datum()
+    values = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
+
+    d3.select("#splitPanel").datum(data)
+
+    for v in values
+      #vdata = 
+      chart = createSmallTimeSeriesChart(v, v)
+      d3.select("#splitPanel").call(chart)   #.datum(data).call(chart)
+
+
+
 
 
 queue()
@@ -378,12 +414,14 @@ queue()
       q = queryHistory.current().copy()
       if q.filter(prop)?
         q.removeFilter(prop)
+        q.split(false)
         load q
 
     resetBreakDown = (prop) ->
       q = queryHistory.current().copy()
       if (q.breakDownBy() is prop)
         q.resetBreakDownBy()
+        q.split(false)
       load q
 
     breakDownBy = (prop, selection) ->
@@ -399,9 +437,16 @@ queue()
         q.breakDownBy(prop)
         changed = true
 
+
       load q if changed
         
+    split = ->
+      q = queryHistory.current().copy()
+      q.split(true)
+      #updateSplitPanel()
 
+      load q
+        
 
     $("button.breakDown").click ->
       prop = $(this).data("prop")
@@ -427,6 +472,7 @@ queue()
       queryHistory.forward(updateCallback)
 
 
+    $("#split").click split
 
 
 

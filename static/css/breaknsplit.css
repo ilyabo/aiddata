@@ -15,13 +15,14 @@ button.reset { font-size:9pt; }
 .ctls td { text-align: center; vertical-align: top; padding-top:2px;}
 
 div.btn-group {display:inline-block;}
-#outerTop select { margin:2px; width:160px; height:270px; font-size:7pt; }
+#outerTop select { margin:2px; width:160px; height:200px; font-size:7pt; }
 
 /*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 
 #error { width:200px; }
 
-
+td.split { text-align: left; }
+td.split .btn-group { padding-left:100px; padding-top:0px; }
 
 .tseries .line { stroke-width:1.3px; opacity:1.0; }
 .tseries .dot  { stroke-width:1.3px; opacity:1.0; }
@@ -32,7 +33,7 @@ div.btn-group {display:inline-block;}
 }
 
 
-div.btn-group.applied button {
+div.btn-group.applied button, button.applied {
   border-color:#f76;
   border-width:1px;
 }
