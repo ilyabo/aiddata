@@ -12,6 +12,10 @@ this.barHierarchyChart = () ->
   labelsFormat = (d) -> d[nameAttr]
   labelsTooltipFormat = (d) -> d[nameAttr]
 
+  fullwidth = 550
+  fullheight = 300
+
+
 
 
   chart = (selection) -> init(selection)
@@ -53,9 +57,6 @@ this.barHierarchyChart = () ->
     right: 20
     bottom: 5 
     left: 150
-
-  fullwidth = 550
-  fullheight = 300
 
   x = null
 
@@ -402,7 +403,7 @@ this.barHierarchyChart = () ->
 
     breadcrumbList.selectAll("li.node a")
       .attr("href", "#")
-      .text((d) -> d[nameAttr])
+      .text(labelsFormat)
       .on "click", (d, i) ->
         if (i < path.length - 1) then up(path[i + 1]) #d.children[0])
 
@@ -424,7 +425,8 @@ this.barHierarchyChart = () ->
     breadcrumb = selection
       .append("div")
         .attr("class", "breadcrumb")
-    
+        .style("width", fullwidth + "px")
+
     breadcrumb.append("ul")
 
     breadcrumbCaption = breadcrumb

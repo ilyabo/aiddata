@@ -120,7 +120,7 @@ this.timeSliderControl = ->
   update = ->
 
     #pos = Math.round(100 * chart.currentIndex() / rangeValues.length) + "%"
-    pos = $(".range", outerDiv[0]).offset().left - 19  +
+    pos = $(".range", outerDiv[0]).offset().left + 1  +
       (chart.currentIndex() * stepSize) + "px"
     #console.log pos
     outerDiv.select(".handle")

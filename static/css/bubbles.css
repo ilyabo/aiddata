@@ -1,40 +1,46 @@
-
+#error { display:none;}
 #bubblesChart {
 text-align:center;
 }
 
 
 
-#timeSlider {
-  position:absolute;
-  left:19px;  /* 10 + 30 (tseries margin) - 20 (tslider left padding) */
-  top:60px;
-}
 
 
 
 #purposeBars {
-	text-align: right;
-	position:absolute;
-	right:5px; top:50px;
 	height: auto;
+  position: fixed;
+  right:10px;
+  margin-top:0;
+
 	background-color:rgba(255,255,255,0.7);
-	padding:10px;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	border-radius: 10px; 
+
+  padding:0;
+
+  text-align: right;
+  
 }
-#purposeBars .breadcrumb { text-align:left; max-width: 500px; }
+#purposeBars .breadcrumb { text-align:left;  margin-top: 0; }
+#purposeBars .breadcrumb .caption { float:right;}
 #purposeBars .breadcrumb li.node { }
 #purposeBars .breadcrumb li.node.sel {   }
 #purposeBars svg {  }
 #purposeBars svg text.barLabel { font-size:10px; fill:gray; }
 
-
-
+#leftSidebar {
+  position: fixed; 
+  left:0;
+}
+#timeSlider {
+  width:255px;
+  margin-left:11px;
+}
 
 #tseriesPanel { 
-  position: absolute; top:160px; left:5px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right:15px;
@@ -47,13 +53,12 @@ text-align:center;
 }
 
 
-.tseries .inbound .line { stroke: #B2182B; opacity:.5; }
-.tseries .outbound .line { stroke: #2166AC; opacity:.5;}
+.tseries .pi_0 .line { stroke: #B2182B; opacity:.5; }
+.tseries .pi_1 .line { stroke: #2166AC; opacity:.5;}
 
 .tseries .dot  { stroke-width:0.5; fill:#fff; }
-.tseries .inbound .dot  { stroke:#B2182B; }
-.tseries .outbound .dot  { stroke:#2166AC; }
-
+.tseries .pi_0 .dot  { stroke:#B2182B; }
+.tseries .pi_1 .dot  { stroke:#2166AC; }
 
 
 #yearSliderOuter {

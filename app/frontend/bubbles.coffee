@@ -18,14 +18,14 @@ bubbles = bubblesChart()
 barHierarchy = barHierarchyChart()
   .width(400)
   .barHeight(10)
-  .labelsWidth(200)
+  .labelsWidth(170)
   .childrenAttr("values")
   .nameAttr("name")
   .valueFormat(formatMagnitude)
   .values((d) -> d["sum_#{startYear}"] ? 0)
   # .values((d) -> d.totals[startYear].sum ? 0)
   #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
-  .labelsFormat((d) -> shorten(d.name ? d.key, 35))
+  .labelsFormat((d) -> shorten(d.name ? d.key, 30))
   .labelsTooltipFormat((d) -> name = d.name ? d.key)
   .breadcrumbText(
     do ->
@@ -70,25 +70,49 @@ timeSlider = timeSliderControl()
     bubbles.setSelDateTo(current, true)
     barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
 
-loadData()
-  .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
-  #.csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
-  .csv('flows', "dv/flows/by/od.csv")
-  .json('map', "data/world-countries.json")
-  .csv('countries', "data/aiddata-countries.csv")
-  .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
-  .json('purposeTree', "purposes-with-totals.json")
-  .onload (data) ->
+# loadData()
+#   .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
+#   #.csv('flows', "#{dynamicDataPath}aiddata-totals-d-r-y.csv")
+#   .csv('flows', "dv/flows/by/od.csv")
+#   #.csv('flows', "dv/flows/breaknsplit.csv?breakby=date,donor,recipient")
+#   .json('map', "data/world-countries.json")
+#   .csv('countries', "data/aiddata-countries.csv")
+#   .csv('flowsByPurpose', "dv/flows/by/purpose.csv")
+#   .json('purposeTree', "purposes-with-totals.json")
+#   .onload (data) ->
 
+queue()
+  .defer(loadCsv, "#{dynamicDataPath}aiddata-nodes.csv")
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient")
+  .defer(loadJson, "data/world-countries.json")
+  .defer(loadCsv, "data/aiddata-countries.csv")
+  .defer(loadCsv, "dv/flows/by/purpose.csv")
+  .defer(loadJson, "purposes-with-totals.json")
+  .await (err, loaded) ->
+
+    if err?  or  not(loaded?)
+      $("#loading").remove()
+      $("#error")
+        .addClass("alert-error alert")
+        .html("Could not load data")
+      return
+
+
+    [ nodes, flows, map, countries, flowsByPurpose, purposeTree ] = loaded
 
     # list of flows with every year separated
     #   -> list grouped by o/d, all years' values in one object
-    data.flows = groupFlowsByOD data.flows 
+    flows = groupFlowsByOD flows 
 
     provideCountryNodesWithCoords(
-      data.nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
-      data.countries, { code: "Code", lat: "Lat", lon: "Lon" }
+      nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
+      countries, { code: "Code", lat: "Lat", lon: "Lon" }
     )
+
+    data = 
+      map : map
+      flows : flows
+      nodes : nodes
 
     d3.select("#bubblesChart")
       .datum(data)
@@ -100,7 +124,7 @@ loadData()
 
     # purposes = d3.nest()
     #   .key((d) -> d.date)
-    #   .map(data.purposes)
+    #   .map(purposes)
 
     valueAttrs = do ->
       arr = []
@@ -109,10 +133,10 @@ loadData()
           arr.push "#{attr}_#{y}"
       arr
 
-    utils.aiddata.purposes.provideWithTotals(data.purposeTree, valueAttrs, "values", "totals")
+    utils.aiddata.purposes.provideWithTotals(purposeTree, valueAttrs, "values", "totals")
 
     d3.select("#purposeBars")
-      .datum(data.purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
+      .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
       .call(barHierarchy)
 
     bubbles.setSelDateTo(utils.date.yearToDate(startYear), true)

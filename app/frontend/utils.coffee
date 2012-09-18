@@ -148,11 +148,11 @@ root.provideCountryNodesWithCoords =
 
 root.provideNodesWithTotals =
 
-    (data, conf) ->
+    (flows, nodes, conf) ->
       max = 0
       totals = {}
       
-      for flow in data.flows
+      for flow in flows
 
         origin = flow[conf.flowOriginAttr]
         dest = flow[conf.flowDestAttr]
@@ -174,7 +174,7 @@ root.provideNodesWithTotals =
             if (o.outbound[i] > max) then max = o.outbound[i]
             if (d.inbound[i] > max) then max = d.inbound[i]
 
-      for node in data.nodes
+      for node in nodes
         nodeId = node[conf.nodeIdAttr]
         node.totals = totals[nodeId]
 

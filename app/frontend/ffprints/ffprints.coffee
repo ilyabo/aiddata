@@ -860,7 +860,7 @@ this.ffprintsChart = () ->
     if data.originTotals  and  data.destTotals 
       fromInputDataTotalsToNodeTotals()
     else if data.flows
-      provideNodesWithTotals(data, conf)
+      provideNodesWithTotals(data.flows, data.nodes, conf)
 
       flowsTree = d3.nest()
         .key((d) -> d[conf.flowOriginAttr])

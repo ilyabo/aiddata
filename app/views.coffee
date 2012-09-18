@@ -132,7 +132,18 @@
     style '@import url("css/charts/bubbles.css");'
     style '@import url("css/bubbles.css");'
 
+
+
+
     div id:"loading", -> "Loading..."
+    div id:"error", class:"alert-error alert", ->
+
+    div id:"leftSidebar", ->
+      div id:"timeSlider"
+      div id:"tseriesPanel"
+
+    div id:"purposeBars"
+
     div id:"bubblesChart"
 
 
@@ -147,17 +158,15 @@
         div id:'yearTicks'
     ###
 
-    div id:"tseriesPanel"
 
-    div id:"purposeBars"
 
-    div id:"timeSlider"
 
     style '@import url("libs/tipsy-new/stylesheets/tipsy.css");'
     script src: "libs/tipsy-new/javascripts/jquery.tipsy.js"
 
     script src: 'js/fit-projection.js'
     script src: 'coffee/utils.js'
+    script src: 'queue.js'
     script src: 'coffee/utils-aiddata.js'
     #script src: "coffee/time-slider.js"
     script src: "coffee/charts/bubbles.js"

@@ -24,7 +24,7 @@ this.bubblesChart = ->
   tseriesh = 100 #bubblesChartHeight*0.18
   tseriesMarginLeft = 30
 
-  nodesWithoutCoordsMarginBottom = 90
+  nodesWithoutCoordsMarginBottom = 50
 
 
   ###
@@ -228,7 +228,7 @@ this.bubblesChart = ->
 
 
 
-    provideNodesWithTotals(data, conf)
+    provideNodesWithTotals(data.flows, data.nodes, conf)
 
 
     state = initFlowData(conf)
@@ -242,7 +242,7 @@ this.bubblesChart = ->
           d3.max(maxTotalMagnitudes.outbound))
 
     rscale = d3.scale.sqrt()
-      .range([0, Math.min(bubblesChartWidth/20, bubblesChartHeight/10)])
+      .range([0, Math.min(bubblesChartWidth/20, bubblesChartHeight /10)])
       .domain([0, maxTotalMagnitude])
     maxr = rscale.range()[1]
 
@@ -265,7 +265,7 @@ this.bubblesChart = ->
       .on 'click', (d) -> clearNodeSelection()
 
 
-    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight*0.8]], true)
+    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight * 0.9]], true)
 
 
 
@@ -360,9 +360,13 @@ this.bubblesChart = ->
               # Check for collisions.
               dx = a.x - b.x
               dy = a.y - b.y
-              l = Math.sqrt(dx * dx + dy * dy)
+              #l = Math.sqrt(dx * dx + dy * dy)
+              l2 = (dx * dx + dy * dy)
               d = a.r + b.r
-              if (l < d)
+              d2 = d * d 
+              #if (l < d)
+              if (l2 < d2)
+                l = Math.sqrt(l2)
                 l = (l - d) / l * k
                 dx *= l
                 dy *= l
