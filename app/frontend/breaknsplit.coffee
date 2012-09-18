@@ -244,7 +244,7 @@ createSmallTimeSeriesCharts = (prop, values) ->
       .properties([val])
       .marginLeft(40)
       .marginRight(15)
-      .title(val)
+      .title("#{prop}: #{val}")
       .propColors(["steelblue"])
       .ytickFormat(shortMagnitudeFormat)
       .showRule(true)
