@@ -9,6 +9,7 @@ this.timeSeriesChart = ->
   dotRadius = 2
   xticks = yticks = null
   marginLeft = 40
+  marginRight = 8
   ytickFormat = d3.format(",.0f")
   maxPropertyClasses = 9
   showLegend = false
@@ -53,6 +54,8 @@ this.timeSeriesChart = ->
 
   chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
 
+  chart.marginRight = (_) -> if (!arguments.length) then marginRight else marginRight = _; chart
+
   chart.dateProp = (_) -> if (!arguments.length) then dateProp else dateProp = _; chart
 
   chart.interpolate = (_) -> if (!arguments.length) then interpolate else interpolate = _; chart
@@ -69,7 +72,15 @@ this.timeSeriesChart = ->
 
   chart.propColors = (_) -> if (!arguments.length) then propColors else propColors = _; chart
 
-  chart.on = (event, listener) -> (eventListeners[event] ?= []).push(listener); chart
+  # Supported events: "rulemove", "mouseover", "mouseout", "click"
+  chart.on = (eventName, listener) -> 
+    (eventListeners[eventName] ?= []).push(listener); chart
+
+  fire = (eventName, args...) -> 
+    listeners = eventListeners[eventName]
+    if listeners?
+      l.apply(chart, args) for l in listeners
+
 
   chart.moveRule = (date) ->
     if date isnt ruleDate
@@ -83,9 +94,7 @@ this.timeSeriesChart = ->
 
       ruleDate = date
 
-      listeners = eventListeners["rulemove"]
-      if listeners?
-        l(date) for l in listeners
+      fire("rulemove", date)
 
 
 
@@ -156,7 +165,7 @@ this.timeSeriesChart = ->
 
 
       g = vis.append("g")
-        .attr("class", "prop #{prop}")
+        .attr("class", "prop pi_#{pi}")
 
       g.append("path")
         .attr("class", "line")
@@ -270,15 +279,17 @@ this.timeSeriesChart = ->
 
   init = (selection) -> 
 
+    element = selection
+    data = selection.datum()
+
     if svg?
       chart.update(selection)
       return
 
-    data = selection.datum()
 
     props = properties ? propsOf(data)
 
-    margin = {top: 28, right: 8, bottom: 14, left: marginLeft}
+    margin = {top: 28, right: marginRight, bottom: 14, left: marginLeft}
 
     legendHeight ?= height - margin.top - margin.bottom
 
@@ -304,8 +315,7 @@ this.timeSeriesChart = ->
       .tickFormat(ytickFormat)
       .tickSize(-w, 0, 0)
 
-    svg = selection
-      .append("svg")
+    svg = element.append("svg")
         .attr("width", w + margin.left + margin.right + 
                       (if showLegend then legendWidth else 0))
         .attr("height", 
@@ -362,6 +372,14 @@ this.timeSeriesChart = ->
       .attr("y", 0)
       .attr("width", w)
       .attr("height", h + margin.bottom)
+      .on("mouseover", -> fire "mouseover", svg)
+      .on("click", -> fire "click", svg)
+      .on("mouseout", -> 
+        fire("mouseout", svg)
+        if showRule
+          chart.moveRule(null)
+      )
+
 
     if showRule
       foreground.on "mousemove", ->
@@ -370,8 +388,7 @@ this.timeSeriesChart = ->
         date = x.invert(d3.mouse(foreground[0][0])[0] + 3)
         chart.moveRule(date)  
 
-      foreground.on "mouseout", ->
-        chart.moveRule(null)
+      
 
 
   

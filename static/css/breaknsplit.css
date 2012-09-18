@@ -49,3 +49,18 @@ div.btn-group.applied button, button.applied {
   stroke-width:0.25;
   stroke:#999;
 }
+
+
+#splitPanel div.tseries {
+  display:inline-block;
+  border:2px solid white; 
+}
+
+#splitPanel div.tseries:hover {
+  border-color:rgb(176,196,222);  /* lightsteelblue */
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  /*transition:border-color 0.5s linear;*/
+}
+
+.tseries line.rule { opacity:.1; }

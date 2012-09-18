@@ -85,10 +85,12 @@ query = do ->
 
     q.addFilter = (prop, values) ->
       check prop
+      values = [ values ] unless values instanceof Array
       if values.length > 0
         unless prop of filters
           numFilters++
-        filters[prop] = values.slice(); q
+        filters[prop] = values.slice()
+      q
 
     q.removeFilter = (prop) ->
       check prop
@@ -219,27 +221,53 @@ tschart = timeSeriesChart()
   .on "rulemove", (date) -> moveChartRulesTo date
 
 
-smallCharts = []
+smallCharts = {}
 
 moveChartRulesTo = (date) ->
   tschart.moveRule date
-  for chart in smallCharts
+  for val, chart of smallCharts
     chart.moveRule date
 
-createSmallTimeSeriesChart = (title, prop) ->
-  timeSeriesChart()
-    .width(270)
-    .height(90)
-    .xticks(3)
-    .yticks(2)
-    .dotRadius(1)
-    .properties([prop])
-    .marginLeft(70)
-    .title(title)
-    .propColors(["steelblue"])
-    .ytickFormat(shortMagnitudeFormat)
-    .showRule(true)
-    .on "rulemove", (date) -> moveChartRulesTo date
+createSmallTimeSeriesCharts = (prop, values) ->
+  
+  data = d3.select("#tseries").datum()
+  panel = d3.select("#splitPanel")
+
+  charts = []
+  for val in values
+    chart = timeSeriesChart()
+      .width(270)
+      .height(90)
+      .xticks(3)
+      .yticks(2)
+      .dotRadius(1)
+      .properties([val])
+      .marginLeft(40)
+      .marginRight(15)
+      .title(val)
+      .propColors(["steelblue"])
+      .ytickFormat(shortMagnitudeFormat)
+      .showRule(true)
+      .on("rulemove", (date) -> moveChartRulesTo date)
+      .on("click", do -> v = val; ->
+        current = queryHistory.current().filter(prop)
+        unless (current.length is 1) and (current[0] is v)  # nothing will change only the history
+                                                            # will be polluted with duplicates
+          filter(prop, [ v ])
+      )
+      #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
+      #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
+
+    div = panel.append("div")
+        .datum(data)
+      .attr("class", "tseries")
+
+    div.call(chart)
+
+    charts[val] = chart
+
+  smallCharts = charts
+  
 
 
 
@@ -295,13 +323,14 @@ updateCallback = (err, data) ->
     $("#error").fadeIn().delay(5000).fadeOut()
     if callback? then callback("Could not load data from the server")
 
-  else if data?.length is 0
-    $("#warningText").html("The result of your filter query is empty")
-    $("#warn").fadeIn().delay(5000).fadeOut()
-    if callback? then callback("Empty query")
+  else 
+    if data?.length is 0
+      $("#warningText").html("The result of your filter query is empty")
+      $("#warn").fadeIn().delay(5000).fadeOut()
+      #if callback? then callback("Empty query")
+    else
+      $("#warn").hide()
 
-  else
-    $("#warn").hide()
     $("#error").hide()
     # update the view
     d3.select("#tseries").datum(data).call(tschart)
@@ -323,31 +352,71 @@ updateCallback = (err, data) ->
 
 updateSplitPanel = ->
   
-  panel = d3.select("#splitPanel")
-  panel.datum(null) 
-  panel.selectAll("svg").remove()
+  d3.select("#splitPanel").selectAll("div.tseries").remove()
 
   q = queryHistory.current()
   prop = q.breakDownBy()
   
-  charts = []
-
   if q.split() and prop?
-
-    data = d3.select("#tseries").datum()
     values = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
-
-    d3.select("#splitPanel").datum(data)
-
-    for v in values
-      #vdata = 
-      chart = createSmallTimeSeriesChart(v, v)
-      charts.push chart
-      d3.select("#splitPanel").call(chart)   #.datum(data).call(chart)
-
-  smallCharts = charts
+    createSmallTimeSeriesCharts(prop, values)
 
 
+
+
+
+selectedFilterOptions = (prop) ->
+  selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
+  selection = $.makeArray(selectedOptions).map (d) -> d.value
+
+load = (q) ->
+  $("#loading").fadeIn()
+  queryHistory.load(q, updateCallback)
+
+filter = (prop, selection) ->
+  unless selection.length is 0
+    current = queryHistory.current()
+    q = current.copy()
+    q.addFilter(prop, selection)
+    load q
+
+resetFilter = (prop) ->
+  q = queryHistory.current().copy()
+  if q.filter(prop)?
+    q.removeFilter(prop)
+    q.split(false)
+    load q
+
+resetBreakDown = (prop) ->
+  q = queryHistory.current().copy()
+  if (q.breakDownBy() is prop)
+    q.resetBreakDownBy()
+    q.split(false)
+  load q
+
+breakDownBy = (prop, selection) ->
+  q = queryHistory.current().copy()
+
+  changed = false
+
+  if selection.length > 0
+    q.addFilter(prop, selection)
+    changed = true
+  
+  if q.breakDownBy isnt prop
+    q.breakDownBy(prop)
+    changed = true
+
+
+  load q if changed
+    
+split = ->
+  q = queryHistory.current().copy()
+  q.split(true)
+  #updateSplitPanel()
+
+  load q
+    
 
 
 queue()
@@ -411,58 +480,6 @@ queue()
 
     #   datum
 
-
-    selectedFilterOptions = (prop) ->
-      selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
-      selection = $.makeArray(selectedOptions).map (d) -> d.value
-
-    load = (q) ->
-      $("#loading").fadeIn()
-      queryHistory.load(q, updateCallback)
-
-    filter = (prop, selection) ->
-      unless selection.length is 0
-        q = queryHistory.current().copy()
-        q.addFilter(prop, selection)
-        load q
-
-    resetFilter = (prop) ->
-      q = queryHistory.current().copy()
-      if q.filter(prop)?
-        q.removeFilter(prop)
-        q.split(false)
-        load q
-
-    resetBreakDown = (prop) ->
-      q = queryHistory.current().copy()
-      if (q.breakDownBy() is prop)
-        q.resetBreakDownBy()
-        q.split(false)
-      load q
-
-    breakDownBy = (prop, selection) ->
-      q = queryHistory.current().copy()
-
-      changed = false
-
-      if selection.length > 0
-        q.addFilter(prop, selection)
-        changed = true
-      
-      if q.breakDownBy isnt prop
-        q.breakDownBy(prop)
-        changed = true
-
-
-      load q if changed
-        
-    split = ->
-      q = queryHistory.current().copy()
-      q.split(true)
-      #updateSplitPanel()
-
-      load q
-        
 
     $("button.breakDown").click ->
       prop = $(this).data("prop")
