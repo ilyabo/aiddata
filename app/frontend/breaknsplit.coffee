@@ -1,4 +1,3 @@
-
 queryHistory = do ->
 
   current = null
@@ -58,6 +57,7 @@ queryHistory = do ->
 dateFormat = d3.time.format("%Y")
 minDate = dateFormat.parse("1942")
 maxDate = Date.now()
+
 
 
 query = do -> 
@@ -292,19 +292,26 @@ updateCtrlButtons = ->
 
   q = queryHistory.current()
 
-  $("div.btn-group.filter").each ->
+  $(".btn-group.filter").each ->
     prop = $(this).data("prop")
     if q.filter(prop)?
       $(this).addClass("applied")
     else
       $(this).removeClass("applied")
 
-  $("div.btn-group.breakDown").each ->
+
+  $(".btn-group.breakDown").each ->
     prop = $(this).data("prop")
     if q.breakDownBy() is prop
       $(this).addClass("applied")
     else
       $(this).removeClass("applied")
+
+
+  $(".btn-group.filter .btn").attr("disabled", false)
+  $(".btn-group.breakDown .btn").attr("disabled", false)
+
+
 
   $("#split").attr("disabled", not (q.breakDownBy()?))
 
@@ -347,7 +354,7 @@ updateCallback = (err, data) ->
     
     # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
-  $("#loading").fadeOut()
+  loadingStopped()
 
 
 updateSplitPanel = ->
@@ -370,7 +377,7 @@ selectedFilterOptions = (prop) ->
   selection = $.makeArray(selectedOptions).map (d) -> d.value
 
 load = (q) ->
-  $("#loading").fadeIn()
+  loadingStarted()
   queryHistory.load(q, updateCallback)
 
 filter = (prop, selection) ->
@@ -416,7 +423,21 @@ split = ->
   #updateSplitPanel()
 
   load q
-    
+
+
+
+
+loadingStarted = ->
+  $("#loading .blockUI").fadeIn(100)
+  $("#loading img").fadeIn(100)
+  $(".btn").attr("disabled", true)
+
+loadingStopped = ->
+  $("#loading .blockUI").fadeOut(100)
+  $("#loading img").fadeOut(500)
+  updateCtrlButtons()
+
+
 
 
 queue()
@@ -428,7 +449,7 @@ queue()
   .await (err, data) ->
 
     if err?  or  not(data?)
-      $("#loading").hide()
+      loadingStopped()
       $("#error")
         .addClass("alert-error alert")
         .html("Could not load flow data")
@@ -496,12 +517,12 @@ queue()
 
 
     $("#backButton").click ->
-      $("#loading").fadeIn()
+      loadingStarted()
       queryHistory.back(updateCallback)
 
 
     $("#forwardButton").click ->
-      $("#loading").fadeIn()
+      loadingStarted()
       queryHistory.forward(updateCallback)
 
 

@@ -1,8 +1,16 @@
-#loading { padding-left:.5em; }
-#content { display:none; margin-top:1.4em;}
+#loading .blockUI { 
+  position:absolute; top:0; left:0; right:0; bottom:0; background-color:white; 
+  opacity:0.5; z-index:99;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#loading img { position: absolute; top:50px; left:10px;  }
+
+#content { display:none; }
 #status { font-size:9pt; margin-bottom:0;}
 #status .filter { font-size:8pt;}
-#outerTop { }
+#outerTop { margin-top:1em;}
 #error, #warn, #status { display:none; }
 button.close { border:none; background:none; padding: 0;}
 
@@ -64,3 +72,5 @@ div.btn-group.applied button, button.applied {
 }
 
 .tseries line.rule { opacity:.1; }
+
+

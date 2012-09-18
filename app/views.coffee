@@ -17,32 +17,31 @@
     script src: 'coffee/breaknsplit.js'
 
 
-    div class:"row-fluid", ->
-
-      table ->
-        td class:"backForwardBtns", ->
-          div class:"btn-toolbar", ->
-            div class:"btn-group", ->
-              button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
-                i class:"icon-chevron-left"
-              button id:"forwardButton",class:"btn btn-mini", disabled:"disabled", ->
-                i class:"icon-chevron-right"
-
-        td style:"width:30px", ->
-          div id:"loading", -> img src:"images/loading.gif"
-        td ->
-          div id:"status", class:"alert alert-info"
-        td ->
-          div id:"error", class:"alert-error alert", ->
-            button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
-            span id:"errorText"
-
-          div id:"warn", class:"alert", ->
-            button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
-            span id:"warningText"
-
-
     div id:"content", ->
+
+      div class:"row-fluid", ->
+
+        table ->
+          td class:"backForwardBtns", ->
+            div class:"btn-toolbar", ->
+              div class:"btn-group", ->
+                button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
+                  i class:"icon-chevron-left"
+                button id:"forwardButton",class:"btn btn-mini", disabled:"disabled", ->
+                  i class:"icon-chevron-right"
+
+          td style:"width:30px" #, ->
+            #div id:"loading", -> img src:"images/loading.gif"
+          td ->
+            div id:"status", class:"alert alert-info"
+          td ->
+            div id:"error", class:"alert-error alert", ->
+              button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
+              span id:"errorText"
+
+            div id:"warn", class:"alert", ->
+              button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
+              span id:"warningText"
 
       div id:"outerTop", ->
         # div class:"row", ->
@@ -109,6 +108,11 @@
               div class:"split btn-group",->
                 button id:"split",class:"split btn btn-mini", -> "Split in multiple"
         div id:"splitPanel", class:"tseries"
+
+
+    div id:"loading", -> 
+      div class:"blockUI"
+      img src:"images/loading.gif"
 
 
 
