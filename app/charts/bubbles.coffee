@@ -79,7 +79,7 @@ this.bubblesChart = ->
 
     d3.select(tseriesDiv).datum(data).call(tschart)
 
-    updateYear = -> tschart.selectDate(data[state.selAttrIndex].date)
+    updateYear = -> tschart.moveRule(data[state.selAttrIndex].date)
     updateYear()
     $(tseriesDiv).bind "updateYear", updateYear
 
@@ -666,7 +666,7 @@ this.bubblesChart = ->
       old = state.selAttrIndex
       state.selAttrIndex = newSelAttr
       update(noAnim)
-      $(".tseries line.selDate").trigger("updateYear")
+      $(".tseries line.rule").trigger("updateYear")
       for handler in listeners.changeSelDate
         handler(
           utils.date.yearToDate(state.magnAttrs(newSelAttr)),

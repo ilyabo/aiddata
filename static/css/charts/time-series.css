@@ -28,7 +28,7 @@ div.tseries { }
   shape-rendering: crispEdges;
 }
 
-.tseries line.selDate { stroke:#000; opacity:.3; }
+.tseries line.rule { stroke:#000; opacity:.3; }
 
 .tseries .y.axis line, #tseries .y.axis path {
   stroke:#eee; stroke-width:1;

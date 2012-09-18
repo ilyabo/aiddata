@@ -203,7 +203,7 @@ query = do ->
 
 tschart = timeSeriesChart()
   .width(600)
-  .height(230)
+  .height(200)
   .xticks(7)
   .yticks(7)
   .dotRadius(1)
@@ -215,19 +215,32 @@ tschart = timeSeriesChart()
   #.legendHeight(250)
   .propColors(chroma.brewer.Set1)
   #.propColors([chroma.brewer.Set1[1]])
+  .showRule(true)
+  .on "rulemove", (date) -> moveChartRulesTo date
 
+
+smallCharts = []
+
+moveChartRulesTo = (date) ->
+  tschart.moveRule date
+  for chart in smallCharts
+    chart.moveRule date
 
 createSmallTimeSeriesChart = (title, prop) ->
   timeSeriesChart()
-    .width(200)
-    .height(100)
+    .width(270)
+    .height(90)
     .xticks(3)
-    .yticks(3)
+    .yticks(2)
     .dotRadius(1)
     .properties([prop])
     .marginLeft(70)
     .title(title)
+    .propColors(["steelblue"])
     .ytickFormat(shortMagnitudeFormat)
+    .showRule(true)
+    .on "rulemove", (date) -> moveChartRulesTo date
+
 
 
 propertyData = null  # is initialized below
@@ -308,7 +321,6 @@ updateCallback = (err, data) ->
   $("#loading").fadeOut()
 
 
-
 updateSplitPanel = ->
   
   panel = d3.select("#splitPanel")
@@ -318,6 +330,8 @@ updateSplitPanel = ->
   q = queryHistory.current()
   prop = q.breakDownBy()
   
+  charts = []
+
   if q.split() and prop?
 
     data = d3.select("#tseries").datum()
@@ -328,8 +342,10 @@ updateSplitPanel = ->
     for v in values
       #vdata = 
       chart = createSmallTimeSeriesChart(v, v)
+      charts.push chart
       d3.select("#splitPanel").call(chart)   #.datum(data).call(chart)
 
+  smallCharts = charts
 
 
 

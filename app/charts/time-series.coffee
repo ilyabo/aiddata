@@ -19,6 +19,9 @@ this.timeSeriesChart = ->
   legendMarginLeft = 20
   legendMarginTop = 0
   properties = null
+  showRule = false
+  ruleDate = null
+  eventListeners = {}
 
   # borrowed from chroma.js: chroma.brewer.Set1
   propColors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
@@ -62,12 +65,29 @@ this.timeSeriesChart = ->
 
   chart.legendHeight = (_) -> if (!arguments.length) then legendHeight else legendHeight = _; chart
 
+  chart.showRule = (_) -> if (!arguments.length) then showRule else showRule = _; chart
+
   chart.propColors = (_) -> if (!arguments.length) then propColors else propColors = _; chart
 
-  chart.selectDate = (date) ->
-    vis.selectAll("line.selDate")
-      .attr("x1", x(date))
-      .attr("x2", x(date))
+  chart.on = (event, listener) -> (eventListeners[event] ?= []).push(listener); chart
+
+  chart.moveRule = (date) ->
+    if date isnt ruleDate
+      rule = vis.selectAll("line.rule")
+      if date?
+        rule.attr("visibility", "visible")
+          .attr("x1", x(date))
+          .attr("x2", x(date))
+      else
+        rule.attr("visibility", "hidden")
+
+      ruleDate = date
+
+      listeners = eventListeners["rulemove"]
+      if listeners?
+        l(date) for l in listeners
+
+
 
 
   chart.update = (selection) ->
@@ -290,7 +310,7 @@ this.timeSeriesChart = ->
                       (if showLegend then legendWidth else 0))
         .attr("height", 
           Math.max(h + margin.top + margin.bottom, legendHeight + margin.top + margin.bottom))
-    
+
     svg.append("text")  
       .attr("class", "title")
       .attr("x",  margin.left + w/2)
@@ -317,35 +337,42 @@ this.timeSeriesChart = ->
       .attr("transform", "translate(0," + h + ")")
       .call(xAxis)
 
-    selDateLine = vis.append("line")
-      .attr("class", "selDate")
+    ruleLine = vis.append("line")
+      .attr("visibility", "hidden")
+      .attr("class", "rule")
       .attr("y1", -3)
       .attr("y2", h + 6)
 
     ###
     updateYear = ->
-      vis.selectAll("line.selDate")
+      vis.selectAll("line.rule")
         .attr("x1", x(data[state.selAttrIndex][dateProp]))
         .attr("x2", x(data[state.selAttrIndex][dateProp]))
 
     updateYear()
-    $(selDateLine[0]).bind("updateYear", updateYear)
+    $(ruleLine[0]).bind("updateYear", updateYear)
     ###
 
     #enter(data)
     update(data, 0)
 
-    vis.append("rect")
+    foreground = vis.append("rect")
       .attr("class", "foreground")
       .attr("x", 0)
       .attr("y", 0)
       .attr("width", w)
       .attr("height", h + margin.bottom)
 
-    ###
-    .on 'mousemove', (d) ->
-      selection.setSelDateTo(x.invert(d3.mouse(this)[0]), true)
-    ###
+    if showRule
+      foreground.on "mousemove", ->
+        #r = outerDiv.select(".range")[0][0]
+        # the handle must be in the middle of the mouse cursor => +3
+        date = x.invert(d3.mouse(foreground[0][0])[0] + 3)
+        chart.moveRule(date)  
+
+      foreground.on "mouseout", ->
+        chart.moveRule(null)
+
 
   
   chart
