@@ -251,8 +251,10 @@ createSmallTimeSeriesCharts = (prop, values) ->
       .on("rulemove", (date) -> moveChartRulesTo date)
       .on("click", do -> v = val; ->
         current = queryHistory.current().filter(prop)
-        unless (current.length is 1) and (current[0] is v)  # nothing will change only the history
-                                                            # will be polluted with duplicates
+        if current? and current.length is 1 and current[0] is v
+          # nothing has to be changed
+          return
+        else
           filter(prop, [ v ])
       )
       #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
