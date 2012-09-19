@@ -544,12 +544,7 @@ this.bubblesChart = ->
             d3.select(this).classed("highlighted", false)
 
             if selectedNode == null
-              flows.selectAll("line")
-                .transition()
-                  .duration(100)
-                  .attr("opacity", 0)
-                .delay(100)
-                  .remove()
+              flows.selectAll("line").remove()
 
             if selectedNode != this
               tseriesPanel.remove("node" + i)
