@@ -57,6 +57,9 @@
                     <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
                     <a href="bubbles">Bubbles</a></li>
 
+                    <li <%=(if @page == "breaknsplit" then 'class=active' else "") %> >
+                    <a href="breaknsplit">Break'n'split</a></li>
+
                     <li <%=(if @page == "horizon" then 'class=active' else "") %> >
                     <a href="horizon">Horizon</a></li>
 
