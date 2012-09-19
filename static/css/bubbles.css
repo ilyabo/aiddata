@@ -24,12 +24,12 @@ text-align:center;
   text-align: right;
   
 }
-#purposeBars .breadcrumb { text-align:left;  margin-top: 0; }
-#purposeBars .breadcrumb .caption { float:right;}
+
+
 #purposeBars .breadcrumb li.node { }
 #purposeBars .breadcrumb li.node.sel {   }
 #purposeBars svg {  }
-#purposeBars svg text.barLabel { font-size:10px; fill:gray; }
+#purposeBars svg text.barLabel {  }
 
 #leftSidebar {
   position: fixed; 

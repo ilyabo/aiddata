@@ -50,7 +50,7 @@ this.barHierarchyChart = () ->
 
   currentNode = null
   data = null
-  svg = vis = breadcrumb = null
+  svg = vis = breadcrumb = breadcrumbCaption = null
 
   margin =
     top: 20
@@ -364,13 +364,7 @@ this.barHierarchyChart = () ->
     
 
   updateBreadcrumbCaption = (node) ->
-    ###
-    li.selectAll("li.total")
-    ###
-    caption = breadcrumb.select("div.caption")
-    #caption.select("div.title").text(node[nameAttr])
-
-    caption.select("div.total").text(breadcrumbText(node))
+    breadcrumbCaption.select("div.total").text(breadcrumbText(node))
 
 
   updateBreadcrumb = (node) ->
@@ -429,7 +423,7 @@ this.barHierarchyChart = () ->
 
     breadcrumb.append("ul")
 
-    breadcrumbCaption = breadcrumb
+    breadcrumbCaption = selection
       .append("div")
         .attr("class", "caption")
 

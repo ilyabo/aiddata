@@ -16,16 +16,16 @@ bubbles = bubblesChart()
 
 
 barHierarchy = barHierarchyChart()
-  .width(400)
-  .barHeight(10)
-  .labelsWidth(170)
+  .width(450)
+  .barHeight(12)
+  .labelsWidth(200)
   .childrenAttr("values")
   .nameAttr("name")
   .valueFormat(formatMagnitude)
   .values((d) -> d["sum_#{startYear}"] ? 0)
   # .values((d) -> d.totals[startYear].sum ? 0)
   #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
-  .labelsFormat((d) -> shorten(d.name ? d.key, 30))
+  .labelsFormat((d) -> shorten(d.name ? d.key, 33))
   .labelsTooltipFormat((d) -> name = d.name ? d.key)
   .breadcrumbText(
     do ->

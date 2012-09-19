@@ -25,3 +25,5 @@ line.in:hover { stroke:rgb(255, 174, 174); }
 line.out { stroke:#a1c0de; }
 line.out:hover { stroke:#bbdeff; }
 
+
+g.bubble text { pointer-events: none; text-shadow: 0 0 0.3em #FFF }

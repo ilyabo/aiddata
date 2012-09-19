@@ -1,8 +1,14 @@
-
 .barHierarchy text.barLabel {
   font-size: 11px;
   cursor:pointer;
+  fill:#999;
 }
+
+.barHierarchy text.barLabel.hasChildren:hover {
+  text-shadow: 0 0 0.1em red;
+}
+
+.barHierarchy svg { margin-top:1em; } 
 
 .barHierarchy text.barLabel.hasChildren {
 }
@@ -15,7 +21,7 @@
   shape-rendering: crispEdges;
 }
 
-.barHierarchy .axis text { font-size:11px;}
+.barHierarchy .axis text { font-size:11px; }
 
 .barHierarchy .axis path, .axis line {
   fill: none;
@@ -39,13 +45,14 @@
 }
 
 
-.barHierarchy .breadcrumb { font-size:11px; padding:.2em .7em; margin:0 0 5px 0; }
+.barHierarchy .breadcrumb { font-size:11px; padding:.2em .7em; margin:0 0 0 0; text-align:left; }
 .barHierarchy .breadcrumb ul { padding:0; margin:0; display:inline; }
 .barHierarchy .breadcrumb li.title { margin-right:.5em; }
 
 .barHierarchy .breadcrumb a { text-decoration: underline; }
 .barHierarchy .breadcrumb li.sel a { color:#333; text-decoration:none; font-weight:bold; cursor:default;}
 
-.barHierarchy .caption { padding:0; display:inline; border:1px; }
+.barHierarchy .caption { position:fixed; margin:3px 0 0 0; padding:0; text-align:left; border:1px; 
+}
 .barHierarchy .caption div.title { display:inline; font-size:11px; }
-.barHierarchy .caption div.total { white-space: nowrap;  display:inline; margin-left:15px; font-size:10px; color:#999; }
+.barHierarchy .caption div.total { color:#aaa;  white-space: nowrap;  display:inline; margin-left:1em; font-size:10px; }

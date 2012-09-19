@@ -418,7 +418,10 @@ this.bubblesChart = ->
           .enter().append("svg:line")
             .attr("class", "out")
             #.attr("stroke", outboundColor)
-            #.attr("opacity", 0.5)
+            .attr("opacity", 0)
+            .transition()
+              .duration(300)
+                .attr("opacity", 0.5)
 
 
       if (d.inlinks?)
@@ -428,6 +431,10 @@ this.bubblesChart = ->
             .attr("class", "in")
             #.attr("stroke", inboundColor)
             #.attr("opacity",0.5)
+            .attr("opacity", 0)
+            .transition()
+              .duration(300)
+                .attr("opacity", 0.5)
 
       createFlowTimeSeries = (flow, d, i) ->
         data = state.magnAttrs().map (attr) => 
@@ -537,7 +544,12 @@ this.bubblesChart = ->
             d3.select(this).classed("highlighted", false)
 
             if selectedNode == null
-              flows.selectAll("line").remove()
+              flows.selectAll("line")
+                .transition()
+                  .duration(100)
+                  .attr("opacity", 0)
+                .delay(100)
+                  .remove()
 
             if selectedNode != this
               tseriesPanel.remove("node" + i)
