@@ -313,9 +313,14 @@ updateCtrlButtons = ->
   $(".btn-group.filter .btn").attr("disabled", false)
   $(".btn-group.breakDown .btn").attr("disabled", false)
 
+  $("#split")
+    .attr("disabled", not (q.breakDownBy()?))
 
 
-  $("#split").attr("disabled", not (q.breakDownBy()?))
+  if q.split()
+    $("#split").addClass("active")
+  else
+    $("#split").removeClass("active")
 
   if q.split()
     $("#split")
@@ -374,9 +379,6 @@ updateSplitPanel = ->
 
 
 
-selectedFilterOptions = (prop) ->
-  selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
-  selection = $.makeArray(selectedOptions).map (d) -> d.value
 
 load = (q) ->
   loadingStarted()
@@ -421,7 +423,7 @@ breakDownBy = (prop, selection) ->
     
 split = ->
   q = queryHistory.current().copy()
-  q.split(true)
+  q.split(not $(this).hasClass("active"))
   #updateSplitPanel()
 
   load q
@@ -430,14 +432,23 @@ split = ->
 
 
 loadingStarted = ->
-  $("#loading .blockUI").fadeIn(100)
-  $("#loading img").fadeIn(100)
+  $("body").css("cursor", "progress")
+  $("#loading .blockUI")
+    .css("cursor", "progress")
+    .show()
+    #.fadeIn(100)
+  $("#loading img").stop().fadeIn(100)
   $(".btn").attr("disabled", true)
+  #$(".ctls .btn").button("loading")
 
 loadingStopped = ->
-  $("#loading .blockUI").fadeOut(100)
-  $("#loading img").fadeOut(500)
+  $.Callbacks().empty()
+  $("body").css("cursor", "auto")
+  $("#loading .blockUI").hide() #fadeOut(100)
+  $("#loading img").stop().fadeOut(500)
+  #$(".ctls .btn").button("complete")
   updateCtrlButtons()
+
 
 
 
@@ -503,6 +514,10 @@ queue()
 
     #   datum
 
+    selectedFilterOptions = (prop) ->
+      selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
+      selection = $.makeArray(selectedOptions).map (d) -> d.value
+
 
     $("button.breakDown").click ->
       prop = $(this).data("prop")
@@ -514,8 +529,15 @@ queue()
       filter(prop, selectedFilterOptions(prop))
 
 
-    $("button.resetFilter").click -> resetFilter($(this).data("prop"))
-    $("button.resetBreakDown").click -> resetBreakDown($(this).data("prop"))
+    $("button.resetFilter").click ->
+      prop = $(this).data("prop")
+      $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+      resetFilter(prop)
+
+    $("button.resetBreakDown").click ->
+      prop = $(this).data("prop")
+      $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+      resetBreakDown(prop)
 
 
     $("#backButton").click ->
@@ -531,8 +553,11 @@ queue()
     $("#split").click split
 
 
+    #$(".ctls .btn").each -> $(this).data("loading-text", $(this).text())
 
 
     $("#content").fadeIn()
     $("#status").fadeIn()
+
+
 

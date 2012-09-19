@@ -106,7 +106,7 @@
 
             td class:"split", ->
               div class:"split btn-group",->
-                button id:"split",class:"split btn btn-mini", -> "Split in multiple"
+                button id:"split",class:"split btn btn-mini", "data-toggle":"button", -> "Split in multiple"
         div id:"splitPanel", class:"tseries"
 
 
