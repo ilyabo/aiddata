@@ -23,14 +23,22 @@ button.reset { font-size:9pt; }
 .ctls td { text-align: center; vertical-align: top; padding-top:2px;}
 
 div.btn-group {display:inline-block;}
-#outerTop select { margin:2px; width:160px; height:200px; font-size:7pt; }
+#outerTop select.filter { margin:2px; width:160px; height:200px; font-size:7pt; }
+
+table.sm-ctls td {vertical-align:middle; margin-top:0; padding-top: 0;}
+td.split { width:100px; padding-top:4px; padding-left:50px; }
+td.indicatorLabel {  padding-left:10px; }
+td.indicator { text-align: left; }
+ul.typeahead.dropdown-menu { font-size:11px;}
+
+#indicatorOuter { padding-top:2em; padding-bottom:1em; display:none; }
+#indicatorOuter td { vertical-align: middle; }
+#indicatorTypeahead { width:400px; height:1.5em; margin:0 0 0 5px; }
+#indicatorFor { height: 2em; font-size:11px; margin-left:3px; margin-bottom: 0; width:auto;}
 
 /*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 
 #error { width:200px; }
-
-td.split { text-align: left; }
-td.split .btn-group { padding-left:100px; padding-top:0px; }
 
 .tseries .line { stroke-width:1.3px; opacity:1.0; }
 .tseries .dot  { stroke-width:1.3px; opacity:1.0; }

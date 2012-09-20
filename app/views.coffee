@@ -11,6 +11,7 @@
     script src: 'coffee/charts/time-series.js'
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
+    script src: 'coffee/query-history.js'
     script src: 'queue.js'
     script src: 'libs/chroma/chroma.min.js'
     script src: 'libs/chroma/chroma.colors.js'
@@ -43,37 +44,13 @@
               button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
               span id:"warningText"
 
-      div id:"outerTop", ->
-        # div class:"row", ->
-        #   div class:"span6", ->
-        #     div class:"row", ->    
-        #       div class:"fltr span2", ->
-        #         div class:"hdr", -> "Donors"
-        #         select id:"donorsList", size:"10", multiple:"multiple"
-        #         div class:"btn-group",->
-        #           button class:"btn btn-mini", -> "Filter"
-        #           button class:"btn btn-mini",-> "Break&nbsp;down"
-        #       div class:"fltr span2", ->
-        #         div class:"hdr", -> "Recipients"
-        #         select id:"recipientList", size:"10", multiple:"multiple"
-        #         div class:"btn-group",->
-        #           button class:"btn btn-mini", -> "Filter"
-        #           button class:"btn btn-mini", -> "Break&nbsp;down"
-        #       div class:"fltr span2", ->
-        #         div class:"hdr", -> "Purposes"
-        #         select id:"purposeList", size:"10", multiple:"multiple"
-        #         div class:"btn-group",->
-        #           button class:"btn btn-mini", -> "Filter"
-        #           button class:"btn btn-mini", -> "Break&nbsp;down"
-          # div class:"span6", ->
-          #   div id:"tseries", class:"tseries"
- 
+      div id:"outerTop", -> 
         table ->
           tr ->
             td -> div class:"hdr", -> "Donors"
             td -> div class:"hdr", -> "Recipients"
             td -> div class:"hdr", -> "Purposes"
-            td rowspan:"2", -> 
+            td rowspan:"2",  -> 
               div id:"tseries", class:"tseries"
 
           tr ->
@@ -104,9 +81,19 @@
                   button class:"breakDown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
                   button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
 
-            td class:"split", ->
-              div class:"split btn-group",->
-                button id:"split",class:"split btn btn-mini", "data-toggle":"button", -> "Split in multiple"
+            td ->
+
+              table class:"sm-ctls",->
+                td class:"split", -> button id:"split",class:"split btn btn-mini", "data-toggle":"button", -> "Split in multiple"
+
+        div id:"indicatorOuter", ->
+          table ->
+            td class:"indicatorLabel",-> span class:"label btn-mini", "Show indicator for:"
+            td -> select id:"indicatorFor",class:"ctl",->
+              option -> "donor"
+              option -> "recipient"
+            td -> input id:"indicatorTypeahead", class:"ctl btn-mini",type:"text", "data-provide":"typeahead"
+
         div id:"splitPanel", class:"tseries"
 
 

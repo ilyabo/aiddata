@@ -1,73 +1,27 @@
-queryHistory = do ->
+plusYears = (date, numYears) ->
+  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
 
-  current = null
-  history = []
-  forwardHistory = []
-
-  load = (q, callback, updateHistory, clearForwardHistory) ->
-
-    q.load (err, data) ->
-
-        if clearForwardHistory
-          forwardHistory = []
-
-        if updateHistory
-          if current?
-            history.push(current)
-
-        current = q.copy()
-
-        #console.log( history.map((d)->d.filters()), current?.filters(), forwardHistory.map((d)->d.filters()))
-
-
-        if callback? then callback(null, data)
-
-
-  top = -> 
-      if history.length > 0
-        history[history.length - 1]
-      else
-        null
-
-  {
-    top : top
-
-    current : -> current?.copy()
-
-    back : (callback) ->
-      if history.length > 0
-        top = history.pop()
-        forwardHistory.push(current)
-        load(top.copy(), callback, false, false)
-
-    forward : (callback) ->
-      if forwardHistory.length > 0
-        top = forwardHistory.pop()
-        load(top.copy(), callback, true, false)
-
-    isBackEmpty : -> history.length is 0
-
-    isForwardEmpty : -> forwardHistory.length is 0
-
-    load : (q, callback) -> load(q, callback, true, true)
-  }
-
-
+# used to sanity-filter the input data
+minDate = plusYears(new Date(), -100)
+maxDate = plusYears(new Date(), +10)
 
 dateFormat = d3.time.format("%Y")
-minDate = dateFormat.parse("1942")
-maxDate = Date.now()
 
+propertyData = null
+indicators = null
+smallCharts = {}
+
+history = queryHistory()
 
 
 query = do -> 
-  baseUrl = "dv/flows/breaknsplit.csv"
 
   (dataset, props, valueProp) ->
     filters = {}
     numFilters = 0
     breakDownBy = null
     split = false
+    indicator = null
 
     q = () ->
 
@@ -77,6 +31,7 @@ query = do ->
         cpy.addFilter(p, v)
       cpy.breakDownBy(breakDownBy) if breakDownBy?
       cpy.split(split)
+      cpy.indicator(indicator.id, indicator.prop) if indicator?
       cpy
 
     check = (prop) ->
@@ -99,6 +54,20 @@ query = do ->
       delete filters[prop]; q
 
     q.filter = (prop) -> check prop; filters[prop]?.slice()
+
+    indicatorObj = (id, prop) ->
+      id : id
+      prop : prop
+
+    q.indicator = (id, prop) ->
+      if (!arguments.length)
+        if indicator?
+          return indicatorObj(indicator.id, indicator.prop)
+        else
+          return null 
+      check prop
+      indicator = indicatorObj(id, prop)
+      q
 
     q.split = (_) ->
       if (!arguments.length)
@@ -141,12 +110,16 @@ query = do ->
 
 
     makeUrl = () ->
-      url = baseUrl + "?breakby=date"
+      url = "dv/flows/breaknsplit.csv?breakby=date"
       url += ",#{breakDownBy}" if breakDownBy?
       enc = (obj) -> encodeURIComponent(obj)
       #url += ("&#{prop}=#{enc(values)}" for prop,values of filters)
       url += "&filter=" + enc(JSON.stringify filters) if numFilters > 0
       return url
+
+    makeIndicatorUrlFor = (filterValue) ->
+      "wb/brief/#{indicator.id}/#{filterValue}.csv"
+
 
     # grouping values corresponding to different values of breakDownBy
     # to one object identified by date. This is the form of data which the 
@@ -178,25 +151,42 @@ query = do ->
         values.push v
       values
 
+    # do not report errors (data in WB API is often missing)
+    loadCsvQuietly = (path, callback) -> d3.csv path, (csv) -> callback(null, csv)
+
     q.load = (callback) ->
-      #console.log q.describe()
-      #console.log makeUrl()
-      d3.csv makeUrl(), (csv) ->
-        unless csv? #and csv.length > 0
-          callback(new Error("Couldn't load csv"), null)
+
+      que = queue()
+
+      que.defer(loadCsv, makeUrl())
+      
+      if indicator?
+        filterValues = filters[indicator.prop]
+        if filterValues?
+          for val in filterValues
+            que.defer(loadCsvQuietly, makeIndicatorUrlFor(val))
         else
-          datum =
-            if breakDownBy?
-              groupValuesByDate(csv)
-            else
-              prepareValues(csv)
+          que.defer(loadCsv, makeIndicatorUrlFor("ALL"))
+
+      que.await (error, results) ->
+        if error?
+          callback(new Error("Couldn't load data from server"), null)
+          return
+
+        mainCsv = results.shift()
+        mainData =
+          if breakDownBy?
+            groupValuesByDate(mainCsv)
+          else
+            prepareValues(mainCsv)
+
+        mainData = mainData.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
 
 
-          datum = datum.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
 
-          callback(null, datum)
+        console.log results
 
-          #console.log merged
+        callback(null, mainData)
 
 
 
@@ -221,7 +211,6 @@ tschart = timeSeriesChart()
   .on "rulemove", (date) -> moveChartRulesTo date
 
 
-smallCharts = {}
 
 moveChartRulesTo = (date) ->
   tschart.moveRule date
@@ -250,7 +239,7 @@ createSmallTimeSeriesCharts = (prop, values) ->
       .showRule(true)
       .on("rulemove", (date) -> moveChartRulesTo date)
       .on("click", do -> v = val; ->
-        current = queryHistory.current().filter(prop)
+        current = history.current().filter(prop)
         if current? and current.length is 1 and current[0] is v
           # nothing has to be changed
           return
@@ -273,10 +262,8 @@ createSmallTimeSeriesCharts = (prop, values) ->
 
 
 
-propertyData = null  # is initialized below
-
 syncFiltersWithQuery = ->
-  q = queryHistory.current()
+  q = history.current()
 
   $("select.filter").each ->
 
@@ -290,9 +277,13 @@ syncFiltersWithQuery = ->
     $(this).append("<option>#{d}</option>") for d in values
 
 
-updateCtrlButtons = ->
+findIndicator = (id) -> (if i.id is id then return i) for i in indicators; null
+findIndicatorByName = (name) -> (if i.name is name then return i) for i in indicators; null
 
-  q = queryHistory.current()
+
+updateCtrls = ->
+
+  q = history.current()
 
   $(".btn-group.filter").each ->
     prop = $(this).data("prop")
@@ -309,9 +300,18 @@ updateCtrlButtons = ->
     else
       $(this).removeClass("applied")
 
+  if q.indicator()?
+    indicator = q.indicator()
+    $("#indicatorTypeahead").val(findIndicator(indicator.id)?.name)
+    $("#indicatorFor").val(indicator.prop)
+  else
+    $("#indicatorTypeahead").val("")
 
-  $(".btn-group.filter .btn").attr("disabled", false)
-  $(".btn-group.breakDown .btn").attr("disabled", false)
+
+  $(".btn, .ctl").attr("disabled", false)
+
+  # $(".btn-group.filter .btn").attr("disabled", false)
+  # $(".btn-group.breakDown .btn").attr("disabled", false)
 
   $("#split")
     .attr("disabled", not (q.breakDownBy()?))
@@ -323,11 +323,11 @@ updateCtrlButtons = ->
     $("#split").removeClass("active")
 
   if q.split()
-    $("#split")
-      .addClass("applied")
+    $("#split").addClass("applied")
+    $("#indicatorOuter").show()
   else
-    $("#split")
-      .removeClass("applied")
+    $("#split").removeClass("applied")
+    $("#indicatorOuter").hide()
 
 
 
@@ -349,13 +349,13 @@ updateCallback = (err, data) ->
     # update the view
     d3.select("#tseries").datum(data).call(tschart)
 
-    q = queryHistory.current()
+    q = history.current()
     $("#status").html(q.describe())
 
-    $("#backButton").attr("disabled", queryHistory.isBackEmpty())
-    $("#forwardButton").attr("disabled", queryHistory.isForwardEmpty())
+    $("#backButton").attr("disabled", history.isBackEmpty())
+    $("#forwardButton").attr("disabled", history.isForwardEmpty())
     syncFiltersWithQuery()
-    updateCtrlButtons()
+    updateCtrls()
 
     updateSplitPanel()
     
@@ -368,7 +368,7 @@ updateSplitPanel = ->
   
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
-  q = queryHistory.current()
+  q = history.current()
   prop = q.breakDownBy()
   
   if q.split() and prop?
@@ -382,31 +382,31 @@ updateSplitPanel = ->
 
 load = (q) ->
   loadingStarted()
-  queryHistory.load(q, updateCallback)
+  history.load(q, updateCallback)
 
 filter = (prop, selection) ->
   unless selection.length is 0
-    current = queryHistory.current()
+    current = history.current()
     q = current.copy()
     q.addFilter(prop, selection)
     load q
 
 resetFilter = (prop) ->
-  q = queryHistory.current().copy()
+  q = history.current().copy()
   if q.filter(prop)?
     q.removeFilter(prop)
     q.split(false)
     load q
 
 resetBreakDown = (prop) ->
-  q = queryHistory.current().copy()
+  q = history.current().copy()
   if (q.breakDownBy() is prop)
     q.resetBreakDownBy()
     q.split(false)
   load q
 
 breakDownBy = (prop, selection) ->
-  q = queryHistory.current().copy()
+  q = history.current().copy()
 
   changed = false
 
@@ -422,11 +422,18 @@ breakDownBy = (prop, selection) ->
   load q if changed
     
 split = ->
-  q = queryHistory.current().copy()
+  q = history.current().copy()
   q.split(not $(this).hasClass("active"))
   #updateSplitPanel()
 
   load q
+
+showIndicator = (id, prop) ->
+  q = history.current().copy()
+  unless (q.indicator()?.id is id) and (q.indicator()?.prop is prop) 
+    q.indicator(id, prop)
+    load q
+
 
 
 
@@ -447,7 +454,9 @@ loadingStopped = ->
   $("#loading .blockUI").hide() #fadeOut(100)
   $("#loading img").stop().fadeOut(500)
   #$(".ctls .btn").button("complete")
-  updateCtrlButtons()
+  updateCtrls()
+
+
 
 
 
@@ -459,6 +468,7 @@ queue()
   .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=recipient")
   .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=purpose")
   .defer(loadJson, "purposes.json")
+  .defer(loadCsv, "wb/brief/indicators.csv")
   .await (err, data) ->
 
     if err?  or  not(data?)
@@ -472,7 +482,7 @@ queue()
 
 
 
-    [ donors, recipients, purposes, purposeTree ] = data
+    [ donors, recipients, purposes, purposeTree, indicators ] = data
 
     propertyData =
       donor : donors
@@ -480,7 +490,7 @@ queue()
       purpose : purposes
 
 
-    queryHistory.load(
+    history.load(
       query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant"),
       updateCallback
     )
@@ -518,46 +528,60 @@ queue()
       selectedOptions = $("select.filter[data-prop='#{prop}']").find(":selected")
       selection = $.makeArray(selectedOptions).map (d) -> d.value
 
+    $ ->
 
-    $("button.breakDown").click ->
-      prop = $(this).data("prop")
-      breakDownBy($(this).data("prop"), selectedFilterOptions(prop))
-
-
-    $("button.filter").click ->
-      prop = $(this).data("prop")
-      filter(prop, selectedFilterOptions(prop))
+      $("button.breakDown").click ->
+        prop = $(this).data("prop")
+        breakDownBy($(this).data("prop"), selectedFilterOptions(prop))
 
 
-    $("button.resetFilter").click ->
-      prop = $(this).data("prop")
-      $("select.filter[data-prop='#{prop}']").val([]) # clear selection
-      resetFilter(prop)
-
-    $("button.resetBreakDown").click ->
-      prop = $(this).data("prop")
-      $("select.filter[data-prop='#{prop}']").val([]) # clear selection
-      resetBreakDown(prop)
+      $("button.filter").click ->
+        prop = $(this).data("prop")
+        filter(prop, selectedFilterOptions(prop))
 
 
-    $("#backButton").click ->
-      loadingStarted()
-      queryHistory.back(updateCallback)
+      $("button.resetFilter").click ->
+        prop = $(this).data("prop")
+        $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+        resetFilter(prop)
+
+      $("button.resetBreakDown").click ->
+        prop = $(this).data("prop")
+        $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+        resetBreakDown(prop)
 
 
-    $("#forwardButton").click ->
-      loadingStarted()
-      queryHistory.forward(updateCallback)
+      $("#backButton").click ->
+        loadingStarted()
+        history.back(updateCallback)
 
 
-    $("#split").click split
+      $("#forwardButton").click ->
+        loadingStarted()
+        history.forward(updateCallback)
 
 
-    #$(".ctls .btn").each -> $(this).data("loading-text", $(this).text())
+      $("#split").click split
 
 
-    $("#content").fadeIn()
-    $("#status").fadeIn()
+      #$(".ctls .btn").each -> $(this).data("loading-text", $(this).text())
 
+
+      $("#content").fadeIn()
+      $("#status").fadeIn()
+
+
+
+      updateIndicator = ->
+        indicator = findIndicatorByName $("#indicatorTypeahead").val()
+        if indicator? then showIndicator indicator.id, $("#indicatorFor").val()
+
+      $("#indicatorTypeahead")
+        .data("source", indicators.map((ind) -> ind.name))  #(ind.source ? "") + ": " + ind.name
+        .data("items", 10)
+        .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
+        .on("change", updateIndicator)
+
+      $("#indicatorFor").on("change", updateIndicator)
 
 

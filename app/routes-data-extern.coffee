@@ -33,15 +33,15 @@
   @get '/wb/brief/indicators.csv': ->
     getWbIndicators (err, indicators) =>
       unless err?
-        @response.write "id,name\n"
+        @response.write "id,name,source\n"
         re = /^([A-Z0-9]+)(\.[A-Z0-9]+)+$/
 
         indicators = indicators.filter (d) -> re.test(d.id)
-        
+
         csv()
           .from(indicators)
           .toStream(@response)
-          .transform (d) -> [ d.id.trim(), d.name.trim() ]
+          .transform (d) -> [ d.id.trim(), d.name.trim(), d.source?.value?.trim() ]
       else
         @next(err)
 
@@ -75,7 +75,10 @@
               .transform (d) -> [ d.date,d.value ]
             # @send JSON.stringify(entries)
           catch err
-            @next err
+            msg = "Response from the World Bank API could not be processed: " + body
+            console.error msg
+            #@send ""
+            @next(err)
         else
           @next(err)
 
@@ -84,7 +87,11 @@
     requestWorldBankIndicator @params.indicator, @params.countryCode,
       (err, response, body) =>
         unless err?
-          @send body
+          try 
+            parsed = JSON.parse body
+            @send parsed
+          catch err
+            @next("Couldn't parse response: " + body)
         else
           @next(err)
 
