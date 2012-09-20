@@ -182,11 +182,15 @@ query = do ->
 
         mainData = mainData.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
 
+        indicatorData = {}
+        if filterValues?
+          for val, i in filterValues
+            indicatorData[val] = results[i]
+        else
+          indicatorData["ALL"] = results
 
-
-        console.log results
-
-        callback(null, mainData)
+        console.log indicatorData
+        callback(null, mainData, indicatorData)
 
 
 
@@ -217,47 +221,6 @@ moveChartRulesTo = (date) ->
   for val, chart of smallCharts
     chart.moveRule date
 
-createSmallTimeSeriesCharts = (prop, values) ->
-  
-  data = d3.select("#tseries").datum()
-  panel = d3.select("#splitPanel")
-
-  charts = []
-  for val in values
-    chart = timeSeriesChart()
-      .width(270)
-      .height(90)
-      .xticks(3)
-      .yticks(2)
-      .dotRadius(1)
-      .properties([val])
-      .marginLeft(40)
-      .marginRight(15)
-      .title("#{prop}: #{val}")
-      .propColors(["steelblue"])
-      .ytickFormat(shortMagnitudeFormat)
-      .showRule(true)
-      .on("rulemove", (date) -> moveChartRulesTo date)
-      .on("click", do -> v = val; ->
-        current = history.current().filter(prop)
-        if current? and current.length is 1 and current[0] is v
-          # nothing has to be changed
-          return
-        else
-          filter(prop, [ v ])
-      )
-      #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
-      #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
-
-    div = panel.append("div")
-        .datum(data)
-      .attr("class", "tseries")
-
-    div.call(chart)
-
-    charts[val] = chart
-
-  smallCharts = charts
   
 
 
@@ -308,13 +271,12 @@ updateCtrls = ->
     $("#indicatorTypeahead").val("")
 
 
-  $(".btn, .ctl").attr("disabled", false)
+  $(".ctls .btn, .ctl").attr("disabled", false)
 
   # $(".btn-group.filter .btn").attr("disabled", false)
   # $(".btn-group.breakDown .btn").attr("disabled", false)
 
-  $("#split")
-    .attr("disabled", not (q.breakDownBy()?))
+  $("#split").attr("disabled", not (q.breakDownBy()?))
 
 
   if q.split()
@@ -325,20 +287,22 @@ updateCtrls = ->
   if q.split()
     $("#split").addClass("applied")
     $("#indicatorOuter").show()
+    unless q.indicator()?
+      $("#indicatorFor").val(q.breakDownBy())
   else
     $("#split").removeClass("applied")
     $("#indicatorOuter").hide()
 
 
 
-updateCallback = (err, data) ->
+updateCallback = (err, mainData, indicatorData) ->
   if err?
     $("#errorText").html("<h4>Oh snap!</h4>I could not load the data from the server")
     $("#error").fadeIn().delay(5000).fadeOut()
     if callback? then callback("Could not load data from the server")
 
   else 
-    if data?.length is 0
+    if mainData?.length is 0
       $("#warningText").html("The result of your filter query is empty")
       $("#warn").fadeIn().delay(5000).fadeOut()
       #if callback? then callback("Empty query")
@@ -347,7 +311,7 @@ updateCallback = (err, data) ->
 
     $("#error").hide()
     # update the view
-    d3.select("#tseries").datum(data).call(tschart)
+    d3.select("#tseries").datum(mainData).call(tschart)
 
     q = history.current()
     $("#status").html(q.describe())
@@ -372,11 +336,52 @@ updateSplitPanel = ->
   prop = q.breakDownBy()
   
   if q.split() and prop?
-    values = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
-    createSmallTimeSeriesCharts(prop, values)
+    filteredValues = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
+    createSmallTimeSeriesCharts(prop, filteredValues)
 
 
 
+createSmallTimeSeriesCharts = (prop, filteredValues) ->
+  
+  data = d3.select("#tseries").datum()
+  panel = d3.select("#splitPanel")
+
+  charts = []
+  for val in filteredValues
+    chart = timeSeriesChart()
+      .width(270)
+      .height(90)
+      .xticks(3)
+      .yticks(2)
+      .dotRadius(1)
+      .properties([val])
+      .marginLeft(40)
+      .marginRight(15)
+      .title("#{prop}: #{val}")
+      .propColors(["steelblue"])
+      .ytickFormat(shortMagnitudeFormat)
+      .showRule(true)
+      .on("rulemove", (date) -> moveChartRulesTo date)
+      .on("click", do -> v = val; ->
+        current = history.current().filter(prop)
+        if current? and current.length is 1 and current[0] is v
+          # nothing has to be changed
+          return
+        else
+          filter(prop, [ v ])
+      )
+      #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
+      #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
+
+    div = panel.append("div")
+        .datum(data)
+      .attr("class", "tseries")
+
+    div.call(chart)
+
+    charts[val] = chart
+
+  smallCharts = charts
 
 
 
@@ -445,7 +450,7 @@ loadingStarted = ->
     .show()
     #.fadeIn(100)
   $("#loading img").stop().fadeIn(100)
-  $(".btn").attr("disabled", true)
+  $(".btn, .ctl").attr("disabled", true)
   #$(".ctls .btn").button("loading")
 
 loadingStopped = ->

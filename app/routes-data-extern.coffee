@@ -72,7 +72,7 @@
             csv()
               .from(entries)
               .toStream(@response)
-              .transform (d) -> [ d.date,d.value ]
+              .transform (d) -> [ d.date, d.value ]
             # @send JSON.stringify(entries)
           catch err
             msg = "Response from the World Bank API could not be processed: " + body

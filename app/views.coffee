@@ -86,7 +86,7 @@
               table class:"sm-ctls",->
                 td class:"split", -> button id:"split",class:"split btn btn-mini", "data-toggle":"button", -> "Split in multiple"
 
-        div id:"indicatorOuter", ->
+        div id:"indicatorOuter", class:"ctls", ->
           table ->
             td class:"indicatorLabel",-> span class:"label btn-mini", "Show indicator for:"
             td -> select id:"indicatorFor",class:"ctl",->
