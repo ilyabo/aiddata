@@ -4,14 +4,14 @@ this.timeSeriesChart = ->
   width = 300
   height = 200
   dateProp = "date"
-  interpolate = null #"monotone"
+  valueProp = "value"
+  interpolate = null # default is "monotone"
   showDots = true
   dotRadius = 2
   xticks = yticks = null
   marginLeft = 40
   marginRight = 8
   ytickFormat = d3.format(",.0f")
-  maxPropertyClasses = 9
   showLegend = false
   legendWidth = 150
   legendHeight = null  # will be set to height by default
@@ -19,26 +19,38 @@ this.timeSeriesChart = ->
   legendItemWidth = 80
   legendMarginLeft = 20
   legendMarginTop = 0
-  properties = null
+  #properties = null
   showRule = false
   ruleDate = null
   eventListeners = {}
 
+  propColors = d3.scale.category10()
+
   # borrowed from chroma.js: chroma.brewer.Set1
-  propColors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
+  # ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
   # Set3 (more pastel colors):
   #  ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
 
   # data is expected to be in the following form:
-  # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
+  # [{date:Date, inbound:123, outbound:321}, ...]
+  #
+  # either:  [ { date:Date, value:123 },  { date:Date, value:123 }, ... ] for one property
+  # or { 
+  #    prop1: [ { date:Date, value:123 },  { date:Date, value:123 }, ... ]
+  #    prop2: [ { date:Date, value:123 },  { date:Date, value:123 }, ... ]
+  # }
 
   chart = (selection) -> init(selection)
 
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
 
+  chart.dateProp = (_) -> if (!arguments.length) then dateProp else dateProp = _; chart
+
+  chart.valueProp = (_) -> if (!arguments.length) then valueProp else valueProp = _; chart
+
   # which properties to visualize
-  chart.properties = (_) -> if (!arguments.length) then properties else properties = _; chart
+  #chart.properties = (_) -> if (!arguments.length) then properties else properties = _; chart
 
   chart.width = (_) -> if (!arguments.length) then width else width = _; chart
 
@@ -55,8 +67,6 @@ this.timeSeriesChart = ->
   chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
 
   chart.marginRight = (_) -> if (!arguments.length) then marginRight else marginRight = _; chart
-
-  chart.dateProp = (_) -> if (!arguments.length) then dateProp else dateProp = _; chart
 
   chart.interpolate = (_) -> if (!arguments.length) then interpolate else interpolate = _; chart
 
@@ -97,18 +107,22 @@ this.timeSeriesChart = ->
       fire("rulemove", date)
 
 
+  propData = (data) -> (if (data instanceof Array) then { value: data } else data)
 
 
   chart.update = (selection) ->
+
+    data = propData(selection.datum())
+    vis.datum(data)
+
+    updateScaleDomains(data)
+
     # vis.selectAll("path.line").remove()
     # vis.selectAll("circle.dot").remove()
 
     vis.selectAll("g.prop").remove()
     vis.selectAll("g.legend").remove()
 
-    data = selection.datum()
-    vis.datum(data)
-    updateScaleDomains(data)
 
     vis.selectAll(".x.axis")
     #    .transition()
@@ -147,25 +161,23 @@ this.timeSeriesChart = ->
   #     #     .attr("r", dotRadius)
 
 
-
   update = (data, duration = updateDuration) ->
-    #vis.datum(data)
+    
+    data = propData(data)
 
-    dates = data.map (d) -> d[dateProp]
+    pi = -1
+    for prop, entries of data
+      pi++
 
-    nested = d3.nest()
-      .key((d) -> d[dateProp])
-      .rollup((a) -> a[0])  # assuming unique values for each date
-      .map(data)
-
-    props = properties ? propsOf data
-
-    for prop, pi in props
-      line = lineDrawer(prop)
-
-
-      g = vis.append("g")
+      g = vis.append("g").datum(entries)
         .attr("class", "prop pi_#{pi}")
+
+      line = d3.svg.line()
+        .x((d) -> x(d[dateProp]))
+        .y((d) -> y(d[valueProp]))
+        .defined((d) -> d[valueProp]? and !isNaN(d[valueProp]))
+        .interpolate(interpolate)
+
 
       g.append("path")
         .attr("class", "line")
@@ -182,10 +194,7 @@ this.timeSeriesChart = ->
 
 
       if showDots
-        dots = g.selectAll("circle.dot")
-          .data dates.filter (d) -> (not isNaN(y(nested[d]?[prop])))
-
-        #console.log dots
+        dots = g.selectAll("circle.dot").data(entries)
 
         dots.enter().append("circle")
           .attr("class", "dot")
@@ -193,14 +202,15 @@ this.timeSeriesChart = ->
           .attr("stroke", propColors[pi % propColors.length])
 
         dots
-          .attr("cx", (d) -> x(d))
-          .attr("cy", (d) -> y(nested[d][prop]))
+          .attr("cx", (d) -> x(d[dateProp]))
+          .attr("cy", (d) -> y(d[valueProp]))
 
         dots.exit().remove()
 
 
-
     if showLegend
+
+      props = d3.keys(data)
 
       legend = vis.append("g")
         .attr("class", "legend")
@@ -221,6 +231,8 @@ this.timeSeriesChart = ->
       item.append("rect")
         .attr("x", 0)
         .attr("y", 0)
+        .attr("rx", 2)
+        .attr("ry", 2)
         .attr("width", 8)
         .attr("height", 8)
         .attr("fill", (d, pi) -> propColors[pi % propColors.length])
@@ -228,11 +240,8 @@ this.timeSeriesChart = ->
       item.append("text")
         .attr("x", 13)
         .attr("y", 4)
-        .text((d, i) -> props[i])
+        .text((d) -> d)
         
-
-
-
 
   updateDuration = 1300
 
@@ -242,52 +251,31 @@ this.timeSeriesChart = ->
 
   isNumber = (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
 
-  # list of properties of the data
-  propsOf = (data) -> 
-    props = {}
-    for d in data
-      for prop, val of d when ((prop isnt dateProp) and not(prop of props))
-        props[prop] = true
-    d3.keys(props)
-
-    #(prop for prop, val of data[0] when prop isnt dateProp)
 
 
   updateScaleDomains = (data) ->
-    maxVal = d3.max(
-      propsOf(data).map(
-        (prop) ->
-          d3.max( data.map((d) -> d[prop]).filter(isNumber) )
-      )
-      .filter(isNumber)
-    )
-    y.domain([0, maxVal])
 
-    #maxVal = d3.max(d3.values(data.map (d) -> Math.max(d.inbound ? 0, d.outbound ? 0)))
-    dates = data.map (d) -> d[dateProp]
-    x.domain([d3.min(dates), d3.max(dates)])
-    #console.log y.domain()
+    valueExtents = (d3.extent(values, (d) -> d[valueProp]) for prop, values of data)
+    valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
+    y.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
 
 
-  lineDrawer = (prop) ->
-    d3.svg.line()
-      .x((d) -> x(d[dateProp]))
-      .y((d) -> y(d[prop]))
-      .defined((d) -> !isNaN(d[prop]))
-      .interpolate(interpolate)
+    dateExtents = (d3.extent(values, (d) -> d[dateProp]) for prop, values of data)
+    dateExtent = [ d3.min(dateExtents, (d) -> d[0]), d3.max(dateExtents, (d) -> d[1]) ] 
+    x.domain([ dateExtent[0],  dateExtent[1] ])
+
+
 
 
   init = (selection) -> 
 
     element = selection
-    data = selection.datum()
+    data = propData(selection.datum())
 
     if svg?
       chart.update(selection)
       return
 
-
-    props = properties ? propsOf(data)
 
     margin = {top: 28, right: marginRight, bottom: 14, left: marginLeft}
 

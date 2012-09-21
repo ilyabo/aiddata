@@ -47,4 +47,4 @@ div.tseries { }
 
 .tseries .legendItem text { font-size:7pt; fill:#666; dominant-baseline: central;}
 
-.tseries .legendItem rect { stroke-width:.5px; stroke:#666;}
+.tseries .legendItem rect { stroke-width:.5px; }

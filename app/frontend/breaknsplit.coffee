@@ -1,11 +1,12 @@
-plusYears = (date, numYears) ->
-  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
+#plusYears = (date, numYears) ->
+#  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
 
 # used to sanity-filter the input data
-minDate = plusYears(new Date(), -100)
-maxDate = plusYears(new Date(), +10)
+#minDate = plusYears(new Date(), -100)
+#maxDate = plusYears(new Date(), +10)
 
 dateFormat = d3.time.format("%Y")
+valueProp = "sum_amount_usd_constant"
 
 propertyData = null
 indicators = null
@@ -174,23 +175,31 @@ query = do ->
           return
 
         mainCsv = results.shift()
+        
+        #mainCsv = mainCsv.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
+
         mainData =
           if breakDownBy?
-            groupValuesByDate(mainCsv)
+            #groupValuesByDate(mainCsv)
+            d3.nest()
+              .key((d) -> d[breakDownBy])
+              .rollup((a) -> prepareValues(a))
+              .map(mainCsv)
           else
             prepareValues(mainCsv)
 
-        mainData = mainData.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
+        console.log mainData
 
-        indicatorData = {}
-        if filterValues?
-          for val, i in filterValues
-            indicatorData[val] = results[i]
-        else
-          indicatorData["ALL"] = results
 
-        console.log indicatorData
-        callback(null, mainData, indicatorData)
+        if indicator?
+          indicatorData = {}
+          if filterValues?
+            for val, i in filterValues
+              indicatorData[val] = results[i]
+          else
+            indicatorData["ALL"] = results
+
+        callback(null, { main: mainData, indicator:indicatorData })
 
 
 
@@ -198,6 +207,7 @@ query = do ->
 
 
 tschart = timeSeriesChart()
+  .valueProp(valueProp)
   .width(600)
   .height(200)
   .xticks(7)
@@ -295,13 +305,16 @@ updateCtrls = ->
 
 
 
-updateCallback = (err, mainData, indicatorData) ->
+updateCallback = (err, data) ->
   if err?
     $("#errorText").html("<h4>Oh snap!</h4>I could not load the data from the server")
     $("#error").fadeIn().delay(5000).fadeOut()
     if callback? then callback("Could not load data from the server")
 
   else 
+  
+    { main: mainData, indicator: indicatorData } = data
+
     if mainData?.length is 0
       $("#warningText").html("The result of your filter query is empty")
       $("#warn").fadeIn().delay(5000).fadeOut()
@@ -321,14 +334,14 @@ updateCallback = (err, mainData, indicatorData) ->
     syncFiltersWithQuery()
     updateCtrls()
 
-    updateSplitPanel()
+    updateSplitPanel(mainData, indicatorData)
     
     # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
   loadingStopped()
 
 
-updateSplitPanel = ->
+updateSplitPanel = (mainData, indicatorData) ->
   
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
@@ -337,51 +350,74 @@ updateSplitPanel = ->
   
   if q.split() and prop?
     filteredValues = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
-    createSmallTimeSeriesCharts(prop, filteredValues)
 
+    panel = d3.select("#splitPanel")
 
+    #console.log data
+    charts = []
 
-createSmallTimeSeriesCharts = (prop, filteredValues) ->
+    for val in filteredValues
+      chart = createSmallTimeSeriesChart(prop, val)
+      
+      ###
+      propValueData = for prop, values of mainData when d[val]?
+        obj = {}
+        obj[val] = d[val]
+        obj.date = d.date
+        obj
+      ###
   
-  data = d3.select("#tseries").datum()
-  panel = d3.select("#splitPanel")
+      data = {}
+      data[prop] = mainData[val]
 
-  charts = []
-  for val in filteredValues
-    chart = timeSeriesChart()
-      .width(270)
-      .height(90)
-      .xticks(3)
-      .yticks(2)
-      .dotRadius(1)
-      .properties([val])
-      .marginLeft(40)
-      .marginRight(15)
-      .title("#{prop}: #{val}")
-      .propColors(["steelblue"])
-      .ytickFormat(shortMagnitudeFormat)
-      .showRule(true)
-      .on("rulemove", (date) -> moveChartRulesTo date)
-      .on("click", do -> v = val; ->
-        current = history.current().filter(prop)
-        if current? and current.length is 1 and current[0] is v
-          # nothing has to be changed
-          return
+      indicator = q.indicator()
+      if indicator?
+        if indicator.prop is prop
+          data[prop + "_indicator"] = indicatorData[val]
         else
-          filter(prop, [ v ])
-      )
-      #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
-      #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
+          data["_indicator"] = indicatorData["ALL"]
 
-    div = panel.append("div")
+      console.log data
+      panel.append("div")
         .datum(data)
-      .attr("class", "tseries")
+          .attr("class", "tseries")
+        .call(chart)
 
-    div.call(chart)
+      charts[val] = chart
 
-    charts[val] = chart
 
-  smallCharts = charts
+    smallCharts = charts
+
+
+
+
+createSmallTimeSeriesChart = (prop, value) ->
+  timeSeriesChart()
+    .valueProp(valueProp)
+    .width(270)
+    .height(90)
+    .xticks(3)
+    .yticks(2)
+    .dotRadius(1)
+    #.properties([ value ])
+    .marginLeft(40)
+    .marginRight(15)
+    .title("#{prop}: #{value}")
+    .propColors(["steelblue"])
+    .ytickFormat(shortMagnitudeFormat)
+    .showRule(true)
+    .on("rulemove", (date) -> moveChartRulesTo date)
+    .on("click", ->
+      current = history.current().filter(prop)
+      if current? and current.length is 1 and current[0] is value
+        # nothing has to be changed
+        return
+      else
+        filter(prop, [ value ])
+    )
+    #.on("mouseover", (svg) -> svg.classed("tshighlight", true))
+    #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
+
 
 
 
@@ -496,7 +532,7 @@ queue()
 
 
     history.load(
-      query("AidData", ["donor", "recipient", "purpose"], "sum_amount_usd_constant"),
+      query("AidData", ["donor", "recipient", "purpose"], valueProp),
       updateCallback
     )
 
@@ -525,7 +561,7 @@ queue()
     #     if date?  and  (minDate <= date <= maxDate)
     #       datum.push
     #         date : date
-    #         outbound : +d.sum_amount_usd_constant
+    #         outbound : +d[valueProp]
 
     #   datum
 
