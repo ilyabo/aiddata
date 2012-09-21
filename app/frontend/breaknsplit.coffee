@@ -587,6 +587,10 @@ queue()
         .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
         .on("change", updateIndicator)
 
+      # typeahead does not always generate a change event when clicking on an item
+      $("#indicatorTypeahead .dropdown-menu li").click ->
+        $("#indicatorTypeahead").val($(this).data("value"))
+
       $("#indicatorFor").on("change", updateIndicator)
 
 
