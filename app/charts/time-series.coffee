@@ -49,6 +49,12 @@ this.timeSeriesChart = ->
 
   chart.valueProp = (_) -> if (!arguments.length) then valueProp else valueProp = _; chart
 
+  getValueProp = (prop) ->
+    if typeof valueProp is "function"
+      valueProp.call this, prop
+    else
+      valueProp
+
   # which properties to visualize
   #chart.properties = (_) -> if (!arguments.length) then properties else properties = _; chart
 
@@ -167,6 +173,7 @@ this.timeSeriesChart = ->
 
     pi = -1
     for prop, entries of data
+      console.log entries
       pi++
 
       g = vis.append("g").datum(entries)
@@ -174,8 +181,8 @@ this.timeSeriesChart = ->
 
       line = d3.svg.line()
         .x((d) -> x(d[dateProp]))
-        .y((d) -> y(d[valueProp]))
-        .defined((d) -> d[valueProp]? and !isNaN(d[valueProp]))
+        .y((d) -> y(d[getValueProp(prop)]))
+        .defined((d) -> vp = getValueProp(prop); d[vp]? and !isNaN(d[vp]))
         .interpolate(interpolate)
 
 
@@ -203,7 +210,7 @@ this.timeSeriesChart = ->
 
         dots
           .attr("cx", (d) -> x(d[dateProp]))
-          .attr("cy", (d) -> y(d[valueProp]))
+          .attr("cy", (d) -> y(d[getValueProp(prop)]))
 
         dots.exit().remove()
 
@@ -255,7 +262,7 @@ this.timeSeriesChart = ->
 
   updateScaleDomains = (data) ->
 
-    valueExtents = (d3.extent(values, (d) -> d[valueProp]) for prop, values of data)
+    valueExtents = (d3.extent(values, (d) -> d[getValueProp(prop)]) for prop, values of data)
     valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
     y.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
 

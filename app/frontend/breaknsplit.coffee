@@ -142,13 +142,13 @@ query = do ->
 
       merged
 
-    prepareValues = (data) -> 
+    prepareValues = (data, valueProp) -> 
       values = []
       for d in data
         date = dateFormat.parse(d.date)
         v = {}
         v.date = date
-        v[valueProp] = +d[valueProp]
+        v["values"] = +d[valueProp]
         values.push v
       values
 
@@ -183,21 +183,19 @@ query = do ->
             #groupValuesByDate(mainCsv)
             d3.nest()
               .key((d) -> d[breakDownBy])
-              .rollup((a) -> prepareValues(a))
+              .rollup((a) -> prepareValues(a, valueProp))
               .map(mainCsv)
           else
-            prepareValues(mainCsv)
-
-        console.log mainData
+            prepareValues(mainCsv, valueProp)
 
 
         if indicator?
           indicatorData = {}
           if filterValues?
             for val, i in filterValues
-              indicatorData[val] = results[i]
+              indicatorData[val] = prepareValues(results[i], "value")
           else
-            indicatorData["ALL"] = results
+            indicatorData["ALL"] = prepareValues(results[0], "value")
 
         callback(null, { main: mainData, indicator:indicatorData })
 
@@ -207,7 +205,7 @@ query = do ->
 
 
 tschart = timeSeriesChart()
-  .valueProp(valueProp)
+  .valueProp("values")
   .width(600)
   .height(200)
   .xticks(7)
@@ -377,7 +375,6 @@ updateSplitPanel = (mainData, indicatorData) ->
         else
           data["_indicator"] = indicatorData["ALL"]
 
-      console.log data
       panel.append("div")
         .datum(data)
           .attr("class", "tseries")
@@ -393,7 +390,7 @@ updateSplitPanel = (mainData, indicatorData) ->
 
 createSmallTimeSeriesChart = (prop, value) ->
   timeSeriesChart()
-    .valueProp(valueProp)
+    .valueProp("values")
     .width(270)
     .height(90)
     .xticks(3)
@@ -403,7 +400,7 @@ createSmallTimeSeriesChart = (prop, value) ->
     .marginLeft(40)
     .marginRight(15)
     .title("#{prop}: #{value}")
-    .propColors(["steelblue"])
+    .propColors(["steelblue", "#e41a1c"])
     .ytickFormat(shortMagnitudeFormat)
     .showRule(true)
     .on("rulemove", (date) -> moveChartRulesTo date)
