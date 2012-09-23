@@ -1,7 +1,7 @@
 .barHierarchy text.barLabel {
   font-size: 11px;
   cursor:pointer;
-  fill:#999;
+  fill:#666;
 }
 
 .barHierarchy text.barLabel.hasChildren:hover {

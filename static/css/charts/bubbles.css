@@ -12,18 +12,18 @@ g.flows line { stroke-linecap:round; }
 
 g.bubble circle { stroke:#ccc; stroke-width:1; }
 /*g.bubble circle:hover { stroke:#fff; }*/
-g.bubble circle.selected { stroke:#FEE090; stroke-width:2;}
+g.bubble circle.selected { stroke:Khaki ; stroke-width:2;}
 
-g.bubble circle.rin { fill:#B2182B; opacity:.5; }
-g.bubble circle.rout { fill:#2166AC; opacity:.5; }
-g.bubble.highlighted  circle.rin { fill:#f2586B; }
-g.bubble.highlighted  circle.rout { fill:#61a6eC; }
+g.bubble circle.rin { fill:#d56869 ; }
+g.bubble circle.rout { fill:steelblue; }
+g.bubble.highlighted  circle.rin { fill:#d56869 ; }
+g.bubble.highlighted  circle.rout { fill:steelblue; }
 
-line.in { stroke:#da969f; }
-line.in:hover { stroke:rgb(255, 174, 174); }
+line.in { stroke:#ffb1af; }
+line.in:hover { stroke:#ffcac8; }
 
-line.out { stroke:#a1c0de; }
-line.out:hover { stroke:#bbdeff; }
+line.out { stroke:#7ab1e6; }
+line.out:hover { stroke:#93caff; }
 
 
-g.bubble text { pointer-events: none; text-shadow: 0 0 0.3em #FFF }
+g.bubble text { pointer-events: none; /* text-shadow: 0 0 0.3em #FFF */ }

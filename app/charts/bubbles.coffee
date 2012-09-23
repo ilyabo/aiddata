@@ -22,7 +22,7 @@ this.bubblesChart = ->
 
   tseriesw = 250 #bubblesChartWidth*0.25
   tseriesh = 100 #bubblesChartHeight*0.18
-  tseriesMarginLeft = 30
+  tseriesMarginLeft = 33  
 
   nodesWithoutCoordsMarginBottom = 50
 
@@ -33,7 +33,7 @@ this.bubblesChart = ->
   playButtonWidth = 40
   ###
 
-  lightVersionMode = $.browser.mozilla
+  lightVersionMode = false #$.browser.mozilla
   if lightVersionMode
     dontUseForceLayout = true
     noAnimation = true
@@ -86,11 +86,12 @@ this.bubblesChart = ->
       .marginLeft(tseriesMarginLeft)
       .title(title)
       .ytickFormat(shortMagnitudeFormat)
+      #.propColors(["lightcoral","steelblue"])
 
-    tschart.propColors switch dir
-      when "in" then ["#B2182B"]
-      when "out" then ["#2166AC"]
-      else ["#B2182B","#2166AC"]
+    # tschart.propColors switch dir
+    #   when "in" then ["lightcoral"]
+    #   when "out" then ["steelblue"]
+    #   else ["lightcoral","steelblue"]
 
     d3.select(tseriesDiv).datum(data).call(tschart)
 
@@ -434,7 +435,7 @@ this.bubblesChart = ->
             .attr("opacity", 0)
             .transition()
               .duration(300)
-                .attr("opacity", 0.5)
+                .attr("opacity", 1)
 
 
       if (d.inlinks?)
@@ -447,16 +448,24 @@ this.bubblesChart = ->
             .attr("opacity", 0)
             .transition()
               .duration(300)
-                .attr("opacity", 0.5)
+                .attr("opacity", 1)
 
       createFlowTimeSeries = (flow, d, i) ->
         
         dir = (if d3.select(flow).classed("in") then "in" else "out")
 
-        data = (for attr in state.magnAttrs() when d.data[attr]?
+        flowData = (for attr in state.magnAttrs() when d.data[attr]?
           date: dateFromMagnAttr(attr)
           value: +d.data[attr]
         )
+
+        data = if dir is "in"
+          inbound : flowData
+          outbound : []
+        else
+          inbound : []
+          outbound : flowData
+
   
         if not tseriesPanel.contains("flow" + i)
           tseries = tseriesPanel.addNew("flow" + i, "tseries")

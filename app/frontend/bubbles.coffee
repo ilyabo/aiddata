@@ -86,7 +86,7 @@ queue()
   .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient")
   .defer(loadJson, "data/world-countries.json")
   .defer(loadCsv, "data/aiddata-countries.csv")
-  .defer(loadCsv, "dv/flows/by/purpose.csv")
+  #.defer(loadCsv, "dv/flows/by/purpose.csv")
   .defer(loadJson, "purposes-with-totals.json")
   .await (err, loaded) ->
 
@@ -98,7 +98,10 @@ queue()
       return
 
 
-    [ nodes, flows, map, countries, flowsByPurpose, purposeTree ] = loaded
+    [ nodes, flows, map, countries, purposeTree ] = loaded
+
+    purposeTree.name = "Purposes"
+
 
     # list of flows with every year separated
     #   -> list grouped by o/d, all years' values in one object
