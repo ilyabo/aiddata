@@ -391,6 +391,7 @@ updateSplitPanel = (mainData, indicatorData) ->
 createSmallTimeSeriesChart = (prop, value) ->
   timeSeriesChart()
     .valueProp("values")
+    #.dateDomain(dateDomain)
     .width(270)
     .height(90)
     .xticks(3)
@@ -403,6 +404,7 @@ createSmallTimeSeriesChart = (prop, value) ->
     .propColors(["steelblue", "#e41a1c"])
     .ytickFormat(shortMagnitudeFormat)
     .showRule(true)
+    .indexedMode(true)
     .on("rulemove", (date) -> moveChartRulesTo date)
     .on("click", ->
       current = history.current().filter(prop)

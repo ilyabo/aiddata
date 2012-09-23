@@ -53,12 +53,9 @@ text-align:center;
 }
 
 
-.tseries .pi_0 .line { stroke: #B2182B; opacity:.5; }
-.tseries .pi_1 .line { stroke: #2166AC; opacity:.5;}
+.tseries .line { opacity:.5; }
 
 .tseries .dot  { stroke-width:0.5; fill:#fff; }
-.tseries .pi_0 .dot  { stroke:#B2182B; }
-.tseries .pi_1 .dot  { stroke:#2166AC; }
 
 
 #yearSliderOuter {

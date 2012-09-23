@@ -66,10 +66,20 @@ this.bubblesChart = ->
       labelText.substr(0, maxLength - 2) + ".."
 
 
+  dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
+  dateFromMagnAttrInd = (magnAttrIndex) -> dateFromMagnAttr(state.magnAttrs()[magnAttrIndex])
+
+
+
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
-  createTimeSeries = (tseriesDiv, data, title) ->
+  createTimeSeries = (tseriesDiv, data, title, dir) ->
+    
+
+    dateDomain = [ dateFromMagnAttrInd(0), dateFromMagnAttrInd(state.magnAttrs().length - 1) ]
+
     tschart = timeSeriesChart()
+      .dateDomain(dateDomain)
       .width(tseriesw)
       .height(tseriesh)
       .dotRadius(1)
@@ -77,9 +87,14 @@ this.bubblesChart = ->
       .title(title)
       .ytickFormat(shortMagnitudeFormat)
 
+    tschart.propColors switch dir
+      when "in" then ["#B2182B"]
+      when "out" then ["#2166AC"]
+      else ["#B2182B","#2166AC"]
+
     d3.select(tseriesDiv).datum(data).call(tschart)
 
-    updateYear = -> tschart.moveRule(data[state.selAttrIndex].date)
+    updateYear = -> tschart.moveRule(dateFromMagnAttrInd(state.selAttrIndex))
     updateYear()
     $(tseriesDiv).bind "updateYear", updateYear
 
@@ -147,8 +162,6 @@ this.bubblesChart = ->
 
 
 
-
-  dateFromMagnAttr = (magnAttr) -> new Date(magnAttr, 0)
 
 
   ###
@@ -437,11 +450,14 @@ this.bubblesChart = ->
                 .attr("opacity", 0.5)
 
       createFlowTimeSeries = (flow, d, i) ->
-        data = state.magnAttrs().map (attr) => 
-            date: dateFromMagnAttr(attr)
-            inbound: if d3.select(flow).classed("in") then +d.data[attr]
-            outbound: if d3.select(flow).classed("out") then +d.data[attr]
+        
+        dir = (if d3.select(flow).classed("in") then "in" else "out")
 
+        data = (for attr in state.magnAttrs() when d.data[attr]?
+          date: dateFromMagnAttr(attr)
+          value: +d.data[attr]
+        )
+  
         if not tseriesPanel.contains("flow" + i)
           tseries = tseriesPanel.addNew("flow" + i, "tseries")
           recipient = d.target.data[conf.nodeLabelAttr]
@@ -449,7 +465,7 @@ this.bubblesChart = ->
 
           flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
 
-          createTimeSeries(tseries, data, flowLabel)
+          createTimeSeries(tseries, data, flowLabel, dir)
 
 
 
@@ -490,10 +506,14 @@ this.bubblesChart = ->
 
 
     createNodeTimeSeries = (node, d, i) ->
-      data = state.magnAttrs().map (attr, i) -> 
+      data = 
+        inbound : state.magnAttrs().map (attr, i) -> 
           date: dateFromMagnAttr(attr)
-          inbound: d.data.totals?.inbound?[i] ? 0
-          outbound: d.data.totals?.outbound?[i] ? 0
+          value: d.data.totals?.inbound?[i] ? 0
+
+        outbound : state.magnAttrs().map (attr, i) -> 
+          date: dateFromMagnAttr(attr)
+          value: d.data.totals?.outbound?[i] ? 0
 
       if not tseriesPanel.contains("node" + i)
         tseries = tseriesPanel.addNew("node" + i, "tseries")

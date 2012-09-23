@@ -13,6 +13,7 @@ this.timeSeriesChart = ->
   marginRight = 8
   ytickFormat = d3.format(",.0f")
   showLegend = false
+  indexedMode = false
   legendWidth = 150
   legendHeight = null  # will be set to height by default
   legendItemHeight = 15
@@ -22,6 +23,8 @@ this.timeSeriesChart = ->
   #properties = null
   showRule = false
   ruleDate = null
+  valueDomain = dateDomain = null
+
   eventListeners = {}
 
   propColors = d3.scale.category10()
@@ -48,6 +51,10 @@ this.timeSeriesChart = ->
   chart.dateProp = (_) -> if (!arguments.length) then dateProp else dateProp = _; chart
 
   chart.valueProp = (_) -> if (!arguments.length) then valueProp else valueProp = _; chart
+
+  chart.dateDomain = (_) -> if (!arguments.length) then dateDomain else dateDomain = _; chart
+
+  chart.valueDomain = (_) -> if (!arguments.length) then valueDomain else valueDomain = _; chart
 
   getValueProp = (prop) ->
     if typeof valueProp is "function"
@@ -78,13 +85,16 @@ this.timeSeriesChart = ->
 
   chart.ytickFormat = (_) -> if (!arguments.length) then ytickFormat else ytickFormat = _; chart
 
-  chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
+  chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = (if _ then true else false); chart
+
+  chart.indexedMode = (_) -> if (!arguments.length) then indexedMode else indexedMode = (if _ then true else false); chart
+
+  chart.showRule = (_) -> if (!arguments.length) then showRule else showRule = (if _ then true else false); chart
 
   chart.legendWidth = (_) -> if (!arguments.length) then legendWidth else legendWidth = _; chart
 
   chart.legendHeight = (_) -> if (!arguments.length) then legendHeight else legendHeight = _; chart
 
-  chart.showRule = (_) -> if (!arguments.length) then showRule else showRule = _; chart
 
   chart.propColors = (_) -> if (!arguments.length) then propColors else propColors = _; chart
 
@@ -173,7 +183,6 @@ this.timeSeriesChart = ->
 
     pi = -1
     for prop, entries of data
-      console.log entries
       pi++
 
       g = vis.append("g").datum(entries)
@@ -262,14 +271,20 @@ this.timeSeriesChart = ->
 
   updateScaleDomains = (data) ->
 
-    valueExtents = (d3.extent(values, (d) -> d[getValueProp(prop)]) for prop, values of data)
-    valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
-    y.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
+    if valueDomain?
+      y.domain(valueDomain)
+    else
+      valueExtents = (d3.extent(values, (d) -> d[getValueProp(prop)]) for prop, values of data)
+      valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
+      y.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
 
 
-    dateExtents = (d3.extent(values, (d) -> d[dateProp]) for prop, values of data)
-    dateExtent = [ d3.min(dateExtents, (d) -> d[0]), d3.max(dateExtents, (d) -> d[1]) ] 
-    x.domain([ dateExtent[0],  dateExtent[1] ])
+    if dateDomain?
+      x.domain(dateDomain)
+    else
+      dateExtents = (d3.extent(values, (d) -> d[dateProp]) for prop, values of data)
+      dateExtent = [ d3.min(dateExtents, (d) -> d[0]), d3.max(dateExtents, (d) -> d[1]) ] 
+      x.domain([ dateExtent[0],  dateExtent[1] ])
 
 
 
