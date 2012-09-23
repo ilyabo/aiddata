@@ -279,7 +279,8 @@ this.bubblesChart = ->
       .on 'click', (d) -> clearNodeSelection()
 
 
-    fitProjection(mapProj, data.map, [[0,20],[bubblesChartWidth, bubblesChartHeight * 0.9]], true)
+    fitProjection(mapProj, data.map, 
+      [[-bubblesChartWidth*0.15,bubblesChartHeight*0.15],[bubblesChartWidth, bubblesChartHeight * 0.8]], true)
 
 
 
