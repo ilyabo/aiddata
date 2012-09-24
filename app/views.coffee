@@ -88,11 +88,15 @@
 
         div id:"indicatorOuter", class:"ctls", ->
           table ->
-            td class:"indicatorLabel",-> span class:"label btn-mini", "Show indicator for:"
-            td -> select id:"indicatorFor",class:"ctl",->
-              option -> "donor"
-              option -> "recipient"
-            td -> input id:"indicatorTypeahead", class:"ctl btn-mini",type:"text", "data-provide":"typeahead"
+            tr ->
+              td class:"indicatorLabel",-> span class:"label btn-mini", "Compare with an indicator for:"
+              td -> select id:"indicatorFor",class:"ctl",->
+                option -> "donor"
+                option -> "recipient"
+              td -> input id:"indicatorTypeahead", class:"ctl btn-mini",type:"text", "data-provide":"typeahead"
+            tr ->
+              td colspan:"2"
+              td class:"ctl-hint", -> "Start typing to find an indicator"
 
         div id:"splitPanel", class:"tseries"
 

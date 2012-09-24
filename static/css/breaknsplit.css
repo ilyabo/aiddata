@@ -21,6 +21,7 @@ button.close { border:none; background:none; padding: 0;}
 
 button.reset { font-size:9pt; }
 .ctls td { text-align: center; vertical-align: top; padding-top:2px;}
+.ctl-hint { font-size:8pt; text-align:left !important; padding-left:7px; color:#999;}
 
 div.btn-group {display:inline-block;}
 #outerTop select.filter { margin:2px; width:160px; height:200px; font-size:7pt; }

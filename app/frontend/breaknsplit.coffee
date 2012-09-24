@@ -118,8 +118,9 @@ query = do ->
       url += "&filter=" + enc(JSON.stringify filters) if numFilters > 0
       return url
 
-    makeIndicatorUrlFor = (filterValue) ->
-      "wb/brief/#{indicator.id}/#{filterValue}.csv"
+    makeIndicatorUrlFor = (filterValues) ->
+      (filterValues = [ filterValues ]) unless filterValues instanceof Array
+      "wb/brief/#{indicator.id}/#{filterValues.join(',')}.csv"
 
 
     # grouping values corresponding to different values of breakDownBy
@@ -162,13 +163,28 @@ query = do ->
 
       que.defer(loadCsv, makeUrl())
       
+
+
       if indicator?
-        filterValues = filters[indicator.prop]
-        if filterValues?
-          for val in filterValues
-            que.defer(loadCsvQuietly, makeIndicatorUrlFor(val))
+
+        if filters[indicator.prop]?
+          filterValues = filters[indicator.prop]
+
+          if breakDownBy is indicator.prop
+            for val in filterValues
+              # load values for each of the selected values separately
+              que.defer(loadCsvQuietly, makeIndicatorUrlFor(val))
+          else
+            # load summarized values for the selection
+            que.defer(loadCsvQuietly, makeIndicatorUrlFor(filterValues))
+
         else
-          que.defer(loadCsv, makeIndicatorUrlFor("ALL"))
+
+          # TODO: splitting and showing indicators without filtering should be impossible
+
+          que.defer(loadCsvQuietly, makeIndicatorUrlFor("ALL"))
+
+
 
       que.await (error, results) ->
         if error?
@@ -197,11 +213,12 @@ query = do ->
 
         if indicator?
           indicatorData = {}
-          if filterValues?
-            for val, i in filterValues
-              indicatorData[val] = prepareValues(results[i], "value")
-          else
-            indicatorData["ALL"] = prepareValues(results[0], "value")
+          for list, i in results
+            prop = (if (breakDownBy is indicator.prop) and filterValues? then filterValues[i] else "ALL")
+            indicatorData[prop] = prepareValues(list, "value")
+        else
+          indicatorData = null
+
 
         callback(null, { main: mainData, indicator:indicatorData })
 
