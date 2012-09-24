@@ -2,7 +2,8 @@
 
   @get '/': -> @render 'bubbles': {layout: 'bootstrap.eco'}
 
-  @get '/breaknsplit': -> @render breaknsplit: {layout: 'bootstrap.eco'}
+  @get '/breaknsplit': ->    
+    @render breaknsplit: {layout: 'bootstrap.eco'}
 
   @get '/ffprints': -> @render ffprints: {layout: 'bootstrap.eco'}
 

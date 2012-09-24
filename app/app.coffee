@@ -45,6 +45,7 @@ require('zappa').run config.port, ->
   @use 'static': __dirname + '/../node_modules/crossfilter'
   @use 'static': __dirname + '/../node_modules/cubism'
   @use 'static': __dirname + '/../node_modules/queue-async'
+  @use 'static': __dirname + '/../node_modules/history.js'
 
   #@enable 'default layout'
   #@enable 'minify'

@@ -27,7 +27,7 @@ this.timeSeriesChart = ->
 
   eventListeners = {}
 
-  propColors = d3.scale.category10()
+  propColors = d3.scale.category10().range()
 
   # borrowed from chroma.js: chroma.brewer.Set1
   # ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]

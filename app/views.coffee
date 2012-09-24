@@ -5,7 +5,8 @@
 
   @view breaknsplit : ->
 
-
+    @title = "AidData Break'n'split"
+    
     style '@import url("css/charts/time-series.css");'
     style '@import url("css/breaknsplit.css");'
     script src: 'coffee/charts/time-series.js'
@@ -13,8 +14,9 @@
     script src: 'coffee/utils.js'
     script src: 'coffee/query-history.js'
     script src: 'queue.js'
-    script src: 'libs/chroma/chroma.min.js'
-    script src: 'libs/chroma/chroma.colors.js'
+    script src: 'libs/history.js/html5/jquery.history.js'
+    # script src: 'libs/chroma/chroma.min.js'
+    # script src: 'libs/chroma/chroma.colors.js'
     script src: 'coffee/breaknsplit.js'
 
 

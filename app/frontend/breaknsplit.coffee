@@ -12,8 +12,15 @@ propertyData = null
 indicators = null
 smallCharts = {}
 
-history = queryHistory()
+#history = queryHistory()
+History = window.History
 
+makeQuery = (state) ->
+  q = query("AidData", ["donor", "recipient", "purpose"], valueProp)
+  q.state(state) if state?
+  return q
+
+currentQuery = -> makeQuery(History.getState().data)
 
 query = do -> 
 
@@ -25,6 +32,39 @@ query = do ->
     indicator = null
 
     q = () ->
+
+    q.toString = -> JSON.stringify(q.state())
+
+    q.state = (_) ->
+      if !arguments.length
+        breakDownBy : breakDownBy
+        split : split
+        indicator : q.indicator()
+        filters : q.filters()
+      else
+        filters = {}
+        breakDownBy = null
+        indicator = null
+
+        if _.filters?
+          for prop, values of _.filters
+            q.addFilter(prop, values)
+        
+        if _.breakDownBy?
+          q.breakDownBy(_.breakDownBy)
+
+        split = (if _.split then true else false)
+
+        if _.indicator?
+          indicator = indicatorObj(_.indicator.id, _.indicator.prop) 
+
+
+    q.makeUrl = ->
+      "breaknsplit?state="+ JSON.stringify(q.state())
+      # "breakDownBy=#{breakDownBy}"+
+      # "&split=#{split}"+
+      # "&indicator=#{JSON.stringify q.indicator()}"+
+      # "&filters=#{JSON.stringify filters}"
 
     q.copy = ->
       cpy = query(dataset, props, valueProp)
@@ -110,7 +150,7 @@ query = do ->
       "</div>"
 
 
-    makeUrl = () ->
+    makeDataUrl = () ->
       url = "dv/flows/breaknsplit.csv?breakby=date"
       url += ",#{breakDownBy}" if breakDownBy?
       enc = (obj) -> encodeURIComponent(obj)
@@ -161,7 +201,7 @@ query = do ->
 
       que = queue()
 
-      que.defer(loadCsv, makeUrl())
+      que.defer(loadCsv, makeDataUrl())
       
 
 
@@ -222,7 +262,7 @@ query = do ->
           indicatorData = null
 
 
-        callback(null, { main: mainData, indicator:indicatorData })
+        callback(null, { query: q, main: mainData, indicator:indicatorData })
 
 
 
@@ -243,7 +283,7 @@ tschart = timeSeriesChart()
   .showLegend(true)
   .legendWidth(250)
   #.legendHeight(250)
-  .propColors(chroma.brewer.Set1)
+  #.propColors(chroma.brewer.Set1)
   #.propColors([chroma.brewer.Set1[1]])
   .showRule(true)
   .on "rulemove", (date) -> moveChartRulesTo date
@@ -260,7 +300,7 @@ moveChartRulesTo = (date) ->
 
 
 syncFiltersWithQuery = ->
-  q = history.current()
+  q = currentQuery()
 
   $("select.filter").each ->
 
@@ -280,7 +320,7 @@ findIndicatorByName = (name) -> (if i.name is name then return i) for i in indic
 
 updateCtrls = ->
 
-  q = history.current()
+  q = currentQuery()
 
   $(".btn-group.filter").each ->
     prop = $(this).data("prop")
@@ -337,7 +377,8 @@ updateCallback = (err, data) ->
 
   else 
   
-    { main: mainData, indicator: indicatorData } = data
+    { query: q, main: mainData, indicator: indicatorData } = data
+
 
     if not(mainData?) or (d3.values(mainData).reduce(((a, sum) -> sum + (a?.length ? 0)), 0) is 0)
       $("#warningText").html("The result of your filter query is empty")
@@ -350,11 +391,14 @@ updateCallback = (err, data) ->
     # update the view
     d3.select("#tseries").datum(mainData).call(tschart)
 
-    q = history.current()
+    #q = currentQuery()
     $("#status").html(q.describe())
 
-    $("#backButton").attr("disabled", history.isBackEmpty())
-    $("#forwardButton").attr("disabled", history.isForwardEmpty())
+    # $("#backButton").attr("disabled", history.isBackEmpty())
+    # $("#forwardButton").attr("disabled", history.isForwardEmpty())
+    # $("#backButton").attr("disabled", false)
+    # $("#forwardButton").attr("disabled", false)
+
     syncFiltersWithQuery()
     updateCtrls()
 
@@ -369,7 +413,7 @@ updateSplitPanel = (mainData, indicatorData, dateDomain) ->
   
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
-  q = history.current()
+  q = currentQuery()
   breakdProp = q.breakDownBy()
   
   if q.split() and breakdProp?
@@ -433,7 +477,7 @@ createSmallTimeSeriesChart = (prop, value, dateDomain) ->
     .indexedMode(true)
     .on("rulemove", (date) -> moveChartRulesTo date)
     .on("click", ->
-      current = history.current().filter(prop)
+      current = History.getState().data.filter(prop)
       if current? and current.length is 1 and current[0] is value
         # nothing has to be changed
         return
@@ -444,35 +488,46 @@ createSmallTimeSeriesChart = (prop, value, dateDomain) ->
     #.on("mouseout", (svg) -> svg.classed("tshighlight", false))
 
 
+load = (q, replace = false) ->
+  #history.load(q, updateCallback)
+  if replace
+    History.replaceState(q.state(), null, q.makeUrl())
+  else
+    History.pushState(q.state(), null, q.makeUrl())
 
+# $(window).bind("popstate", (event) ->
+#   if event.state?.load?
+# )
 
-load = (q) ->
+History.Adapter.bind window, 'statechange', ->
   loadingStarted()
-  history.load(q, updateCallback)
+  q = makeQuery(History.getState()?.data)
+  q.load(updateCallback)
+
+
 
 filter = (prop, selection) ->
   unless selection.length is 0
-    current = history.current()
-    q = current.copy()
+    q = currentQuery()
     q.addFilter(prop, selection)
     load q
 
 resetFilter = (prop) ->
-  q = history.current().copy()
+  q = currentQuery()
   if q.filter(prop)?
     q.removeFilter(prop)
     q.split(false)
     load q
 
 resetBreakDown = (prop) ->
-  q = history.current().copy()
+  q = currentQuery()
   if (q.breakDownBy() is prop)
     q.resetBreakDownBy()
     q.split(false)
   load q
 
 breakDownBy = (prop, selection) ->
-  q = history.current().copy()
+  q = currentQuery()
 
   changed = false
 
@@ -488,14 +543,14 @@ breakDownBy = (prop, selection) ->
   load q if changed
     
 split = ->
-  q = history.current().copy()
+  q = currentQuery()
   q.split(not $(this).hasClass("active"))
   #updateSplitPanel()
 
   load q
 
 showIndicator = (id, prop) ->
-  q = history.current().copy()
+  q = currentQuery()
   unless (q.indicator()?.id is id) and (q.indicator()?.prop is prop) 
     q.indicator(id, prop)
     load q
@@ -525,6 +580,9 @@ loadingStopped = ->
 
 
 
+getUrlParamValue = (name) -> 
+  matches = RegExp("#{name}=(.+?)(&|$)").exec(location.search)
+  if matches? then decodeURIComponent(matches[1]) else null
 
 
 
@@ -556,10 +614,10 @@ queue()
       purpose : purposes
 
 
-    history.load(
-      query("AidData", ["donor", "recipient", "purpose"], valueProp),
-      updateCallback
-    )
+    load makeQuery(JSON.parse(getUrlParamValue("state"))), true
+
+    #history.load(makeQuery(), updateCallback)
+
 
 
 
@@ -618,13 +676,11 @@ queue()
 
 
       $("#backButton").click ->
-        loadingStarted()
-        history.back(updateCallback)
+        History.back()
 
 
       $("#forwardButton").click ->
-        loadingStarted()
-        history.forward(updateCallback)
+        History.forward()
 
 
       $("#split").click split

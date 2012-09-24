@@ -3,7 +3,7 @@
   config = require '../config'
 
   @view 'bootstrap.eco': '''
-    <% @title = "AidData" %>
+    <% @title ?= "AidData" %>
     <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -48,7 +48,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </a>
-                <a class="brand" href="bubbles"><%= @title %></a>
+                <a class="brand" href="bubbles">AidData</a>
 
                 <div class="nav-collapse">
                   <ul class="nav">
