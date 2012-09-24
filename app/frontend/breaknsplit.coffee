@@ -180,7 +180,9 @@ query = do ->
 
         else
 
-          # TODO: splitting and showing indicators without filtering should be impossible
+          if breakDownBy is indicator.prop
+            callback "A subset of #{indicator.prop}s must be selected before loading an indicator"
+            return
 
           que.defer(loadCsvQuietly, makeIndicatorUrlFor("ALL"))
 
@@ -189,7 +191,7 @@ query = do ->
       que.await (error, results) ->
         if error?
           console.error err
-          callback(new Error("Couldn't load data from server"), null)
+          callback("Couldn't load data from server", null)
           return
 
         # try
@@ -393,9 +395,11 @@ updateSplitPanel = (mainData, indicatorData, dateDomain) ->
       indicator = q.indicator()
       if indicator?
         if indicator.prop is breakdProp
-          data[breakdProp + "_indicator"] = indicatorData[val]
+          if indicatorData[val]?
+            data[breakdProp + "_indicator"] = indicatorData[val]
         else
-          data["_indicator"] = indicatorData["ALL"]
+          if indicatorData["ALL"]?
+            data["_indicator"] = indicatorData["ALL"]
 
       panel.append("div")
         .datum(data)

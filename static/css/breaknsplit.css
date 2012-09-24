@@ -12,6 +12,7 @@
 #status .filter { font-size:8pt;}
 #outerTop { margin-top:1em;}
 #error, #warn, #status { display:none; }
+#error { margin:0 0 0 2em; vertical-align: middle;}
 button.close { border:none; background:none; padding: 0;}
 
 #backForwardBtns { white-space:nowrap; }
@@ -39,7 +40,6 @@ ul.typeahead.dropdown-menu { font-size:11px;}
 
 /*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 
-#error { }
 
 .tseries .line { stroke-width:1.3px; opacity:1.0; }
 .tseries .dot  { stroke-width:1.3px; opacity:1.0; }
