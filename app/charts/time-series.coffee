@@ -56,6 +56,10 @@ this.timeSeriesChart = ->
 
   chart.valueDomain = (_) -> if (!arguments.length) then valueDomain else valueDomain = _; chart
 
+  chart.actualDateDomain = (_) -> x?.domain().slice()
+
+  chart.actualValueDomain = (_) -> y?.domain().slice()
+
   getValueProp = (prop) ->
     if typeof valueProp is "function"
       valueProp.call this, prop

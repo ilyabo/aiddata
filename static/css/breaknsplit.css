@@ -38,7 +38,7 @@ ul.typeahead.dropdown-menu { font-size:11px;}
 
 /*.list { font-size:7pt; overflow-y:auto; overflow-x:hidden; height:250px; margin:5px;}*/
 
-#error { width:200px; }
+#error { }
 
 .tseries .line { stroke-width:1.3px; opacity:1.0; }
 .tseries .dot  { stroke-width:1.3px; opacity:1.0; }

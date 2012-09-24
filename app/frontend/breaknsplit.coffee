@@ -1,9 +1,9 @@
-#plusYears = (date, numYears) ->
-#  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
+plusYears = (date, numYears) ->
+  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
 
 # used to sanity-filter the input data
-#minDate = plusYears(new Date(), -100)
-#maxDate = plusYears(new Date(), +10)
+minDate = plusYears(new Date(), -100)
+maxDate = plusYears(new Date(), +10)
 
 dateFormat = d3.time.format("%Y")
 valueProp = "sum_amount_usd_constant"
@@ -144,12 +144,13 @@ query = do ->
 
     prepareValues = (data, valueProp) -> 
       values = []
-      for d in data
-        date = dateFormat.parse(d.date)
-        v = {}
-        v.date = date
-        v["values"] = +d[valueProp]
-        values.push v
+      if data?
+        for d in data
+          date = dateFormat.parse(d.date)
+          v = {}
+          v.date = date
+          v["values"] = +d[valueProp]
+          values.push v
       values
 
     # do not report errors (data in WB API is often missing)
@@ -171,33 +172,39 @@ query = do ->
 
       que.await (error, results) ->
         if error?
+          console.error err
           callback(new Error("Couldn't load data from server"), null)
           return
 
-        mainCsv = results.shift()
-        
-        #mainCsv = mainCsv.filter (d) -> d.date? and (minDate <= d.date <= maxDate)
+        try
+          mainCsv = results
+            .shift()
+            .filter (d) -> d.date? and (minDate <= dateFormat.parse(d.date) <= maxDate)
 
-        mainData =
-          if breakDownBy?
-            #groupValuesByDate(mainCsv)
-            d3.nest()
-              .key((d) -> d[breakDownBy])
-              .rollup((a) -> prepareValues(a, valueProp))
-              .map(mainCsv)
-          else
-            prepareValues(mainCsv, valueProp)
+          mainData =
+            if breakDownBy?
+              #groupValuesByDate(mainCsv)
+              d3.nest()
+                .key((d) -> d[breakDownBy])
+                .rollup((a) -> prepareValues(a, valueProp))
+                .map(mainCsv)
+            else
+              prepareValues(mainCsv, valueProp)
 
 
-        if indicator?
-          indicatorData = {}
-          if filterValues?
-            for val, i in filterValues
-              indicatorData[val] = prepareValues(results[i], "value")
-          else
-            indicatorData["ALL"] = prepareValues(results[0], "value")
+          if indicator?
+            indicatorData = {}
+            if filterValues?
+              for val, i in filterValues
+                indicatorData[val] = prepareValues(results[i], "value")
+            else
+              indicatorData["ALL"] = prepareValues(results[0], "value")
 
-        callback(null, { main: mainData, indicator:indicatorData })
+          callback(null, { main: mainData, indicator:indicatorData })
+          
+        catch err
+          console.error err
+          callback(new Error("Couldn't load data from server: " + err, null))
 
 
 
@@ -305,15 +312,15 @@ updateCtrls = ->
 
 updateCallback = (err, data) ->
   if err?
-    $("#errorText").html("<h4>Oh snap!</h4>I could not load the data from the server")
+    $("#errorText").html("<h4>Oh snap!</h4>" + err)
     $("#error").fadeIn().delay(5000).fadeOut()
-    if callback? then callback("Could not load data from the server")
+    #if callback? then callback("Could not load data from the server")
 
   else 
   
     { main: mainData, indicator: indicatorData } = data
 
-    if mainData?.length is 0
+    if not(mainData?) or (d3.values(mainData).reduce(((a, sum) -> sum + (a?.length ? 0)), 0) is 0)
       $("#warningText").html("The result of your filter query is empty")
       $("#warn").fadeIn().delay(5000).fadeOut()
       #if callback? then callback("Empty query")
@@ -332,14 +339,14 @@ updateCallback = (err, data) ->
     syncFiltersWithQuery()
     updateCtrls()
 
-    updateSplitPanel(mainData, indicatorData)
+    updateSplitPanel(mainData, indicatorData, tschart.actualDateDomain())
     
     # if q.breakDownBy()? then splitBy(q.breakDownBy())
 
   loadingStopped()
 
 
-updateSplitPanel = (mainData, indicatorData) ->
+updateSplitPanel = (mainData, indicatorData, dateDomain) ->
   
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
@@ -355,18 +362,10 @@ updateSplitPanel = (mainData, indicatorData) ->
     charts = []
 
     for val in filteredValues
-      chart = createSmallTimeSeriesChart(prop, val)
-      
-      ###
-      propValueData = for prop, values of mainData when d[val]?
-        obj = {}
-        obj[val] = d[val]
-        obj.date = d.date
-        obj
-      ###
-  
+      chart = createSmallTimeSeriesChart(prop, val, dateDomain)
+
       data = {}
-      data[prop] = mainData[val]
+      data[prop] = mainData[val] ? []  
 
       indicator = q.indicator()
       if indicator?
@@ -388,10 +387,10 @@ updateSplitPanel = (mainData, indicatorData) ->
 
 
 
-createSmallTimeSeriesChart = (prop, value) ->
+createSmallTimeSeriesChart = (prop, value, dateDomain) ->
   timeSeriesChart()
     .valueProp("values")
-    #.dateDomain(dateDomain)
+    .dateDomain(dateDomain)
     .width(270)
     .height(90)
     .xticks(3)
