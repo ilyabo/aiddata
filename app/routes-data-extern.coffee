@@ -3,6 +3,7 @@
   request = require 'request'
   caching = require './caching-loader'
   csv = require 'csv'
+  queue = require 'queue-async'
   _ = require 'underscore'
   utils = require './data-utils'
 
@@ -57,30 +58,64 @@
   requestWorldBankIndicator = (indicator, countryCode, callback) ->
     url = "http://api.worldbank.org/countries/#{countryCode}/indicators/#{indicator}?format=json"
     console.debug "Loading #{url}"
-    request url, callback
+    request url, (err, response, body) ->
+      # console.log err
+      if err?
+        callback err
+      # TODO: if there is no data for a country just return an empty list and no error
+      # Ignoring the response
+      try        
+        if body.indexOf("The provided parameter value is not valid") >= 0
+          console.warn "WB API reported invalid param value for country '#{countryCode}'. Returning empty data."
+          data = []
+        else
+          data = unpage(JSON.parse(body))
+
+        callback(null, data)
+
+      catch err
+        console.error "Could not parse WB API response: " + body.substr(0, 1024)
+        callback "WB API response parse error: " + err
+
 
 
   @get '/wb/brief/:indicator/:countryCode.csv': ->
 
-    requestWorldBankIndicator @params.indicator, @params.countryCode,
-      (err, response, body) =>
-        unless err?
-          try
-            entries = unpage(JSON.parse(body)).filter (d) -> d.value?
 
-            @response.write "date,value\n"
-            csv()
-              .from(entries)
-              .toStream(@response)
-              .transform (d) -> [ d.date, d.value ]
-            # @send JSON.stringify(entries)
-          catch err
-            msg = "Response from the World Bank API could not be processed: " + body
-            console.error msg
-            #@send ""
-            @next(err)
-        else
+    q = queue()
+
+    for countryCode in @params.countryCode.split(",")
+      q.defer(requestWorldBankIndicator, @params.indicator, countryCode)
+
+    q.await (err, results) =>
+      unless err?
+        try
+          entries = (result.filter((d) -> d.value?) for result in results)
+
+          if entries.length is 1
+            data = entries[0]
+          else
+            sumByDate = {}
+            for list in entries
+              for d in list when d.value?
+                sumByDate[d.date] = (sumByDate[d.date] ? 0) + (+d.value)
+
+            data = ({date : date, value : sum} for date, sum of sumByDate)
+
+
+          @response.write "date,value\n"
+          csv()
+            .from(data)
+            .toStream(@response)
+            .transform (d) -> [ d.date, d.value ]
+          # @send JSON.stringify(entries)
+        catch err
+          #msg = "Response from the World Bank API could not be processed: " + body
+          console.error "Response from the World Bank API could not be processed"
+          #@send ""
           @next(err)
+      else
+        @next(err)
 
 
   @get '/wb/full/:indicator/:countryCode.json': ->

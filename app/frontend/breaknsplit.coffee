@@ -176,35 +176,35 @@ query = do ->
           callback(new Error("Couldn't load data from server"), null)
           return
 
-        try
-          mainCsv = results
-            .shift()
-            .filter (d) -> d.date? and (minDate <= dateFormat.parse(d.date) <= maxDate)
+        # try
+        # catch err
+        #   console.error err
+        #   callback(new Error("Couldn't load data from server: " + err, null))
+        mainCsv = results
+          .shift()
+          .filter (d) -> d.date? and (minDate <= dateFormat.parse(d.date) <= maxDate)
 
-          mainData =
-            if breakDownBy?
-              #groupValuesByDate(mainCsv)
-              d3.nest()
-                .key((d) -> d[breakDownBy])
-                .rollup((a) -> prepareValues(a, valueProp))
-                .map(mainCsv)
-            else
-              prepareValues(mainCsv, valueProp)
+        mainData =
+          if breakDownBy?
+            #groupValuesByDate(mainCsv)
+            d3.nest()
+              .key((d) -> d[breakDownBy])
+              .rollup((a) -> prepareValues(a, valueProp))
+              .map(mainCsv)
+          else
+            prepareValues(mainCsv, valueProp)
 
 
-          if indicator?
-            indicatorData = {}
-            if filterValues?
-              for val, i in filterValues
-                indicatorData[val] = prepareValues(results[i], "value")
-            else
-              indicatorData["ALL"] = prepareValues(results[0], "value")
+        if indicator?
+          indicatorData = {}
+          if filterValues?
+            for val, i in filterValues
+              indicatorData[val] = prepareValues(results[i], "value")
+          else
+            indicatorData["ALL"] = prepareValues(results[0], "value")
 
-          callback(null, { main: mainData, indicator:indicatorData })
-          
-        catch err
-          console.error err
-          callback(new Error("Couldn't load data from server: " + err, null))
+        callback(null, { main: mainData, indicator:indicatorData })
+
 
 
 
@@ -351,26 +351,32 @@ updateSplitPanel = (mainData, indicatorData, dateDomain) ->
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
   q = history.current()
-  prop = q.breakDownBy()
+  breakdProp = q.breakDownBy()
   
-  if q.split() and prop?
-    filteredValues = q.filter(prop) ? (propertyData[prop].map (d) -> d[prop])
+  if q.split() and breakdProp?
+    filteredValues = q.filter(breakdProp) ? (propertyData[breakdProp].map (d) -> d[breakdProp])
 
     panel = d3.select("#splitPanel")
 
     #console.log data
     charts = []
 
+    if indicator? 
+      do ->
+        extents = (d3.extent(values, (d) -> d[dateProp]) for breakdProp, values of indicatorData)
+        extents.push(dateDomain)
+        dateDomain = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ] 
+
     for val in filteredValues
-      chart = createSmallTimeSeriesChart(prop, val, dateDomain)
+      chart = createSmallTimeSeriesChart(breakdProp, val, dateDomain)
 
       data = {}
-      data[prop] = mainData[val] ? []  
+      data[breakdProp] = mainData[val] ? []  
 
       indicator = q.indicator()
       if indicator?
-        if indicator.prop is prop
-          data[prop + "_indicator"] = indicatorData[val]
+        if indicator.prop is breakdProp
+          data[breakdProp + "_indicator"] = indicatorData[val]
         else
           data["_indicator"] = indicatorData["ALL"]
 
