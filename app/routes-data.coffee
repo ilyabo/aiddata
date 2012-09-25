@@ -14,7 +14,7 @@
   caching = require './caching-loader'
 
   cachedFlowsFile = if @app.settings.env is "development"
-    "flows-sample.csv"
+    "flows.csv"
   else
     "flows.csv"
 
@@ -157,16 +157,26 @@
         #     (not(purpose) or get("purpose").indexOf(purpose) == 0)
         #   )
 
+        plusYears = (date, numYears) ->
+          d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
 
-        agg.by.apply(this, @query.breakby.split(","))
+        # used to sanity-filter the input data
+        minDate = plusYears(new Date(), -100).getFullYear()
+        maxDate = plusYears(new Date(), +100).getFullYear()
 
-        if @query.filter?
-          filter = JSON.parse @query.filter
-          agg.where((get) -> 
+        agg.by.apply(this, @query.breakby?.split(","))
+
+        filter = (if @query.filter? then JSON.parse(@query.filter) else null)
+        agg.where((get) ->
+
+
+          return false unless (minDate <= +get("date") <= maxDate)
+
+          if filter?
             for prop, values of filter
               return false unless get(prop) in values
-            return true
-          )
+          return true
+        )
 
         data = agg.columns()
 

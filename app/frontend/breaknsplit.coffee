@@ -1,10 +1,3 @@
-plusYears = (date, numYears) ->
-  d = new Date(date.getTime()); d.setFullYear(d.getFullYear() + numYears); d
-
-# used to sanity-filter the input data
-minDate = plusYears(new Date(), -100)
-maxDate = plusYears(new Date(), +10)
-
 dateFormat = d3.time.format("%Y")
 valueProp = "sum_amount_usd_constant"
 
@@ -240,7 +233,7 @@ query = do ->
         #   callback(new Error("Couldn't load data from server: " + err, null))
         mainCsv = results
           .shift()
-          .filter (d) -> d.date? and (minDate <= dateFormat.parse(d.date) <= maxDate)
+          #.filter (d) -> d.date? and (minDate <= dateFormat.parse(d.date) <= maxDate)
 
         mainData =
           if breakDownBy?
