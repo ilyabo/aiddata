@@ -402,7 +402,7 @@ updateCallback = (err, data) ->
   loadingStopped()
 
 
-updateSplitPanel = (mainData, indicatorData, dateDomain) ->
+updateSplitPanel = (mainData, indicatorData, breakDownDateDomain) ->
   
   d3.select("#splitPanel").selectAll("div.tseries").remove()
 
@@ -417,11 +417,14 @@ updateSplitPanel = (mainData, indicatorData, dateDomain) ->
     #console.log data
     charts = []
 
-    if indicator? 
-      do ->
-        extents = (d3.extent(values, (d) -> d[dateProp]) for breakdProp, values of indicatorData)
-        extents.push(dateDomain)
-        dateDomain = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ] 
+    indicator = q.indicator()
+
+    dateDomain = if indicator? then do ->
+      extents = (d3.extent(values, (d) -> d.date) for prop, values of indicatorData)
+      extents.push(breakDownDateDomain)
+      [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+    else
+      breakDownDateDomain
 
     for val in filteredValues
       chart = createSmallTimeSeriesChart(breakdProp, val, dateDomain)
@@ -429,7 +432,6 @@ updateSplitPanel = (mainData, indicatorData, dateDomain) ->
       data = {}
       data[breakdProp] = mainData[val] ? []  
 
-      indicator = q.indicator()
       if indicator?
         if indicator.prop is breakdProp
           if indicatorData[val]?
@@ -573,10 +575,9 @@ loadingStopped = ->
 
 
 
-getUrlParamValue = (name) -> 
-  matches = RegExp("#{name}=(.+?)(&|$)").exec(location.search)
-  if matches? then decodeURIComponent(matches[1]) else null
-
+getUrlParamValue = (name) ->
+  match = RegExp("[?&]#{name}=([^&]*)").exec(window.location.search)
+  if match? then decodeURIComponent(match[1].replace(/\+/g, ' ')) else null
 
 
 queue()
