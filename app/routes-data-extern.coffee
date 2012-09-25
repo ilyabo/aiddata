@@ -56,7 +56,7 @@
 
 
   requestWorldBankIndicator = (indicator, countryCode, callback) ->
-    url = "http://api.worldbank.org/countries/#{countryCode}/indicators/#{indicator}?format=json"
+    url = "http://api.worldbank.org/countries/#{countryCode}/indicators/#{indicator}?format=json&per_page=32000"
     console.debug "Loading #{url}"
     request url, (err, response, body) ->
       # console.log err
@@ -79,9 +79,9 @@
 
 
 
+
+
   @get '/wb/brief/:indicator/:countryCode.csv': ->
-
-
     q = queue()
 
     for countryCode in @params.countryCode.split(",")
@@ -91,8 +91,8 @@
       unless err?
         try
           entries = (result.filter((d) -> d.value?) for result in results)
-
-          if entries.length is 1
+          #  asking for one country       asking for all countries
+          if (entries.length is 1)  and  (@params.countryCode isnt "ALL")
             data = entries[0]
           else
             sumByDate = {}

@@ -198,7 +198,7 @@ query = do ->
       
 
 
-      if indicator?
+      if split and indicator?
 
         if filters[indicator.prop]?
           filterValues = filters[indicator.prop]
@@ -468,12 +468,14 @@ createSmallTimeSeriesChart = (prop, value, dateDomain) ->
     .title("#{prop}: #{value}")
     .propColors(["steelblue", "#e41a1c"])
     .ytickFormat(shortMagnitudeFormat)
+    #.ytickFormat((d) -> "%#{d}")
     .showRule(true)
     .indexedMode(true)
     .on("rulemove", (date) -> moveChartRulesTo date)
     .on("click", ->
-      current = History.getState().data.filter(prop)
-      if current? and current.length is 1 and current[0] is value
+
+      currentf = currentQuery().filter(prop)
+      if currentf? and currentf.length is 1 and currentf[0] is value
         # nothing has to be changed
         return
       else
