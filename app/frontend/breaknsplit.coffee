@@ -214,7 +214,7 @@ query = do ->
         else
 
           if breakDownBy is indicator.prop
-            callback "A subset of #{indicator.prop}s must be selected before loading an indicator"
+            callback "A subset of #{indicator.prop}s must be selected before loading an indicator (by means of filtering)"
             return
 
           que.defer(loadCsvQuietly, makeIndicatorUrlFor("ALL"))

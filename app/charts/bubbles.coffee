@@ -86,6 +86,7 @@ this.bubblesChart = ->
       .dotRadius(1)
       .marginLeft(tseriesMarginLeft)
       .title(title)
+      .yticks(3)
       .ytickFormat(shortMagnitudeFormat)
       #.propColors(["lightcoral","steelblue"])
 
