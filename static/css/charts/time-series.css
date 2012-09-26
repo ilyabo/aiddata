@@ -47,3 +47,5 @@ div.tseries { }
 .tseries .legendItem text { font-size:7pt; fill:#666; dominant-baseline: central;}
 
 .tseries .legendItem rect { stroke-width:.5px; }
+
+.tseries .index text { font-size:7pt; fill:#999; }

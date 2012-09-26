@@ -18,7 +18,7 @@ this.timeSeriesChart = ->
   legendHeight = null  # will be set to height by default
   legendItemHeight = 15
   legendItemWidth = 80
-  legendMarginLeft = 20
+  legendMarginLeft = 12
   legendMarginTop = 0
   #properties = null
   showRule = false
@@ -170,6 +170,8 @@ this.timeSeriesChart = ->
 
   yscaleForProp = (prop) -> if indexedMode then yscales[prop] else yscale
 
+  picolor = (pi) -> propColors[pi % propColors.length]
+
   update = (data, duration = updateDuration) ->
     
     data = propData(data)
@@ -180,7 +182,7 @@ this.timeSeriesChart = ->
 
       y = yscaleForProp(prop)
 
-      color = propColors[pi % propColors.length]
+      color = picolor(pi)
 
       g = vis.append("g").datum(entries)
         .attr("class", "prop")
@@ -244,15 +246,16 @@ this.timeSeriesChart = ->
       item.append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("rx", 2)
-        .attr("ry", 2)
-        .attr("width", 8)
-        .attr("height", 8)
-        .attr("fill", (d, pi) -> propColors[pi % propColors.length])
+        #.attr("rx", 2)
+        #.attr("ry", 2)
+        .attr("width", 10)
+        .attr("height", 2)
+        .attr("fill", (d, pi) -> picolor(pi))
 
       item.append("text")
+        .attr("dominant-baseline", "central")
         .attr("x", 13)
-        .attr("y", 4)
+        .attr("y", 1)
         .text((d) -> d)
         
 
@@ -280,6 +283,7 @@ this.timeSeriesChart = ->
   updateScalesAndAxes = (data) ->
 
     vis.selectAll("g.y.axis").remove()
+    svg.selectAll("g.index").remove()
 
     if indexedMode
       # create a separate scale for each prop
@@ -291,6 +295,35 @@ this.timeSeriesChart = ->
         y.domain([ Math.min(0, extent[0]),  extent[1] ])
         yscales[prop] = y
         yaxes[prop] = createAxis("left", y, 2, 0)
+  
+      index = svg.append("g")
+        .attr("class", "index")
+
+      index.append("text")
+        .attr("dominant-baseline", "central")
+        .attr("x", 7)
+        .attr("y", 7)
+        .text("max")
+
+      g = index.selectAll("g.item")
+        .data(d3.keys(data))
+      .enter().append("g")
+        .attr("class", "item")
+        .attr("transform", (prop, i) -> "translate(0, #{15+i*15})")
+      
+      g.append("text")
+        .attr("dominant-baseline", "central")
+        .attr("x", 12)
+        .attr("y", 6)
+        .text((prop, i) -> ytickFormat(yscales[prop].domain()[1]))
+
+      g.append("rect")
+        .attr("fill", (prop, i) -> picolor(i))
+        .attr("y", 5)
+        .attr("width", 10)
+        .attr("height", 2)
+
+
 
       if showYAxis
         pi = 0
@@ -301,6 +334,7 @@ this.timeSeriesChart = ->
             .attr("transform", "translate(#{dx},0)")
             .call(yaxes[prop])
           pi++
+
 
     else
       yscale = d3.scale.linear().range([h, 0])

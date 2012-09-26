@@ -430,7 +430,7 @@ updateSplitPanel = (mainData, indicatorData, breakDownDateDomain) ->
       chart = createSmallTimeSeriesChart(breakdProp, val, dateDomain)
 
       data = {}
-      data[breakdProp] = mainData[val] ? []  
+      data["commitment"] = mainData[val] ? []  
 
       if indicator?
         if indicator.prop is breakdProp
@@ -438,7 +438,7 @@ updateSplitPanel = (mainData, indicatorData, breakDownDateDomain) ->
             data[breakdProp + "_indicator"] = indicatorData[val]
         else
           if indicatorData["ALL"]?
-            data["_indicator"] = indicatorData["ALL"]
+            data["indicator"] = indicatorData["ALL"]
 
       panel.append("div")
         .datum(data)
@@ -464,11 +464,12 @@ createSmallTimeSeriesChart = (prop, value, dateDomain) ->
     .dotRadius(1)
     #.properties([ value ])
     .marginLeft(40)
-    .marginRight(15)
+    .marginRight(25)
     .showYAxis(false)
+    .showLegend(false)
     .title("#{prop}: #{value}")
     .propColors(["steelblue", "#e41a1c"])
-    .ytickFormat(shortMagnitudeFormat)
+    .ytickFormat(shortNumberFormat)
     #.ytickFormat((d) -> "%#{d}")
     .showRule(true)
     .indexedMode(true)

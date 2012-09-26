@@ -1,20 +1,22 @@
 fmt = d3.format(",.0f")
 
+@shortNumberFormat = (d) ->
+  if (d >= 1e15)
+    "#{fmt(d / 1e15)}P"
+  else if (d >= 1e12)
+    "#{fmt(d / 1e12)}T"
+  else if (d >= 1e9)
+    "#{fmt(d / 1e9)}G"
+  else if (d >= 1e6)
+    "#{fmt(d / 1e6)}M"
+  else if (d >= 1e3)
+    "#{fmt(d / 1e3)}k"
+  else
+    "#{fmt(d)}" 
+
 @formatMagnitudeLong = (d) -> "$#{fmt(d)}"
 
-@formatMagnitude = @magnitudeFormat = (d) ->
-  if (d >= 1e15)
-    "$#{fmt(d / 1e15)}P"
-  else if (d >= 1e12)
-    "$#{fmt(d / 1e12)}T"
-  else if (d >= 1e9)
-    "$#{fmt(d / 1e9)}G"
-  else if (d >= 1e6)
-    "$#{fmt(d / 1e6)}M"
-  else if (d >= 1e3)
-    "$#{fmt(d / 1e3)}k"
-  else
-    "$#{fmt(d)}" 
+@formatMagnitude = @magnitudeFormat = (d) -> "$" + shortNumberFormat(d)
 
 @formatMagnitudeShort = @shortMagnitudeFormat = (d) -> formatMagnitude(d)
 
