@@ -22,6 +22,7 @@ this.timeSeriesChart = ->
   legendMarginTop = 0
   #properties = null
   showRule = false
+  showYAxis = true
   ruleDate = null
   valueDomain = dateDomain = null
 
@@ -56,15 +57,9 @@ this.timeSeriesChart = ->
 
   chart.valueDomain = (_) -> if (!arguments.length) then valueDomain else valueDomain = _; chart
 
-  chart.actualDateDomain = (_) -> x?.domain().slice()
+  chart.actualDateDomain = (_) -> xscale?.domain().slice()
 
-  chart.actualValueDomain = (_) -> y?.domain().slice()
-
-  getValueProp = (prop) ->
-    if typeof valueProp is "function"
-      valueProp.call this, prop
-    else
-      valueProp
+  chart.actualValueDomain = (_) -> yscale?.domain().slice()
 
   # which properties to visualize
   #chart.properties = (_) -> if (!arguments.length) then properties else properties = _; chart
@@ -95,6 +90,8 @@ this.timeSeriesChart = ->
 
   chart.showRule = (_) -> if (!arguments.length) then showRule else showRule = (if _ then true else false); chart
 
+  chart.showYAxis = (_) -> if (!arguments.length) then showYAxis else showYAxis = (if _ then true else false); chart
+
   chart.legendWidth = (_) -> if (!arguments.length) then legendWidth else legendWidth = _; chart
 
   chart.legendHeight = (_) -> if (!arguments.length) then legendHeight else legendHeight = _; chart
@@ -117,8 +114,8 @@ this.timeSeriesChart = ->
       rule = vis.selectAll("line.rule")
       if date?
         rule.attr("visibility", "visible")
-          .attr("x1", x(date))
-          .attr("x2", x(date))
+          .attr("x1", xscale(date))
+          .attr("x2", xscale(date))
       else
         rule.attr("visibility", "hidden")
 
@@ -131,11 +128,10 @@ this.timeSeriesChart = ->
 
 
   chart.update = (selection) ->
-
     data = propData(selection.datum())
     vis.datum(data)
 
-    updateScaleDomains(data)
+    updateScalesAndAxes(data)
 
     # vis.selectAll("path.line").remove()
     # vis.selectAll("circle.dot").remove()
@@ -144,15 +140,6 @@ this.timeSeriesChart = ->
     vis.selectAll("g.legend").remove()
 
 
-    vis.selectAll(".x.axis")
-    #    .transition()
-    #      .duration(updateDuration)
-          .call xAxis
-
-    vis.selectAll(".y.axis")
-    #    .transition()
-    #      .duration(updateDuration)
-          .call yAxis
 
     #enter(data)
     update(data)
@@ -181,6 +168,8 @@ this.timeSeriesChart = ->
   #     #     .attr("r", dotRadius)
 
 
+  yscaleForProp = (prop) -> if indexedMode then yscales[prop] else yscale
+
   update = (data, duration = updateDuration) ->
     
     data = propData(data)
@@ -189,20 +178,24 @@ this.timeSeriesChart = ->
     for prop, entries of data
       pi++
 
+      y = yscaleForProp(prop)
+
+      color = propColors[pi % propColors.length]
+
       g = vis.append("g").datum(entries)
-        .attr("class", "prop pi_#{pi}")
+        .attr("class", "prop")
 
       line = d3.svg.line()
-        .x((d) -> x(d[dateProp]))
-        .y((d) -> y(d[getValueProp(prop)]))
-        .defined((d) -> vp = getValueProp(prop); d[vp]? and !isNaN(d[vp]))
+        .x((d) -> xscale(d[dateProp]))
+        .y((d) -> y(d[valueProp]))
+        .defined((d) -> d[valueProp]? and !isNaN(d[valueProp]))
         .interpolate(interpolate)
 
 
       g.append("path")
         .attr("class", "line")
         .attr("d", line)
-        .attr("stroke", propColors[pi % propColors.length])
+        .attr("stroke", color)
 
 
       # g = vis.select("g.#{prop}")
@@ -219,11 +212,11 @@ this.timeSeriesChart = ->
         dots.enter().append("circle")
           .attr("class", "dot")
           .attr("r", dotRadius)
-          .attr("stroke", propColors[pi % propColors.length])
+          .attr("stroke", color)
 
         dots
-          .attr("cx", (d) -> x(d[dateProp]))
-          .attr("cy", (d) -> y(d[getValueProp(prop)]))
+          .attr("cx", (d) -> xscale(d[dateProp]))
+          .attr("cy", (d) -> y(d[valueProp]))
 
         dots.exit().remove()
 
@@ -265,30 +258,79 @@ this.timeSeriesChart = ->
 
   updateDuration = 1300
 
-  x = y = null  # scales
+  w = h = null   # width and height
+  xscale = yscale = null  # scales
   xAxis = yAxis = null
+  yscales = {}  # y scales by property for indexedMode
+  yaxes = {} # for indexedMode
   svg = vis = null
 
   isNumber = (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
 
 
+  createAxis = (orient, scale, numTicks, tickSize = -w) ->
+   d3.svg.axis()
+    .ticks(numTicks)
+    .scale(scale)
+    .orient(orient)
+    .tickFormat(ytickFormat)
+    .tickSize(tickSize, 0, 0)
 
-  updateScaleDomains = (data) ->
 
-    if valueDomain?
-      y.domain(valueDomain)
+  updateScalesAndAxes = (data) ->
+
+    vis.selectAll("g.y.axis").remove()
+
+    if indexedMode
+      # create a separate scale for each prop
+      yscales = {}
+      yaxes = {}
+      for prop, values of data
+        y = d3.scale.linear().range([h, 0])
+        extent = d3.extent(values, (d) -> d[valueProp])
+        y.domain([ Math.min(0, extent[0]),  extent[1] ])
+        yscales[prop] = y
+        yaxes[prop] = createAxis("left", y, 2, 0)
+
+      if showYAxis
+        pi = 0
+        for prop, values of data
+          dx = -25 * pi  #(if (pi % 2 is 0) then (-25*pi/2) else (w + 25*pi/2))
+          vis.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(#{dx},0)")
+            .call(yaxes[prop])
+          pi++
+
     else
-      valueExtents = (d3.extent(values, (d) -> d[getValueProp(prop)]) for prop, values of data)
-      valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
-      y.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
+      yscale = d3.scale.linear().range([h, 0])
+
+      if valueDomain?
+        yscale.domain(valueDomain)
+      else
+        valueExtents = (d3.extent(values, (d) -> d[valueProp]) for prop, values of data)
+        valueExtent = [ d3.min(valueExtents, (d) -> d[0]), d3.max(valueExtents, (d) -> d[1]) ] 
+        yscale.domain([ Math.min(0, valueExtent[0]),  valueExtent[1] ])
+
+      if showYAxis
+        yAxis = createAxis("left", yscale, yticks ? 5)
+
+        vis.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
 
 
     if dateDomain?
-      x.domain(dateDomain)
+      xscale.domain(dateDomain)
     else
       dateExtents = (d3.extent(values, (d) -> d[dateProp]) for prop, values of data)
       dateExtent = [ d3.min(dateExtents, (d) -> d[0]), d3.max(dateExtents, (d) -> d[1]) ] 
-      x.domain([ dateExtent[0],  dateExtent[1] ])
+      xscale.domain([ dateExtent[0],  dateExtent[1] ])
+
+
+    vis.selectAll(".x.axis").call(xAxis)
+
+
 
 
 
@@ -311,23 +353,6 @@ this.timeSeriesChart = ->
     h = height - margin.top - margin.bottom
 
 
-    x = d3.time.scale().range([0, w])          
-    y = d3.scale.linear().range([h, 0])
-
-    updateScaleDomains(data)
-
-    xAxis = d3.svg.axis()
-      .scale(x)
-      .ticks(xticks ? Math.max(1, Math.round(w/30)))
-      .orient("bottom")
-      .tickSize(3, 0, 0)
-
-    yAxis = d3.svg.axis()
-      .ticks(yticks ? Math.max(1, Math.round(h/18)))
-      .scale(y)
-      .orient("left")
-      .tickFormat(ytickFormat)
-      .tickSize(-w, 0, 0)
 
     svg = element.append("svg")
         .attr("width", w + margin.left + margin.right + 
@@ -352,9 +377,17 @@ this.timeSeriesChart = ->
       .attr("width", w)
       .attr("height", h)
 
-    vis.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
+    xscale = d3.time.scale().range([0, w])          
+
+    xAxis = d3.svg.axis()
+      .scale(xscale)
+      .ticks(xticks ? Math.max(1, Math.round(w/30)))
+      .orient("bottom")
+      .tickSize(3, 0, 0)
+
+    updateScalesAndAxes(data)
+
+
 
     vis.append("g")
       .attr("class", "x axis")
@@ -399,7 +432,7 @@ this.timeSeriesChart = ->
       foreground.on "mousemove", ->
         #r = outerDiv.select(".range")[0][0]
         # the handle must be in the middle of the mouse cursor => +3
-        date = x.invert(d3.mouse(foreground[0][0])[0] + 3)
+        date = xscale.invert(d3.mouse(foreground[0][0])[0] + 3)
         chart.moveRule(date)  
 
       

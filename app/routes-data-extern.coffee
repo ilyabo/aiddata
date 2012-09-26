@@ -74,7 +74,7 @@
         callback(null, data)
 
       catch err
-        console.error "Could not parse WB API response: " + body.substr(0, 1024)
+        console.error "Could not parse WB API response: " + body?.substr(0, 1024)
         callback "WB API response parse error: " + err
 
 
@@ -126,7 +126,7 @@
             parsed = JSON.parse body
             @send parsed
           catch err
-            @next("Couldn't parse response: " + body)
+            @next("Couldn't parse response: " + body?.substr(0, 1024))
         else
           @next(err)
 
