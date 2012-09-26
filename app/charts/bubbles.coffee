@@ -80,6 +80,7 @@ this.bubblesChart = ->
 
     tschart = timeSeriesChart()
       .dateDomain(dateDomain)
+      .propColors(["lightcoral", "steelblue"])
       .width(tseriesw)
       .height(tseriesh)
       .dotRadius(1)

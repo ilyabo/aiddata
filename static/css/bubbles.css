@@ -61,10 +61,8 @@ text-align:center;
 }
 
 
-.tseries .pi_0 .line { stroke:lightcoral; }
-.tseries .pi_1 .line { stroke:steelblue; }
-.tseries .pi_0 .dot  { stroke-width:0.5; fill:lightcoral; }
-.tseries .pi_1 .dot  { stroke-width:0.5; fill:steelblue; }
+.tseries .pi_0 .line { }
+.tseries .pi_0 .dot  { stroke-width:0.5; }
 
 
 #yearSliderOuter {
