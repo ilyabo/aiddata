@@ -518,19 +518,12 @@ this.timeSeriesChart = ->
 
 
 
-
-
-
-
-
-
-
     if showRule
 
       foreground
         .on("mousemove", ->
           date = xscale.invert(d3.mouse(foreground[0][0])[0])
-          closest = findValuesWithTheClosestDate(vis.datum(), date)
+          closest = findValuesWithTheClosestDate(propData(vis.datum()), date)
           if closest?
             d = closest[d3.keys(closest)[0]]
             chart.moveRule(d[dateProp])
