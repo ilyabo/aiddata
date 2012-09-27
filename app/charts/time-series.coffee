@@ -172,6 +172,8 @@ this.timeSeriesChart = ->
 
   picolor = (pi) -> propColors[pi % propColors.length]
 
+
+
   update = (data, duration = updateDuration) ->
     
     data = propData(data)
@@ -179,6 +181,9 @@ this.timeSeriesChart = ->
     pi = -1
     for prop, entries of data
       pi++
+
+      # necessary for findValuesWithTheClosestDate
+      entries.sort((a,b) -> d3.ascending(a[dateProp]?.getTime(), b[dateProp]?.getTime()))
 
       y = yscaleForProp(prop)
 
@@ -259,6 +264,9 @@ this.timeSeriesChart = ->
         .text((d) -> d)
         
 
+
+
+
   updateDuration = 1300
 
   w = h = null   # width and height
@@ -268,7 +276,45 @@ this.timeSeriesChart = ->
   yaxes = {} # for indexedMode
   svg = vis = null
 
+
+  findValuesWithTheClosestDate = do ->
+    time = (v) -> v?[dateProp].getTime()
+    bisector = d3.bisector(time).right
+    
+    find = (values, t) ->
+      i = bisector(values, t)
+      
+      left = values[i - 1]
+      right = values[i]
+
+      if left?  and (not(right?) or (t - time(left) < time(right) - t))
+        left
+      else
+        right
+
+    (data, date) ->
+      t = date.getTime()
+
+      # closest for each prop
+      closest = ([prop, find(values, t)] for prop,values of data).filter((d) -> d[1]?)
+
+      # group by date and sort by closeness
+      byDate = d3.nest()
+        .key((d) -> d[1][dateProp].getTime())
+        .sortKeys((a, b) -> d3.ascending(Math.abs(t - a), Math.abs(t - b)))
+        .entries(closest)
+
+      if byDate[0]?
+        byProp = d3.nest()
+          .key((d) -> d[0])
+          .rollup((arr) -> arr[0][1])
+          .map(byDate[0].values)
+      else
+        null
+
+
   isNumber = (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
+
 
 
   createAxis = (orient, scale, numTicks, tickSize = -w) ->
@@ -278,6 +324,15 @@ this.timeSeriesChart = ->
     .orient(orient)
     .tickFormat(ytickFormat)
     .tickSize(tickSize, 0, 0)
+
+
+  updateIndex = ->
+    index = svg.select("g.index")
+    
+    index.select("text.title").text("max")
+
+    index.selectAll("g.item text")
+      .text((prop, i) -> ytickFormat(yscales[prop].domain()[1]))
 
 
   updateScalesAndAxes = (data) ->
@@ -300,10 +355,10 @@ this.timeSeriesChart = ->
         .attr("class", "index")
 
       index.append("text")
+        .attr("class", "title")
         .attr("dominant-baseline", "central")
         .attr("x", 7)
         .attr("y", 7)
-        .text("max")
 
       g = index.selectAll("g.item")
         .data(d3.keys(data))
@@ -315,13 +370,14 @@ this.timeSeriesChart = ->
         .attr("dominant-baseline", "central")
         .attr("x", 12)
         .attr("y", 6)
-        .text((prop, i) -> ytickFormat(yscales[prop].domain()[1]))
 
       g.append("rect")
         .attr("fill", (prop, i) -> picolor(i))
         .attr("y", 5)
         .attr("width", 10)
         .attr("height", 2)
+
+      updateIndex()
 
 
 
@@ -457,20 +513,48 @@ this.timeSeriesChart = ->
       .on("click", -> fire "click", svg)
       .on("mouseout", -> 
         fire("mouseout", svg)
-        if showRule
-          chart.moveRule(null)
       )
 
 
+
+
+
+
+
+
+
+
+
     if showRule
-      foreground.on "mousemove", ->
-        #r = outerDiv.select(".range")[0][0]
-        # the handle must be in the middle of the mouse cursor => +3
-        date = xscale.invert(d3.mouse(foreground[0][0])[0] + 3)
-        chart.moveRule(date)  
 
+      foreground
+        .on("mousemove", ->
+          date = xscale.invert(d3.mouse(foreground[0][0])[0])
+          closest = findValuesWithTheClosestDate(vis.datum(), date)
+          if closest?
+            d = closest[d3.keys(closest)[0]]
+            chart.moveRule(d[dateProp])
+
+            if indexedMode
+              index = svg.select("g.index")
+              
+              index.select("text.title")
+                .text(xscale.tickFormat()(d[dateProp]))
+
+              index.selectAll("g.item text")
+                .text (prop, i) -> 
+                  v = closest[prop]?[valueProp]
+                  if v? then ytickFormat(v) else ""
+
+
+        ).on("mouseout", ->
+
+          chart.moveRule(null)
+          if indexedMode
+            updateIndex()
+
+        )
       
-
 
   
   chart

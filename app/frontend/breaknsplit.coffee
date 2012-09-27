@@ -183,7 +183,7 @@ query = do ->
           date = dateFormat.parse(d.date)
           v = {}
           v.date = date
-          v["values"] = +d[valueProp]
+          v["value"] = +d[valueProp]
           values.push v
       values
 
@@ -214,7 +214,7 @@ query = do ->
         else
 
           if breakDownBy is indicator.prop
-            callback "A subset of #{indicator.prop}s must be selected before loading an indicator (by means of filtering)"
+            callback "Please apply filter to the #{indicator.prop}s before loading an indicator"
             return
 
           que.defer(loadCsvQuietly, makeIndicatorUrlFor("ALL"))
@@ -264,7 +264,7 @@ query = do ->
 
 
 tschart = timeSeriesChart()
-  .valueProp("values")
+  .valueProp("value")
   .width(600)
   .height(200)
   .xticks(7)
@@ -339,6 +339,12 @@ updateCtrls = ->
 
 
   $(".ctls .btn, .ctl").attr("disabled", false)
+
+  $(".resetFilter").each ->
+    $(this).attr "disabled", not(q.filter($(this).data("prop"))?)
+
+  $(".resetBreakDown").each ->
+    $(this).attr "disabled", not(q.breakDownBy() is $(this).data("prop"))
 
   # $(".btn-group.filter .btn").attr("disabled", false)
   # $(".btn-group.breakDown .btn").attr("disabled", false)
@@ -455,9 +461,9 @@ updateSplitPanel = (mainData, indicatorData, breakDownDateDomain) ->
 
 createSmallTimeSeriesChart = (prop, value, dateDomain) ->
   timeSeriesChart()
-    .valueProp("values")
+    .valueProp("value")
     .dateDomain(dateDomain)
-    .width(270)
+    .width(290)
     .height(90)
     .xticks(2)
     .yticks(2)
@@ -652,9 +658,10 @@ queue()
 
     $ ->
 
-      $("button.breakDown").click ->
-        prop = $(this).data("prop")
-        breakDownBy($(this).data("prop"), selectedFilterOptions(prop))
+      $("button.breakDown")
+        .click ->
+          prop = $(this).data("prop")
+          breakDownBy($(this).data("prop"), selectedFilterOptions(prop))
 
 
       $("button.filter").click ->
@@ -662,15 +669,19 @@ queue()
         filter(prop, selectedFilterOptions(prop))
 
 
-      $("button.resetFilter").click ->
-        prop = $(this).data("prop")
-        $("select.filter[data-prop='#{prop}']").val([]) # clear selection
-        resetFilter(prop)
+      $("button.resetFilter")
+        .attr("title", "Reset filter")
+        .click ->
+          prop = $(this).data("prop")
+          $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+          resetFilter(prop)
 
-      $("button.resetBreakDown").click ->
-        prop = $(this).data("prop")
-        $("select.filter[data-prop='#{prop}']").val([]) # clear selection
-        resetBreakDown(prop)
+      $("button.resetBreakDown")
+        .attr("title", "Reset break down")
+        .click ->
+          prop = $(this).data("prop")
+          $("select.filter[data-prop='#{prop}']").val([]) # clear selection
+          resetBreakDown(prop)
 
 
       $("#backButton").click ->

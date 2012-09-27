@@ -80,6 +80,6 @@ div.btn-group.applied button, button.applied {
   /*transition:border-color 0.5s linear;*/
 }
 
-.tseries line.rule { opacity:.1; }
+.tseries line.rule { opacity:.3; }
 
 

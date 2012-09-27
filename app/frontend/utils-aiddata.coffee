@@ -1,15 +1,16 @@
 fmt = d3.format(",.0f")
 
 @shortNumberFormat = (d) ->
-  if (d >= 1e15)
+  abs = Math.abs(d)
+  if (abs >= 1e15)
     "#{fmt(d / 1e15)}P"
-  else if (d >= 1e12)
+  else if (abs >= 1e12)
     "#{fmt(d / 1e12)}T"
-  else if (d >= 1e9)
+  else if (abs >= 1e9)
     "#{fmt(d / 1e9)}G"
-  else if (d >= 1e6)
+  else if (abs >= 1e6)
     "#{fmt(d / 1e6)}M"
-  else if (d >= 1e3)
+  else if (abs >= 1e3)
     "#{fmt(d / 1e3)}k"
   else
     "#{fmt(d)}" 
