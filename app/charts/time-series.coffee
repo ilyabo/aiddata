@@ -10,6 +10,7 @@ this.timeSeriesChart = ->
   dotRadius = 2
   xticks = yticks = null
   marginLeft = 40
+  marginTop = 28
   marginRight = 8
   ytickFormat = d3.format(",.0f")
   showLegend = false
@@ -77,6 +78,8 @@ this.timeSeriesChart = ->
   chart.height = (_) -> if (!arguments.length) then height else height = _; chart
 
   chart.marginLeft = (_) -> if (!arguments.length) then marginLeft else marginLeft = _; chart
+
+  chart.marginTop = (_) -> if (!arguments.length) then marginTop else marginTop = _; chart
 
   chart.marginRight = (_) -> if (!arguments.length) then marginRight else marginRight = _; chart
 
@@ -277,6 +280,8 @@ this.timeSeriesChart = ->
   svg = vis = null
 
 
+  # returns an object with values for each property
+  # on the closest date to the given date
   findValuesWithTheClosestDate = do ->
     time = (v) -> v?[dateProp].getTime()
     bisector = d3.bisector(time).right
@@ -364,7 +369,7 @@ this.timeSeriesChart = ->
         .data(d3.keys(data))
       .enter().append("g")
         .attr("class", "item")
-        .attr("transform", (prop, i) -> "translate(0, #{15+i*15})")
+        .attr("transform", (prop, i) -> "translate(3, #{15+i*15})")
       
       g.append("text")
         .attr("dominant-baseline", "central")
@@ -435,7 +440,7 @@ this.timeSeriesChart = ->
       return
 
 
-    margin = {top: 28, right: marginRight, bottom: 14, left: marginLeft}
+    margin = {top: marginTop, right: marginRight, bottom: 14, left: marginLeft}
 
     legendHeight ?= height - margin.top - margin.bottom
 

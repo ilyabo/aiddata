@@ -122,20 +122,20 @@ query = do ->
     q.resetBreakDownBy = ->
       breakDownBy = null; split = false; q
 
+    desc = (prop) -> 
+      if prop of filters
+        len = filters[prop].length
+        len + " " + prop + 
+          (if len > 1 then "s" else "") +
+          (if len < 5 then " ("+filters[prop].join(", ")+")" else "")
+      else
+        "any #{prop}"
+
     q.describe = () ->
-      "Showing totals for " +
-      dataset + "'s <em>" + valueProp + "</em> over time." +
-      "<div class=\"filter\">Selected " +
-      (for prop in props
-        if prop of filters
-          len = filters[prop].length
-          len + " " + prop + 
-            (if len > 1 then "s" else "") +
-            (if len < 5 then " ("+filters[prop].join(", ")+")" else "")
-        else
-          "all #{prop}s"
-      ).join(", ") + 
-      "." +
+      #"Showing totals for " +  dataset + "'s <em>" + valueProp + "</em> over time." +
+      "<div class=\"filter\">Showing commitments " + 
+      " of " + desc("purpose") + " from " +
+      desc("donor") + " to " + desc("recipient") +  "." +
       (if breakDownBy?
         " Broken down by <b>#{breakDownBy}s</b>.</div>" 
       else 
@@ -369,6 +369,7 @@ updateCtrls = ->
 
 
 updateCallback = (err, data) ->
+  $("#content").fadeIn()
   if err?
     $("#errorText").html("<h4>Oh snap!</h4>" + err)
     $("#error").fadeIn().delay(5000).fadeOut()
@@ -521,14 +522,14 @@ resetFilter = (prop) ->
   q = currentQuery()
   if q.filter(prop)?
     q.removeFilter(prop)
-    q.split(false)
+    #q.split(false)
     load q
 
 resetBreakDown = (prop) ->
   q = currentQuery()
   if (q.breakDownBy() is prop)
     q.resetBreakDownBy()
-    q.split(false)
+    #q.split(false)
   load q
 
 breakDownBy = (prop, selection) ->
@@ -698,8 +699,6 @@ queue()
       #$(".ctls .btn").each -> $(this).data("loading-text", $(this).text())
 
 
-      $("#content").fadeIn()
-      $("#status").fadeIn()
 
 
 
