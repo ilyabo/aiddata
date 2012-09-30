@@ -7,11 +7,13 @@
 
 #loading img { position: absolute; top:50px; left:10px;  }
 
+.messageArea { height: 40px; }
 #content { display:none; }
-#status { font-size:9pt; margin-bottom:0;}
-#status .filter { font-size:8pt;}
-#outerTop { margin-top:1em;}
-#error, #warn, #status { display:none; }
+#status { font-size:9pt; margin:0 200px 0 50px;}
+#status .filter { font-size:9pt; }
+#outerTop { margin-top:0;}
+#outerTop table { margin-top:0;}
+#error, #warn { display:none; }
 #error { margin:0 0 0 2em; vertical-align: middle;}
 button.close { border:none; background:none; padding: 0;}
 

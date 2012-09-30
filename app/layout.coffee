@@ -2,6 +2,23 @@
 
   config = require '../config'
 
+  menu = 
+    bubbles : "Bubbles"
+
+    horizon3 : "Horizon3"
+
+    breaknsplit : "Break'n'split"
+
+    #horizon : "Horizon"
+
+    ffprints : "Flowprints"
+
+    #crossfilter : "Crossfilter"
+
+    "purpose-pack" : "Purposes"
+
+
+
   @view 'bootstrap.eco': '''
     <% @title ?= "AidData" %>
     <!DOCTYPE html>
@@ -53,39 +70,12 @@
                 <div class="nav-collapse">
                   <ul class="nav">
 
+                    ''' + (
+                      for id, title of menu
+                        "<li" + (if @page is id then ' class=active' else "") + ">" +
+                        '<a href="' + id + '">' + title + '</a></li>'
+                    ).join("") + '''
 
-                    <li <%=(if @page == "bubbles" then 'class=active' else "") %> >
-                    <a href="bubbles">Bubbles</a></li>
-
-                    <li <%=(if @page == "breaknsplit" then 'class=active' else "") %> >
-                    <a href="breaknsplit">Break'n'split</a></li>
-
-                    <li <%=(if @page == "horizon" then 'class=active' else "") %> >
-                    <a href="horizon">Horizon</a></li>
-
-                    <li <%=(if @page == "ffprints" then 'class=active' else "") %>>
-                      <a href="ffprints">Flowprints</a></li>
-
-                    <li <%=(if @page == "crossfilter" then 'class=active' else "") %> >
-                    <a href="crossfilter">Crossfilter</a></li>
-
-
-                    <li <%=(if @page == "purposePack" then 'class=active' else "") %> >
-                    <a href="purpose-pack">Purposes</a></li>
-
-                    <!--
-                    <li <%=(if @page == "flowmap" then 'class=active' else "") %> >
-                    <a href="flowmap">Flowmap</a></li>
-
-
-                    <li <%=(if @page == "time-series" then 'class=active' else "") %> >
-                    <a href="time-series">Time series</a></li>
-
-                    <li <%=(if @page == "chord" then 'class=active' else "") %> >
-                    <a href="chord">Chord</a></li>
-                    -->
-
-                    <!--<li><a href="refugees-ffprints">Refugees</a></li>-->
                   </ul>
                 </div><!--/.nav-collapse -->
 

@@ -11,6 +11,8 @@
 
   @get '/horizon': -> @render horizon: {layout: 'bootstrap.eco'}
  
+  @get '/horizon3': -> @render horizon3: {layout: 'bootstrap.eco'}
+ 
   @get '/flowmap': -> @render flowmap: {layout: 'bootstrap.eco'}
  
   @get '/chord': -> @render chord: {layout: 'bootstrap.eco'}

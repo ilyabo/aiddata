@@ -1,0 +1,40 @@
+#horizonParent {
+text-align: center;
+margin: 0px auto;
+position: relative;
+}
+
+.horizonChart {
+vertical-align: top;
+margin:0px;  
+font-family: "Helvetica Neue", Helvetica, sans-serif;
+display:inline-block;
+padding:0px 20px;
+}
+
+.horizon {
+/*border-bottom: solid 1px #999;*/
+border-top: solid 1px #999;
+position: relative;
+}
+
+.horizon canvas {
+display: block;
+margin:0;
+}
+
+
+.horizon .title, .horizon .value {
+font-size: 8pt;
+bottom: 0;
+line-height: 20px;
+vertical-align: middle;
+position: absolute;
+margin:0 6px;
+text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+white-space: nowrap;
+}
+
+
+
+

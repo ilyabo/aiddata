@@ -19,74 +19,75 @@
     # script src: 'libs/chroma/chroma.colors.js'
     script src: 'coffee/breaknsplit.js'
 
-
     div id:"content", ->
 
-      div class:"row-fluid", ->
-
-        table ->
-          td class:"backForwardBtns", ->
-            div class:"btn-toolbar", ->
-              div class:"btn-group", ->
-                button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
-                  i class:"icon-chevron-left"
-                button id:"forwardButton",class:"btn btn-mini", disabled:"disabled", ->
-                  i class:"icon-chevron-right"
-
-          td style:"width:30px" #, ->
-            #div id:"loading", -> img src:"images/loading.gif"
-          td ->
-            div id:"status", class:"alert alert-info"
-          td ->
-            div id:"error", class:"alert-error alert", ->
-              button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
-              span id:"errorText"
-
-            div id:"warn", class:"alert", ->
-              button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
-              span id:"warningText"
+      #div class:"row-fluid", ->
 
       div id:"outerTop", -> 
         table ->
           tr ->
-            td -> div class:"hdr", -> "Donors"
-            td -> div class:"hdr", -> "Recipients"
-            td -> div class:"hdr", -> "Purposes"
+            td -> table ->
+
+              # td class:"backForwardBtns", ->
+              #   div class:"btn-toolbar", ->
+              #     div class:"btn-group", ->
+              #       button id:"backButton",class:"btn btn-mini", disabled:"disabled", ->
+              #         i class:"icon-chevron-left"
+              #       button id:"forwardButton",class:"btn btn-mini", disabled:"disabled", ->
+              #         i class:"icon-chevron-right"
+
+              # td style:"width:30px" #, ->
+              #   #div id:"loading", -> img src:"images/loading.gif"
+              td class:"messageArea",->
+                div id:"error", class:"alert-error alert", ->
+                  button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
+                  span id:"errorText"
+
+                div id:"warn", class:"alert", ->
+                  button type:"button", class:"close", 'data-dismiss':"alert", -> "&times;"
+                  span id:"warningText"
+
             td rowspan:"2",  -> 
+              table -> td -> div id:"status", class:"alert alert-info"
               div id:"tseries", class:"tseries"
-
-          tr ->
-            td -> select id:"donorList", class:"filter", 'data-prop':"donor", size:"10", multiple:"multiple"
-            td -> select id:"recipientList", class:"filter",'data-prop':"recipient",  size:"10", multiple:"multiple"
-            td -> select id:"purposeList", class:"filter", 'data-prop':"purpose", size:"10", multiple:"multiple"
-
-          tr class:"ctls",->
-            td ->
-                div class:"btn-group filter",'data-prop':"donor",->
-                  button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
-                  button class:"resetFilter btn btn-mini", 'data-prop':"donor", -> "&times;"
-                div class:"btn-group breakDown",'data-prop':"donor",->
-                  button class:"breakDown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
-                  button class:"resetBreakDown btn btn-mini", 'data-prop':"donor", -> "&times;"
-            td ->
-                div class:"btn-group filter",'data-prop':"recipient",->
-                  button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
-                  button class:"resetFilter btn btn-mini", 'data-prop':"recipient", -> "&times;"
-                div class:"btn-group breakDown",'data-prop':"recipient",->
-                  button class:"breakDown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
-                  button class:"resetBreakDown btn btn-mini", 'data-prop':"recipient", -> "&times;"
-            td ->
-                div class:"btn-group filter",'data-prop':"purpose",->
-                  button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
-                  button class:"resetFilter btn btn-mini", 'data-prop':"purpose", -> "&times;"
-                div class:"btn-group breakDown",'data-prop':"purpose",->
-                  button class:"breakDown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
-                  button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
-
-            td ->
-
               table class:"sm-ctls",->
                 td class:"split", -> button id:"split",class:"split btn btn-mini", "data-toggle":"button", -> "Split in multiple"
+
+          tr -> td ->
+            table ->
+              tr ->
+                td -> div class:"hdr", -> "Donors"
+                td -> div class:"hdr", -> "Recipients"
+                td -> div class:"hdr", -> "Purposes"
+
+              tr ->
+                td -> select id:"donorList", class:"filter", 'data-prop':"donor", size:"10", multiple:"multiple"
+                td -> select id:"recipientList", class:"filter",'data-prop':"recipient",  size:"10", multiple:"multiple"
+                td -> select id:"purposeList", class:"filter", 'data-prop':"purpose", size:"10", multiple:"multiple"
+
+              tr class:"ctls",->
+                td ->
+                    div class:"btn-group filter",'data-prop':"donor",->
+                      button class:"filter btn btn-mini", 'data-prop':"donor", -> "Filter"
+                      button class:"resetFilter btn btn-mini", 'data-prop':"donor", -> "&times;"
+                    div class:"btn-group breakDown",'data-prop':"donor",->
+                      button class:"breakDown btn btn-mini",'data-prop':"donor", -> "Break&nbsp;down"
+                      button class:"resetBreakDown btn btn-mini", 'data-prop':"donor", -> "&times;"
+                td ->
+                    div class:"btn-group filter",'data-prop':"recipient",->
+                      button class:"filter btn btn-mini",'data-prop':"recipient", -> "Filter"
+                      button class:"resetFilter btn btn-mini", 'data-prop':"recipient", -> "&times;"
+                    div class:"btn-group breakDown",'data-prop':"recipient",->
+                      button class:"breakDown btn btn-mini",'data-prop':"recipient", -> "Break&nbsp;down"
+                      button class:"resetBreakDown btn btn-mini", 'data-prop':"recipient", -> "&times;"
+                td ->
+                    div class:"btn-group filter",'data-prop':"purpose",->
+                      button class:"filter btn btn-mini", 'data-prop':"purpose", -> "Filter"
+                      button class:"resetFilter btn btn-mini", 'data-prop':"purpose", -> "&times;"
+                    div class:"btn-group breakDown",'data-prop':"purpose",->
+                      button class:"breakDown btn btn-mini",'data-prop':"purpose", -> "Break&nbsp;down"
+                      button class:"resetBreakDown btn btn-mini", 'data-prop':"purpose", -> "&times;"
+
 
         div id:"indicatorOuter", class:"ctls", ->
           table ->
@@ -180,12 +181,14 @@
 
   @view horizon: ->
     @page = "horizon"
-    
+
+  
+
     div id:'horizonParent', ->
       div id:'originsChart',class:'horizonChart'
       div id:'destsChart',class:'horizonChart'
 
-    style '@import url("css/horizon.css");'
+    style '@import url("css/horizon3.css");'
     script src: 'queue.min.js'
     script src: 'js/cubism.v1.my.js'
     script src: 'coffee/utils.js'
@@ -193,6 +196,35 @@
     script src: 'libs/chroma/chroma.min.js'
     script src: 'libs/chroma/chroma.colors.js'
     script src: 'coffee/horizon-aiddata.js'
+
+
+
+
+
+
+  ############# horizon3 ###############
+
+
+  @view horizon3: ->
+    @page = "horizon3"
+
+  
+
+    div id:'horizonParent', ->
+      div id:'donorsChart',class:'horizonChart'
+      div id:'recipientsChart',class:'horizonChart'
+      div id:'purposesChart',class:'horizonChart'
+
+
+    style '@import url("css/horizon3.css");'
+    script src: 'queue.min.js'
+    # script src: 'js/cubism.v1.my.js'
+    script src: 'coffee/utils.js'
+    # #script src: 'js/cubism-aiddata.js'
+    script src: 'libs/chroma/chroma.min.js'
+    script src: 'libs/chroma/chroma.colors.js'
+    #script src: 'js/horizon.js'
+    script src: 'coffee/horizon3.js'
 
 
 
@@ -300,7 +332,7 @@
   ############# purposePack ###############
 
   @view purposePack: ->
-    @page = "purposePack"
+    @page = "purpose-pack"
 
     style '@import url("css/purpose-pack.css");'
     div id:"purposePack"
