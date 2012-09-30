@@ -162,7 +162,7 @@
 
         # used to sanity-filter the input data
         minDate = plusYears(new Date(), -100).getFullYear()
-        maxDate = plusYears(new Date(), +100).getFullYear()
+        maxDate = plusYears(new Date(), +5).getFullYear()
 
         agg.by.apply(this, @query.breakby?.split(","))
 

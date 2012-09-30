@@ -36,5 +36,11 @@ white-space: nowrap;
 }
 
 
+.horizonChart .legend {
+  position:absolute;
+  left:5px;
+}
 
-
+.horizonChart .legend text {
+font-size:7pt;
+}

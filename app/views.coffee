@@ -211,7 +211,7 @@
   
 
     div id:'horizonParent', ->
-      div id:'donorsChart',class:'horizonChart'
+      div id:'donorsChart',class:'horizonChart', -> div class:'legend'
       div id:'recipientsChart',class:'horizonChart'
       div id:'purposesChart',class:'horizonChart'
 
@@ -220,9 +220,10 @@
     script src: 'queue.min.js'
     # script src: 'js/cubism.v1.my.js'
     script src: 'coffee/utils.js'
+    script src: 'coffee/utils-aiddata.js'
     # #script src: 'js/cubism-aiddata.js'
-    script src: 'libs/chroma/chroma.min.js'
-    script src: 'libs/chroma/chroma.colors.js'
+    # script src: 'libs/chroma/chroma.min.js'
+    # script src: 'libs/chroma/chroma.colors.js'
     #script src: 'js/horizon.js'
     script src: 'coffee/horizon3.js'
 
