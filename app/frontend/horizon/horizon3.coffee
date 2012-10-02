@@ -1,4 +1,5 @@
 dateFormat = d3.time.format("%Y")
+valueFormat = formatMagnitudeLong
 bandHeight = 20
 bandWidth = 390
 bandPadding = 1
@@ -43,6 +44,7 @@ renderHorizons = do ->
   m = colors.length >> 1   # number of bands
 
   useLog10Bands = true
+  showNegativeLegend = true
 
 
 
@@ -97,32 +99,58 @@ renderHorizons = do ->
         [ i - 1, [ start, end ] ]
       )
 
-      legend = parent.select("div.legend")
-        .append("svg")
-          .attr("width", 100)
-          .attr("height", bands.length * 15 + 20)
-        .append("g")
-          .attr("transform", "translate(0, 10)")
+      do ->
+        n = if showNegativeLegend then 2*m else m
 
-      gitem = legend.selectAll("g.item")
-        .data(([[-1, [0, 0]]]).concat bands)
-        .enter()
+        legend = parent.select("div.legend")
+          .append("svg")
+            .attr("width", 100)
+            .attr("height", n * 15 + 15)
           .append("g")
-            .attr("class", "item")
-            .attr("transform", (d, i) -> "translate(0, #{(bands.length - i) * 15})")
+            .attr("transform", "translate(0, 10)")
 
-      gitem.append("rect")
-        .attr("x", 5)
-        .attr("y", 0)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", (d, i) -> if i > 0 then colors[m + i - 1] else "white")
+        #items = bands.map (band) -> [ i, [start, end] ] = band; [ colors[m + i - 1], end ]
 
-      gitem.append("text")
-        .attr("dominant-baseline", "central")
-        .attr("x", 25)
-        .attr("y", 0)
-        .text((d) -> formatMagnitude d[1][1])
+        gitem = legend.selectAll("g.item")
+          .data(
+            #([[-1, [0, 0]]]).concat(bands)
+            #items
+            if showNegativeLegend
+              ["white"].concat colors
+            else
+              ["white"].concat colors.slice(m, 2*m)
+          )
+          .enter()
+            .append("g")
+              .attr("class", "item")
+              .attr("transform", (d, i) -> 
+                "translate(0, #{(n - i) * 15})")
+
+        gitem.append("rect")
+          .attr("x", 5)
+          .attr("y", 0)
+          .attr("width", 15)
+          .attr("height", 15)
+          .attr("fill", (d, i) -> d)
+
+        gitem.append("text")
+          .attr("dominant-baseline", "central")
+          .attr("x", 25)
+          .attr("y", 0)
+          .text((d, i) ->
+            if showNegativeLegend
+              if i < m
+                valueFormat -bands[m - 1 - i][1][1]
+              else if i == m
+                valueFormat 0
+              else
+                valueFormat bands[i - m - 1][1][1]
+            else
+              if i > 0
+                valueFormat bands[i - 1][1][1]
+              else
+                valueFormat 0
+          )
 
 
       # returns array [ band, [startLimit, endLimit] ] 
@@ -166,13 +194,29 @@ renderHorizons = do ->
         for d in data
           t = Math.round(tscale(d.date))
           v = d.value
+          
+          [band, limits] = valueToBand(v)
 
+          if v < 0     # negative
 
-          if v <= 0     # negative
+            # draw previous band
+            if band > 0
+              canvas.fillStyle = colors[m - 1 - (band - 1)]
+              canvas.fillRect t, 0, stepWidth, height
+
+            yscale.range [0, height]
+            yscale.domain limits 
+
+            canvas.fillStyle = colors[m - 1 - band]
+            y1 = yscale(-v)
+
+            if mode is "offset"
+              canvas.fillRect t, 0, stepWidth, y1
+            else
+              canvas.fillRect t, height - y1, stepWidth, y1
             
 
           else
-            [band, limits] = valueToBand(v)
 
             # draw previous band
             if band > 0
@@ -294,7 +338,7 @@ queue()
 
           for obj in arr
             obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
-            obj.value = +obj[valueProp] #- mean/2
+            obj.value = +obj[valueProp] - mean/2
 
           arr.extent = d3.extent(arr, (d) -> +d.value)
           arr.timeExtent = d3.extent(arr, (d) -> d.date)

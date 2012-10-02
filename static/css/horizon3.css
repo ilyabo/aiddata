@@ -37,8 +37,15 @@ white-space: nowrap;
 
 
 .horizonChart .legend {
-  position:absolute;
-  left:5px;
+  top:60px; left:20px;
+  background-color: white;
+  z-index: 1000;
+  position: fixed;
+  padding:10px 10px 10px 5px;
+  border:1px solid #cccccc;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px; 
 }
 
 .horizonChart .legend text {
