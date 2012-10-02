@@ -5,15 +5,15 @@ position: relative;
 }
 
 #donorsChart {
-  left:130px;  
+  left:120px;  
 }
 
 #recipientsChart {
-  left:550px;  
+  left:560px;  
 }
 
 #purposesChart {
-  left:970px;  
+  left:1000px;  
 }
 
 .horizonChart {
@@ -23,7 +23,7 @@ margin:0px;
 margin-top:20px;
 font-family: "Helvetica Neue", Helvetica, sans-serif;
 display:inline-block;
-padding:0px 20px;
+padding:0;
   height:80%; margin:auto;
 }
 
@@ -31,6 +31,7 @@ padding:0px 20px;
 /*border-bottom: solid 1px #999;*/
 border-top: solid 1px #999;
 position: relative;
+padding-left:60px;
 }
 
 .horizon canvas {
@@ -47,6 +48,7 @@ margin:0;
   z-index:4;
   background-color:white;
   height:25px;
+  width: 410px;
 }
 
 .bands {
@@ -57,12 +59,13 @@ margin:0;
   height:100%; margin:auto;
 /*  padding-top:20px;
 */  
-  width:390px;
+  width:410px;
   padding-right:20px;
 }
 
 
-.horizon .title, .horizon .value {
+.horizon .item {
+left:0px;
 font-size: 8pt;
 bottom: 0;
 line-height: 20px;
@@ -71,7 +74,10 @@ position: absolute;
 margin:0 6px;
 text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
 white-space: nowrap;
-left:0px;
+}
+
+.horizon .item input {
+  margin-right:3px;
 }
 
 
@@ -80,7 +86,7 @@ left:0px;
   background-color: white;
   z-index: 1000;
   position: fixed;
-  padding:10px 10px 10px 5px;
+  padding:5px;
   border:1px solid #cccccc;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
@@ -93,6 +99,7 @@ font-size:7pt;
 
 
 .axis {
+   padding-left:42px;
   font: 10px sans-serif;
   /*position: fixed; */
   pointer-events: none;

@@ -1,8 +1,7 @@
 dateFormat = d3.time.format("%Y")
 valueFormat = formatMagnitudeLong
 bandHeight = 20
-bandWidth = 390
-bandPadding = 1
+bandWidth = 350
 
 timeInterval = d3.time.year
 
@@ -80,10 +79,10 @@ renderHorizons = do ->
       .attr("class", "top axis")
       .append("svg")
         .attr("height", 20)
-        .attr("width", bandWidth + 20)
+        .attr("width", bandWidth + 40)
         .append("g")
           .attr("class", "x axis")
-          .attr("transform", "translate(0," + 20 + ")")
+          .attr("transform", "translate(20,20)")
           .call(xAxis)
 
     parent.selectAll(".x.axis").call(xAxis)
@@ -92,11 +91,9 @@ renderHorizons = do ->
     parent.append("div")
       .attr("class", "bands")
 
-    parent.select("div.bands").selectAll("div.band")
+    parent.select("div.bands").selectAll("div.horizon")
         .data(data)
       .enter()
-        .append("div")
-          .attr("class", "band")
         .append("div")
           .attr("class", "horizon")
 
@@ -197,10 +194,16 @@ renderHorizons = do ->
         .attr("width", width)
         .attr("height", height)
 
-      parent.append("span")
+
+      item = parent.append("span")
+        .attr("class", "item")
+
+      item.append("input")
+        .attr("type", "checkbox")
+
+      item.append("span")
         .attr("class", "title")
         .text((d) -> d.key)
-
 
       canvas = d3.select(this).select("canvas").node().getContext("2d")
       canvas.save()
