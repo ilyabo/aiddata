@@ -188,7 +188,7 @@
       div id:'originsChart',class:'horizonChart'
       div id:'destsChart',class:'horizonChart'
 
-    style '@import url("css/horizon3.css");'
+    style '@import url("css/horizon.css");'
     script src: 'queue.min.js'
     script src: 'js/cubism.v1.my.js'
     script src: 'coffee/utils.js'
@@ -211,9 +211,13 @@
   
 
     div id:'horizonParent', ->
-      div id:'donorsChart',class:'horizonChart', -> div class:'legend'
-      div id:'recipientsChart',class:'horizonChart'
-      div id:'purposesChart',class:'horizonChart'
+      div id:'donorsChart',class:'horizonChart', ->
+        div class:'viewTitle', -> "Donors"
+        div class:'legend'
+      div id:'recipientsChart',class:'horizonChart', ->
+        div class:'viewTitle', -> "Recipients"
+      div id:'purposesChart',class:'horizonChart', ->
+        div class:'viewTitle', -> "Purposes"
 
 
     style '@import url("css/horizon3.css");'

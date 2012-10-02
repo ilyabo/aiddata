@@ -44,22 +44,14 @@ renderHorizons = do ->
   m = colors.length >> 1   # number of bands
 
   useLog10Bands = true
-  showNegativeLegend = true
+  showNegativeLegend = false
 
 
 
-  (parent, data) ->
+  (parent, data, showLegend) ->
     parent
       .attr("class", "horizonChart")
       .attr("style", "width:#{bandWidth}px")
-
-    parent.selectAll("div.band")
-        .data(data)
-      .enter()
-        .append("div")
-          .attr("class", "band")
-        .append("div")
-          .attr("class", "horizon")
 
 
 
@@ -77,6 +69,36 @@ renderHorizons = do ->
     numSteps = Math.max(1, timeInterval.range.apply(this, timeExtent).length)
     stepWidth = Math.ceil(width / numSteps)
 
+
+    xAxis = d3.svg.axis()
+      .scale(tscale)
+      .ticks(12)
+      .orient("top")
+      .tickSize(3, 0, 0)
+
+    parent.append("div")
+      .attr("class", "top axis")
+      .append("svg")
+        .attr("height", 20)
+        .attr("width", bandWidth + 20)
+        .append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + 20 + ")")
+          .call(xAxis)
+
+    parent.selectAll(".x.axis").call(xAxis)
+
+
+    parent.append("div")
+      .attr("class", "bands")
+
+    parent.select("div.bands").selectAll("div.band")
+        .data(data)
+      .enter()
+        .append("div")
+          .attr("class", "band")
+        .append("div")
+          .attr("class", "horizon")
 
 
 
@@ -99,7 +121,7 @@ renderHorizons = do ->
         [ i - 1, [ start, end ] ]
       )
 
-      do ->
+      if showLegend then do ->
         n = if showNegativeLegend then 2*m else m
 
         legend = parent.select("div.legend")
@@ -325,8 +347,8 @@ renderHorizons = do ->
 
 queue()
   .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor")
-  # .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient")
-  # .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose")
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient")
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose")
   .await (error, loaded) ->
 
     prepareData = (data, keyProp, valueProp) ->
@@ -334,11 +356,11 @@ queue()
         .key((d) -> d[keyProp])
         .rollup((arr) -> 
 
-          mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
+          #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
 
           for obj in arr
             obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
-            obj.value = +obj[valueProp] - mean/2
+            obj.value = +obj[valueProp] #- mean/2
 
           arr.extent = d3.extent(arr, (d) -> +d.value)
           arr.timeExtent = d3.extent(arr, (d) -> d.date)
@@ -347,16 +369,26 @@ queue()
         .entries(data)
       nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
 
-    [ donors ] = loaded
+    [ donors, recipients, purposes ] = loaded
 
     #timeScale = d3.time.scale().range([0, w])          
 
 
     renderHorizons(
       d3.select("#donorsChart"), 
-      prepareData(donors, "donor", "sum_amount_usd_constant")
+      prepareData(donors, "donor", "sum_amount_usd_constant"),
+      true
     )
 
+    renderHorizons(
+      d3.select("#recipientsChart"), 
+      prepareData(recipients, "recipient", "sum_amount_usd_constant")
+    )
+
+    renderHorizons(
+      d3.select("#purposesChart"), 
+      prepareData(purposes, "purpose", "sum_amount_usd_constant")
+    )
 
 
     

@@ -4,12 +4,27 @@ margin: 0px auto;
 position: relative;
 }
 
+#donorsChart {
+  left:130px;  
+}
+
+#recipientsChart {
+  left:550px;  
+}
+
+#purposesChart {
+  left:970px;  
+}
+
 .horizonChart {
+  position: fixed;
 vertical-align: top;
 margin:0px;  
+margin-top:20px;
 font-family: "Helvetica Neue", Helvetica, sans-serif;
 display:inline-block;
 padding:0px 20px;
+  height:80%; margin:auto;
 }
 
 .horizon {
@@ -23,6 +38,29 @@ display: block;
 margin:0;
 }
 
+.horizonChart  .viewTitle {
+  font: bold 22px sans-serif;
+  /*position: fixed;*/
+  padding:0px 0px 10px 0px;
+  width:inherit;
+  text-align:center;
+  z-index:4;
+  background-color:white;
+  height:25px;
+}
+
+.bands {
+/*  position: relative;
+  top:-25px;
+*/  overflow-y:scroll;
+  overflow-x:hidden;
+  height:100%; margin:auto;
+/*  padding-top:20px;
+*/  
+  width:390px;
+  padding-right:20px;
+}
+
 
 .horizon .title, .horizon .value {
 font-size: 8pt;
@@ -33,11 +71,12 @@ position: absolute;
 margin:0 6px;
 text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
 white-space: nowrap;
+left:0px;
 }
 
 
 .horizonChart .legend {
-  top:60px; left:20px;
+  top:60px; left:10px;
   background-color: white;
   z-index: 1000;
   position: fixed;
@@ -50,4 +89,47 @@ white-space: nowrap;
 
 .horizonChart .legend text {
 font-size:7pt;
+}
+
+
+.axis {
+  font: 10px sans-serif;
+  /*position: fixed; */
+  pointer-events: none;
+  z-index: 30;
+}
+
+.axis.top { margin-top:0px; }
+
+.axis text {
+  -webkit-transition: fill-opacity 250ms linear;
+}
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis.top {
+  background-image: linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  top: 0px;
+/*  padding: 0 0 14px 0;
+*/}
+
+.axis.bottom {
+  background-image: linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  bottom: 0px;
+  padding: 34px 0 0 0;
 }
