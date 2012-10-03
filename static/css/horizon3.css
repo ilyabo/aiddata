@@ -18,21 +18,28 @@ position: relative;
 
 .horizonChart {
   position: fixed;
-vertical-align: top;
-margin:0px;  
-margin-top:20px;
-font-family: "Helvetica Neue", Helvetica, sans-serif;
-display:inline-block;
-padding:0;
-  height:80%; margin:auto;
+  vertical-align: top;
+  margin:0px;  
+  margin-top:20px;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  display:inline-block;
+  padding:0;
+  height:75%; margin:auto;
 }
+
+.horizonChart .controls {
+  padding:10px 0px 0px 5px;
+}
+
 
 .horizon {
 /*border-bottom: solid 1px #999;*/
-border-top: solid 1px #999;
+border-top: solid 1px #ccc;
 position: relative;
 padding-left:60px;
 }
+
+.horizon:first-of-type { border-top: none; }
 
 .horizon canvas {
 display: block;
@@ -52,6 +59,9 @@ margin:0;
 }
 
 .bands {
+  border-top:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+
 /*  position: relative;
   top:-25px;
 */  overflow-y:scroll;
@@ -63,6 +73,9 @@ margin:0;
   padding-right:20px;
 }
 
+.horizon label { display:inline; font-size:11px; }
+
+.horizon label:hover { text-decoration: underline; color:blue; }
 
 .horizon .item {
 left:0px;
@@ -82,11 +95,11 @@ white-space: nowrap;
 
 
 .horizonChart .legend {
-  top:60px; left:10px;
+  top:115px; left:5px;
   background-color: white;
   z-index: 1000;
   position: fixed;
-  padding:5px;
+  padding:3px;
   border:1px solid #cccccc;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
@@ -96,6 +109,8 @@ white-space: nowrap;
 .horizonChart .legend text {
 font-size:7pt;
 }
+
+
 
 
 .axis {
@@ -109,6 +124,7 @@ font-size:7pt;
 .axis.top { margin-top:0px; }
 
 .axis text {
+  font-size:9px;
   -webkit-transition: fill-opacity 250ms linear;
 }
 

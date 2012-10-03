@@ -30,10 +30,10 @@ renderHorizons = do ->
   #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
   #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
-
+  numBands = 5
   colors = 
-    colorsBetween("#313695", "#e0f3f8", 6)  # negative
-    .concat colorsBetween("#e5f5e0",d3.hcl("#00441b").darker(), 6)  # positive
+    colorsBetween("#313695", "#e0f3f8", numBands)  # negative
+    .concat colorsBetween("#e5f5e0",d3.hcl("#00441b").darker(), numBands)  # positive
 
 
   width = bandWidth
@@ -44,14 +44,30 @@ renderHorizons = do ->
 
   useLog10Bands = true
   showNegativeLegend = false
+  nextCheckboxId = 1
 
 
 
-  (parent, data, showLegend) ->
+  (name, title, parent, data, showLegend) ->
     parent
       .attr("class", "horizonChart")
       .attr("style", "width:#{bandWidth}px")
 
+
+    parent.append("div").attr("class", "viewTitle").text(title)
+    parent.append("div").attr("class", "legend")  if showLegend
+    parent.append("div").attr("class", "top axis")
+    parent.append("div").attr("class", "bands")
+    filterBtns = parent.append("div")
+      .attr("class", "controls btn-group")
+
+    filterBtns.append("button")
+        .attr("class", "btn btn-mini")
+        .text("Apply filter")
+
+    filterBtns.append("button")
+        .attr("class", "btn btn-mini")
+        .html("&times;")
 
 
 
@@ -75,8 +91,7 @@ renderHorizons = do ->
       .orient("top")
       .tickSize(3, 0, 0)
 
-    parent.append("div")
-      .attr("class", "top axis")
+    parent.select("div.top.axis")
       .append("svg")
         .attr("height", 20)
         .attr("width", bandWidth + 40)
@@ -88,8 +103,6 @@ renderHorizons = do ->
     parent.selectAll(".x.axis").call(xAxis)
 
 
-    parent.append("div")
-      .attr("class", "bands")
 
     parent.select("div.bands").selectAll("div.horizon")
         .data(data)
@@ -199,11 +212,15 @@ renderHorizons = do ->
         .attr("class", "item")
 
       item.append("input")
+        .attr("id", "chk#{nextCheckboxId}")
         .attr("type", "checkbox")
 
-      item.append("span")
+      item.append("label")
         .attr("class", "title")
+        .attr("for", "chk#{nextCheckboxId}")
         .text((d) -> d.key)
+
+      nextCheckboxId++
 
       canvas = d3.select(this).select("canvas").node().getContext("2d")
       canvas.save()
@@ -377,18 +394,22 @@ queue()
     #timeScale = d3.time.scale().range([0, w])          
 
 
+
     renderHorizons(
+      "donor", "Donors",
       d3.select("#donorsChart"), 
       prepareData(donors, "donor", "sum_amount_usd_constant"),
       true
     )
 
     renderHorizons(
+      "recipient", "Recipients",
       d3.select("#recipientsChart"), 
       prepareData(recipients, "recipient", "sum_amount_usd_constant")
     )
 
     renderHorizons(
+      "purpose", "Purposes",
       d3.select("#purposesChart"), 
       prepareData(purposes, "purpose", "sum_amount_usd_constant")
     )
