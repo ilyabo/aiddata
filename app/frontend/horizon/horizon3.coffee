@@ -1,36 +1,46 @@
 dateFormat = d3.time.format("%Y")
-valueFormat = formatMagnitudeLong
-bandHeight = 20
-bandWidth = 350
-
 timeInterval = d3.time.year
 
-
-
-
-
-colorsBetween = (start, end, numColors) ->
-  scale = d3.scale.linear()
-    .range([start, end])
-    .domain([1, numColors])
-    .interpolate(d3.interpolateHcl)
-
-  (scale(i) for i in [1..numColors])
-
  
-
-
-
-renderHorizons = do ->
+horizonChart = ->
 
   mode = "mirror"
+  showLegend = true
+  bandHeight = 20
+  bandWidth = 350
+  valueFormat = formatMagnitudeLong
+  interval = d3.time.year
+
+  title = ""
+  eventListeners = {}
+  useLog10Bands = true
+  numBands = 5
+
+  chart = (selection) -> init(selection)
+  chart.title = (_) -> if (!arguments.length) then title else title = _; chart
+  chart.mode = (_) -> if (!arguments.length) then mode else mode = _; chart
+  chart.interval = (_) -> if (!arguments.length) then interval else interval = _; chart
+  chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
+  chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
+
+  # Supported events: "applyFilter"
+  chart.on = (eventName, listener) -> 
+    (eventListeners[eventName] ?= []).push(listener); chart
+
   # colors = ["#08519c","#3182bd","#6baed6","#bdd7e7",
   #           "#bae4b3","#74c476","#31a354","#006d2c"]
   # colors = 
   #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
   #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
-  numBands = 5
+  colorsBetween = (start, end, numColors) ->
+    scale = d3.scale.linear()
+      .range([start, end])
+      .domain([1, numColors])
+      .interpolate(d3.interpolateHcl)
+
+    (scale(i) for i in [1..numColors])
+
   colors = 
     colorsBetween("#313695", "#e0f3f8", numBands)  # negative
     .concat colorsBetween("#e5f5e0",d3.hcl("#00441b").darker(), numBands)  # positive
@@ -42,32 +52,55 @@ renderHorizons = do ->
   yscale = d3.scale.linear()#.nice() #.interpolate(d3.interpolateRound)
   m = colors.length >> 1   # number of bands
 
-  useLog10Bands = true
   showNegativeLegend = false
   nextCheckboxId = 1
 
 
 
-  (name, title, parent, data, showLegend) ->
-    parent
-      .attr("class", "horizonChart")
-      .attr("style", "width:#{bandWidth}px")
+  fire = (eventName, args...) -> 
+    listeners = eventListeners[eventName]
+    if listeners?
+      l.apply(chart, args) for l in listeners
 
 
-    parent.append("div").attr("class", "viewTitle").text(title)
-    parent.append("div").attr("class", "legend")  if showLegend
-    parent.append("div").attr("class", "top axis")
-    parent.append("div").attr("class", "bands")
-    filterBtns = parent.append("div")
-      .attr("class", "controls btn-group")
+  init = (selection) ->
 
-    filterBtns.append("button")
+    data = selection.datum()
+    parent = selection
+
+
+    update = not selection.select("svg").empty()
+
+    unless update
+      parent
+        .attr("class", "horizonChart")
+        .attr("style", "width:#{bandWidth}px")
+
+
+      parent.append("div").attr("class", "viewTitle").text(title)
+      parent.append("div").attr("class", "legend")  if showLegend
+      parent.append("div").attr("class", "top axis")
+      parent.append("div").attr("class", "bands")
+      filterBtns = parent.append("div")
+        .attr("class", "controls btn-group")
+
+      filterBtns.append("button")
         .attr("class", "btn btn-mini")
         .text("Apply filter")
+        .on "click", -> 
+          selected = []
+          parent.selectAll("input")
+            .each (d) -> 
+              if d3.select(this).property("checked")
+                selected.push d.key
 
-    filterBtns.append("button")
+          fire "applyFilter", selected
+
+
+      filterBtns.append("button")
         .attr("class", "btn btn-mini")
         .html("&times;")
+
 
 
 
@@ -81,35 +114,57 @@ renderHorizons = do ->
     timeExtent = [ d3.min(timeExtents, (d) -> d[0]), d3.max(timeExtents, (d) -> d[1]) ]
     tscale.domain(timeExtent)
 
-    numSteps = Math.max(1, timeInterval.range.apply(this, timeExtent).length)
+    numSteps = Math.max(1, interval.range.apply(this, timeExtent).length)
     stepWidth = Math.ceil(width / numSteps)
 
 
-    xAxis = d3.svg.axis()
-      .scale(tscale)
-      .ticks(12)
-      .orient("top")
-      .tickSize(3, 0, 0)
+    unless update
+      xAxis = d3.svg.axis()
+        .ticks(12)
+        .orient("top")
+        .tickSize(3, 0, 0)
+        .scale(tscale)
 
-    parent.select("div.top.axis")
-      .append("svg")
-        .attr("height", 20)
-        .attr("width", bandWidth + 40)
-        .append("g")
-          .attr("class", "x axis")
-          .attr("transform", "translate(20,20)")
-          .call(xAxis)
-
-    parent.selectAll(".x.axis").call(xAxis)
-
+      parent.select("div.top.axis")
+        .append("svg")
+          .attr("height", 20)
+          .attr("width", bandWidth + 40)
+          .append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(20,20)")
+            .call(xAxis)
 
 
-    parent.select("div.bands").selectAll("div.horizon")
-        .data(data)
-      .enter()
+      parent.selectAll(".x.axis").call(xAxis)
+
+
+
+    horizons = parent.select("div.bands").selectAll("div.horizon")
+        .data(data, (d) -> d.key)
+
+    horizonsEnter = horizons.enter()
         .append("div")
           .attr("class", "horizon")
 
+    horizonsEnter.append("canvas")
+      .attr("width", width)
+      .attr("height", height)
+
+    item = horizonsEnter.append("span")
+      .attr("class", "item")
+
+    item.append("input")
+      .attr("value", (d) -> d.key)
+      .attr("type", "checkbox")
+
+    item.append("label")
+      .attr("class", "title")
+      .text((d) -> d.key)
+      .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
+
+
+
+    horizons.exit().remove()
 
 
     if useLog10Bands
@@ -134,12 +189,16 @@ renderHorizons = do ->
       if showLegend then do ->
         n = if showNegativeLegend then 2*m else m
 
-        legend = parent.select("div.legend")
-          .append("svg")
-            .attr("width", 100)
-            .attr("height", n * 15 + 15)
-          .append("g")
-            .attr("transform", "translate(0, 10)")
+        unless update
+          parent.select("div.legend")
+            .append("svg")
+              .attr("width", 100)
+              .attr("height", n * 15 + 15)
+            .append("g")
+              .attr("class", "content")
+              .attr("transform", "translate(0, 10)")
+
+        legend = parent.select("div.legend").select("g.content")
 
         #items = bands.map (band) -> [ i, [start, end] ] = band; [ colors[m + i - 1], end ]
 
@@ -201,28 +260,10 @@ renderHorizons = do ->
     parent.selectAll("div.horizon").each (data) ->
       data = data.values
 
-      parent = d3.select(this)
-
-      parent.append("canvas")
-        .attr("width", width)
-        .attr("height", height)
+      horizon = d3.select(this)
 
 
-      item = parent.append("span")
-        .attr("class", "item")
-
-      item.append("input")
-        .attr("id", "chk#{nextCheckboxId}")
-        .attr("type", "checkbox")
-
-      item.append("label")
-        .attr("class", "title")
-        .attr("for", "chk#{nextCheckboxId}")
-        .text((d) -> d.key)
-
-      nextCheckboxId++
-
-      canvas = d3.select(this).select("canvas").node().getContext("2d")
+      canvas = horizon.select("canvas").node().getContext("2d")
       canvas.save()
 
       i0 = 0
@@ -363,12 +404,47 @@ renderHorizons = do ->
       return canvas
 
 
+  chart
 
 
-queue()
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor")
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient")
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose")
+
+
+
+# TODO: ensure that a uniform scale is used for the three datasets
+
+applyFilter = do ->
+  filters = {}
+  (attrName, values) ->
+    filters[attrName] = values
+    loadData filters
+
+
+donorsChart = horizonChart()
+  .title("Donors")
+  .interval(timeInterval)
+  .showLegend(true)
+  .on("applyFilter", (selected) -> applyFilter "donor", selected)
+
+recipientsChart = horizonChart()
+  .title("Recipients")
+  .interval(timeInterval)
+  .showLegend(false)
+  .on("applyFilter", (selected) -> applyFilter "recipient", selected)
+
+purposesChart = horizonChart()
+  .title("Purposes")
+  .interval(timeInterval)
+  .showLegend(false)
+  .on("applyFilter", (selected) -> applyFilter "purpose", selected)
+
+
+loadData = (filters) ->
+  filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
+
+  queue()
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}")
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}")
+  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}")
   .await (error, loaded) ->
 
     prepareData = (data, keyProp, valueProp) ->
@@ -391,31 +467,21 @@ queue()
 
     [ donors, recipients, purposes ] = loaded
 
-    #timeScale = d3.time.scale().range([0, w])          
+
+    d3.select("#donorsChart")
+      .datum(prepareData(donors, "donor", "sum_amount_usd_constant"))
+      .call(donorsChart)
+
+    d3.select("#recipientsChart")
+      .datum(prepareData(recipients, "recipient", "sum_amount_usd_constant"))
+      .call(recipientsChart)
+
+    d3.select("#purposesChart")
+      .datum(prepareData(purposes, "purpose", "sum_amount_usd_constant"))
+      .call(purposesChart)
 
 
-
-    renderHorizons(
-      "donor", "Donors",
-      d3.select("#donorsChart"), 
-      prepareData(donors, "donor", "sum_amount_usd_constant"),
-      true
-    )
-
-    renderHorizons(
-      "recipient", "Recipients",
-      d3.select("#recipientsChart"), 
-      prepareData(recipients, "recipient", "sum_amount_usd_constant")
-    )
-
-    renderHorizons(
-      "purpose", "Purposes",
-      d3.select("#purposesChart"), 
-      prepareData(purposes, "purpose", "sum_amount_usd_constant")
-    )
-
-
-    
+loadData()
 
 
 
