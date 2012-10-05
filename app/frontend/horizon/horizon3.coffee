@@ -33,6 +33,11 @@ horizonChart = ->
   #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
   #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
+  fire = (eventName, args...) -> 
+    listeners = eventListeners[eventName]
+    if listeners?
+      l.apply(chart, args) for l in listeners
+
   colorsBetween = (start, end, numColors) ->
     scale = d3.scale.linear()
       .range([start, end])
@@ -55,13 +60,7 @@ horizonChart = ->
   showNegativeLegend = false
   nextCheckboxId = 1
 
-
-
-  fire = (eventName, args...) -> 
-    listeners = eventListeners[eventName]
-    if listeners?
-      l.apply(chart, args) for l in listeners
-
+  numSteps = stepWidth = null
 
   init = (selection) ->
 
@@ -91,31 +90,37 @@ horizonChart = ->
           selected = []
           parent.selectAll("input")
             .each (d) -> 
-              if d3.select(this).property("checked")
+              that = d3.select(this)
+              if that.property("checked")
                 selected.push d.key
+                that.property("checked", false)
 
-          fire "applyFilter", selected
+          if selected.length > 0
+            fire "applyFilter", selected
 
 
       filterBtns.append("button")
         .attr("class", "btn btn-mini")
         .html("&times;")
-
+        .on "click", -> 
+          parent.selectAll("input").property("checked", false)
+          fire "applyFilter", null
 
 
 
     extents = (d.values.extent for d in data)
     extent = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
     max = Math.max(-extent[0], extent[1])
-    
     yscale.domain [0, max]
 
-    timeExtents = (d.values.timeExtent for d in data)
-    timeExtent = [ d3.min(timeExtents, (d) -> d[0]), d3.max(timeExtents, (d) -> d[1]) ]
-    tscale.domain(timeExtent)
 
-    numSteps = Math.max(1, interval.range.apply(this, timeExtent).length)
-    stepWidth = Math.ceil(width / numSteps)
+    unless update
+      timeExtents = (d.values.timeExtent for d in data)
+      timeExtent = [ d3.min(timeExtents, (d) -> d[0]), d3.max(timeExtents, (d) -> d[1]) ]
+      tscale.domain(timeExtent)
+
+      numSteps = Math.max(1, interval.range.apply(this, timeExtent).length)
+      stepWidth = Math.ceil(width / numSteps)
 
 
     unless update
@@ -163,6 +168,9 @@ horizonChart = ->
       .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
+    parent.select("div.bands").selectAll("div.horizon")
+      .sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
+
 
     horizons.exit().remove()
 
@@ -189,14 +197,16 @@ horizonChart = ->
       if showLegend then do ->
         n = if showNegativeLegend then 2*m else m
 
-        unless update
-          parent.select("div.legend")
-            .append("svg")
-              .attr("width", 100)
-              .attr("height", n * 15 + 15)
-            .append("g")
-              .attr("class", "content")
-              .attr("transform", "translate(0, 10)")
+        if update
+          parent.select("div.legend").select("svg").remove()          
+
+        parent.select("div.legend")
+          .append("svg")
+            .attr("width", 100)
+            .attr("height", n * 15 + 15)
+          .append("g")
+            .attr("class", "content")
+            .attr("transform", "translate(0, 10)")
 
         legend = parent.select("div.legend").select("g.content")
 
@@ -262,6 +272,9 @@ horizonChart = ->
 
       horizon = d3.select(this)
 
+      ys = yscale.copy()
+      
+ 
 
       canvas = horizon.select("canvas").node().getContext("2d")
       canvas.save()
@@ -287,11 +300,11 @@ horizonChart = ->
               canvas.fillStyle = colors[m - 1 - (band - 1)]
               canvas.fillRect t, 0, stepWidth, height
 
-            yscale.range [0, height]
-            yscale.domain limits 
+            ys.range [0, height]
+            ys.domain limits 
 
             canvas.fillStyle = colors[m - 1 - band]
-            y1 = yscale(-v)
+            y1 = ys(-v)
 
             if mode is "offset"
               canvas.fillRect t, 0, stepWidth, y1
@@ -308,11 +321,11 @@ horizonChart = ->
 
             # draw this band
     
-            yscale.range [0, height]
-            yscale.domain limits 
+            ys.range [0, height]
+            ys.domain limits 
 
             canvas.fillStyle = colors[m + band]
-            y1 = yscale(v)
+            y1 = ys(v)
             canvas.fillRect t, height - y1, stepWidth, y1
 
 
@@ -337,8 +350,8 @@ horizonChart = ->
           # so that bars representing larger values and coming from below 
           # overplot the smaller ones in previous bands
 
-          yscale.range [m * height + y0, y0]
-          y0 = yscale(0)
+          ys.range [m * height + y0, y0]
+          y0 = ys(0)
           i = i0
           n = width
           y1 = undefined
@@ -348,7 +361,7 @@ horizonChart = ->
           #   if y1 <= 0
           #     negative = true
           #     continue
-          #   canvas.fillRect i, y1 = yscale(y1), 1, y0 - y1
+          #   canvas.fillRect i, y1 = ys(y1), 1, y0 - y1
           #   ++i
 
           for d in data
@@ -357,7 +370,7 @@ horizonChart = ->
             if y1 <= 0
               negative = true       # has at least one negative value
               continue
-            canvas.fillRect tscale(t), y1 = yscale(y1), stepWidth, y0 - y1
+            canvas.fillRect tscale(t), y1 = ys(y1), stepWidth, y0 - y1
 
 
           ++j
@@ -378,8 +391,8 @@ horizonChart = ->
             
             # Adjust the range based on the current band index.
             y0 = (j - m + 1) * height
-            yscale.range [m * height + y0, y0]
-            y0 = yscale(0)
+            ys.range [m * height + y0, y0]
+            y0 = ys(0)
             i = i0
             n = width
             y1 = undefined
@@ -387,14 +400,14 @@ horizonChart = ->
             # while i < n
             #   y1 = data[i].value
             #   continue  if y1 >= 0
-            #   canvas.fillRect i, yscale(-y1), 1, y0 - yscale(-y1)
+            #   canvas.fillRect i, ys(-y1), 1, y0 - ys(-y1)
             #   ++i
 
             for d in data
               t = d.date
               y1 = d.value
               continue  if y1 >= 0
-              canvas.fillRect tscale(t), yscale(-y1), stepWidth, y0 - yscale(-y1)
+              canvas.fillRect tscale(t), ys(-y1), stepWidth, y0 - ys(-y1)
 
             ++j
 
@@ -415,7 +428,11 @@ horizonChart = ->
 applyFilter = do ->
   filters = {}
   (attrName, values) ->
-    filters[attrName] = values
+    if values?
+      filters[attrName] = values
+    else
+      delete filters[attrName]
+
     loadData filters
 
 
@@ -463,7 +480,7 @@ loadData = (filters) ->
           arr
         )
         .entries(data)
-      nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
+      #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
 
     [ donors, recipients, purposes ] = loaded
 
