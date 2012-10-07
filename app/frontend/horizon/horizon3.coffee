@@ -117,7 +117,6 @@ horizonChart = ->
         .attr("class", "btn btn-mini")
         .html("&times;")
         .on "click", -> 
-          parent.selectAll("input").property("checked", false)
           fire "applyFilter", null
 
 
@@ -164,7 +163,9 @@ horizonChart = ->
     horizonsEnter = horizons.enter()
       .append("div")
         .attr("class", "horizon")
-        .on "click", ->  d3.select(this).select("input")[0][0].click()
+        .on "click", -> 
+          unless d3.event.target?.type is "checkbox"
+            d3.select(this).select("input")[0][0].click()
 
     horizonsEnter.append("canvas")
       .attr("width", width)
@@ -195,6 +196,8 @@ horizonChart = ->
       .text((d) -> d.key)
       # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
+
+    parent.selectAll("input").property("checked", false)
 
     parent.select("div.bands").selectAll("div.horizon")
       .sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
