@@ -148,8 +148,9 @@ horizonChart = ->
         .data(data, (d) -> d.key)
 
     horizonsEnter = horizons.enter()
-        .append("div")
-          .attr("class", "horizon")
+      .append("div")
+        .attr("class", "horizon")
+        .on "click", ->  d3.select(this).select("input")[0][0].click()
 
     horizonsEnter.append("canvas")
       .attr("width", width)
@@ -165,7 +166,7 @@ horizonChart = ->
     item.append("label")
       .attr("class", "title")
       .text((d) -> d.key)
-      .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
+      # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
     parent.select("div.bands").selectAll("div.horizon")
@@ -499,6 +500,16 @@ loadData = (filters) ->
 
 
 loadData()
+
+
+
+# disable text selection with mouse
+(($) ->
+  $.fn.disableSelection = ->
+    @attr("unselectable", "on").css("user-select", "none").on "selectstart", false
+) jQuery
+
+$(".horizonChart").disableSelection()
 
 
 

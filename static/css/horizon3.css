@@ -34,9 +34,15 @@ position: relative;
 
 .horizon {
 /*border-bottom: solid 1px #999;*/
-border-top: solid 1px #ccc;
+border-bottom: solid 1px #ccc;
 position: relative;
 padding-left:60px;
+}
+
+.horizon:hover {
+outline:1px solid blue;
+outline-offset: -1px;
+border-bottom: solid 1px white;
 }
 
 .horizon:first-of-type { border-top: none; }
