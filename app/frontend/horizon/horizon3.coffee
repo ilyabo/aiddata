@@ -84,7 +84,7 @@ horizonChart = ->
       bandsDiv = parent.append("div")
         .attr("class", "bands")
 
-      ruleDiv = bandsDiv.append("div")
+      parent.append("div")
           .attr("class", "line rule")
           .style("position", "fixed")
           .style("top", 0)
@@ -107,7 +107,7 @@ horizonChart = ->
               that = d3.select(this)
               if that.property("checked")
                 selected.push d.key
-                that.property("checked", false)
+                # that.property("checked", false)
 
           if selected.length > 0
             fire "applyFilter", selected
@@ -115,9 +115,11 @@ horizonChart = ->
 
       filterBtns.append("button")
         .attr("class", "btn btn-mini")
+        .attr("title", "Clear filter")
         .html("&times;")
         .on "click", -> 
           fire "applyFilter", null
+          parent.selectAll("input").property("checked", false)
 
 
 
@@ -177,12 +179,12 @@ horizonChart = ->
 
         r = this.parentNode.parentNode.getBoundingClientRect()
         clip = "rect("+(r.top - 5)+"px,"+r.right+"px,"+Math.round(r.bottom)+"px,0px)"
-        ruleDiv
+        parent.select(".rule")
           .style("display", "block")
           .style("clip", clip)
           .style("left", pos + "px")
       )
-      .on("mouseout", -> ruleDiv.style("display", "none"))
+      .on("mouseout", -> parent.select(".rule").style("display", "none"))
 
     item = horizonsEnter.append("span")
       .attr("class", "item")
@@ -197,7 +199,6 @@ horizonChart = ->
       # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
-    parent.selectAll("input").property("checked", false)
 
     parent.select("div.bands").selectAll("div.horizon")
       .sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
