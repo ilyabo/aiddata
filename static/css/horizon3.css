@@ -39,17 +39,24 @@ position: relative;
 padding-left:60px;
 }
 
-.horizon:hover {
+/*.horizon:hover {
 outline:1px solid blue;
 outline-offset: -1px;
 border-bottom: solid 1px white;
 }
-
+*/
 .horizon:first-of-type { border-top: none; }
 
 .horizon canvas {
 display: block;
 margin:0;
+}
+
+.horizonChart  .line.rule {
+display:none;
+background: black;
+opacity: 0.4;
+z-index: 2;
 }
 
 .horizonChart  .viewTitle {
@@ -81,7 +88,7 @@ margin:0;
 
 .horizon label { display:inline; font-size:11px; }
 
-.horizon label:hover { text-decoration: underline; color:blue; }
+/*.horizon label:hover { text-decoration: underline; color:blue; }*/
 
 .horizon .item {
 left:0px;
@@ -120,7 +127,7 @@ font-size:7pt;
 
 
 .axis {
-   padding-left:42px;
+   padding-left:43px;
   font: 10px sans-serif;
   /*position: fixed; */
   pointer-events: none;

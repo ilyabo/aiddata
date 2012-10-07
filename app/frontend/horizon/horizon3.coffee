@@ -23,7 +23,7 @@ horizonChart = ->
   chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
 
-  # Supported events: "applyFilter"
+  # Supported events: "applyFilter", ""
   chart.on = (eventName, listener) -> 
     (eventListeners[eventName] ?= []).push(listener); chart
 
@@ -37,6 +37,7 @@ horizonChart = ->
     listeners = eventListeners[eventName]
     if listeners?
       l.apply(chart, args) for l in listeners
+
 
   colorsBetween = (start, end, numColors) ->
     scale = d3.scale.linear()
@@ -79,7 +80,20 @@ horizonChart = ->
       parent.append("div").attr("class", "viewTitle").text(title)
       parent.append("div").attr("class", "legend")  if showLegend
       parent.append("div").attr("class", "top axis")
-      parent.append("div").attr("class", "bands")
+      
+      bandsDiv = parent.append("div")
+        .attr("class", "bands")
+
+      ruleDiv = bandsDiv.append("div")
+          .attr("class", "line rule")
+          .style("position", "fixed")
+          .style("top", 0)
+          .style("right", 0)
+          .style("bottom", 0)
+          .style("width", "1px")
+          .style("pointer-events", "none")
+
+
       filterBtns = parent.append("div")
         .attr("class", "controls btn-group")
 
@@ -155,6 +169,19 @@ horizonChart = ->
     horizonsEnter.append("canvas")
       .attr("width", width)
       .attr("height", height)
+      .on("mousemove", ->
+        left = this.getBoundingClientRect().left
+        t = interval(tscale.invert(d3.event.clientX - left))
+        pos = tscale(t) + left + Math.floor(stepWidth/2)
+
+        r = this.parentNode.parentNode.getBoundingClientRect()
+        clip = "rect("+(r.top - 5)+"px,"+r.right+"px,"+Math.round(r.bottom)+"px,0px)"
+        ruleDiv
+          .style("display", "block")
+          .style("clip", clip)
+          .style("left", pos + "px")
+      )
+      .on("mouseout", -> ruleDiv.style("display", "none"))
 
     item = horizonsEnter.append("span")
       .attr("class", "item")
