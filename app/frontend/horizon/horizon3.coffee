@@ -14,7 +14,7 @@ horizonChart = ->
   title = ""
   eventListeners = {}
   useLog10Bands = true
-  numBands = 5
+  numBands = 4
 
   chart = (selection) -> init(selection)
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
@@ -22,6 +22,7 @@ horizonChart = ->
   chart.interval = (_) -> if (!arguments.length) then interval else interval = _; chart
   chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
+  chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
@@ -33,10 +34,10 @@ horizonChart = ->
   #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
   #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
-  fire = (eventName, args...) -> 
+  fire = (eventName, thisObj, args...) -> 
     listeners = eventListeners[eventName]
     if listeners?
-      l.apply(chart, args) for l in listeners
+      l.apply(thisObj, args) for l in listeners
 
   chart.showRuleAt = (t) ->
     unless t?
@@ -88,7 +89,7 @@ horizonChart = ->
     unless update
       parent
         .attr("class", "horizonChart")
-        .attr("style", "width:#{bandWidth}px")
+        #.attr("style", "width:#{bandWidth}px")
 
 
       parent.append("div").attr("class", "viewTitle").text(title)
@@ -124,7 +125,7 @@ horizonChart = ->
                 # that.property("checked", false)
 
           if selected.length > 0
-            fire "applyFilter", selected
+            fire "applyFilter", chart, selected
 
 
       filterBtns.append("button")
@@ -132,7 +133,7 @@ horizonChart = ->
         .attr("title", "Clear filter")
         .html("&times;")
         .on "click", -> 
-          fire "applyFilter", null
+          fire "applyFilter", chart, null
           parent.selectAll("input").property("checked", false)
 
 
@@ -179,25 +180,42 @@ horizonChart = ->
     horizonsEnter = horizons.enter()
       .append("div")
         .attr("class", "horizon")
-        .on "click", -> 
+        .on("click", (d) -> 
           unless d3.event.target?.type is "checkbox"
             d3.select(this).select("input")[0][0].click()
+        )
 
 
 
     horizonsEnter.append("canvas")
       .attr("width", width)
       .attr("height", height)
-      .on("mousemove", ->
+      .on("mousemove", (d) ->
+        # otherwise, d for the first horizon is not properly set for some reason
+        d = this.parentElement.__data__
         left = this.getBoundingClientRect().left
         t = interval(tscale.invert(d3.event.clientX - left))
 
         chart.showRuleAt t
-        fire "ruleMoved", t
+        fire "ruleMoved", this, t
+
+        dobj = do -> 
+          tt = t.getTime()
+          if d.values?
+            for obj in d.values
+              if interval(obj.date).getTime() is tt
+                return obj
+          return null
+
+        if dobj
+          fire "focusOnItem", this, d, dobj, t
+        else
+          fire "focusOnItem", this, null
       )
-      .on("mouseout", -> 
+      .on("mouseout", ->
         chart.showRuleAt null
-        fire "ruleMoved", null
+        fire "ruleMoved", this, null
+        fire "focusOnItem", this, null
       )
 
     item = horizonsEnter.append("span")
@@ -334,7 +352,7 @@ horizonChart = ->
 
 
         for d in data
-          t = Math.round(tscale(d.date))
+          t = Math.ceil(tscale(d.date))
           v = d.value
           
           [band, limits] = valueToBand(v)
@@ -469,6 +487,7 @@ horizonChart = ->
 
 
 
+
 # TODO: ensure that a uniform scale is used for the three datasets
 
 applyFilter = do ->
@@ -482,6 +501,25 @@ applyFilter = do ->
     loadData filters
 
 
+
+tip = $('<div id="tooltip"></div>')
+  .html('<div></div>')
+  .hide()
+  .appendTo($('body'))
+
+tooltip = (chart, verb) ->
+  (d, dobj, t) ->
+    if d?
+      tip.find("div").html "In #{dateFormat(t)} #{d.key} #{verb}<br>#{donorsChart.valueFormat()(dobj.value)}"
+      e = d3.event
+      tip.css
+        top: e.pageY - 20
+        left: e.pageX + 20
+      tip.show()
+    else
+      tip.hide()
+
+
 donorsChart = horizonChart()
   .title("Donors")
   .interval(timeInterval)
@@ -491,6 +529,9 @@ donorsChart = horizonChart()
     recipientsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
+  .on("focusOnItem", tooltip(donorsChart, "donated"))
+
+
 
 recipientsChart = horizonChart()
   .title("Recipients")
@@ -501,6 +542,7 @@ recipientsChart = horizonChart()
     donorsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
+  .on("focusOnItem", tooltip(recipientsChart, "received"))
 
 purposesChart = horizonChart()
   .title("Purposes")
@@ -511,50 +553,71 @@ purposesChart = horizonChart()
     recipientsChart.showRuleAt t
     donorsChart.showRuleAt t
   )
+  .on("focusOnItem", tooltip(purposesChart, ""))
 
 
-loadData = (filters) ->
-  filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
+loadData = do ->
 
-  queue()
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}")
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}")
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}")
-  .await (error, loaded) ->
+  loadingStarted = ->
+    $("body").css("cursor", "progress")
+    $("#loading .blockUI")
+      .css("cursor", "progress")
+      .show()
+    $("#loading img").stop().fadeIn(100)
+    $(".btn").attr("disabled", true)
 
-    prepareData = (data, keyProp, valueProp) ->
-      nested = d3.nest()
-        .key((d) -> d[keyProp])
-        .rollup((arr) -> 
-
-          #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
-
-          for obj in arr
-            obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
-            obj.value = +obj[valueProp] #- mean/2
-
-          arr.extent = d3.extent(arr, (d) -> +d.value)
-          arr.timeExtent = d3.extent(arr, (d) -> d.date)
-          arr
-        )
-        .entries(data)
-      #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
-
-    [ donors, recipients, purposes ] = loaded
+  loadingFinished = ->
+    $("body").css("cursor", "auto")
+    $("#loading .blockUI").hide()
+    $("#loading img").stop().fadeOut(500)
+    $(".btn").button("complete")
 
 
-    d3.select("#donorsChart")
-      .datum(prepareData(donors, "donor", "sum_amount_usd_constant"))
-      .call(donorsChart)
+  (filters) ->
+    loadingStarted()
 
-    d3.select("#recipientsChart")
-      .datum(prepareData(recipients, "recipient", "sum_amount_usd_constant"))
-      .call(recipientsChart)
+    filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
 
-    d3.select("#purposesChart")
-      .datum(prepareData(purposes, "purpose", "sum_amount_usd_constant"))
-      .call(purposesChart)
+    queue()
+    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}")
+    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}")
+    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}")
+    .await (error, loaded) ->
 
+      prepareData = (data, keyProp, valueProp) ->
+        nested = d3.nest()
+          .key((d) -> d[keyProp])
+          .rollup((arr) -> 
+
+            #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
+
+            for obj in arr
+              obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
+              obj.value = +obj[valueProp] #- mean/2
+
+            arr.extent = d3.extent(arr, (d) -> +d.value)
+            arr.timeExtent = d3.extent(arr, (d) -> d.date)
+            arr
+          )
+          .entries(data)
+        #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
+
+      [ donors, recipients, purposes ] = loaded
+
+
+      d3.select("#donorsChart")
+        .datum(prepareData(donors, "donor", "sum_amount_usd_constant"))
+        .call(donorsChart)
+
+      d3.select("#recipientsChart")
+        .datum(prepareData(recipients, "recipient", "sum_amount_usd_constant"))
+        .call(recipientsChart)
+
+      d3.select("#purposesChart")
+        .datum(prepareData(purposes, "purpose", "sum_amount_usd_constant"))
+        .call(purposesChart)
+
+      loadingFinished()
 
 loadData()
 

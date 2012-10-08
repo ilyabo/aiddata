@@ -209,6 +209,9 @@
     @page = "horizon3"
 
   
+    div id:"loading", -> 
+      div class:"blockUI"
+      img src:"images/loading.gif"
 
     div id:'horizonParent', ->
       div id:'donorsChart', class:'horizonChart'

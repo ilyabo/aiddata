@@ -1,3 +1,11 @@
+#loading { position:absolute; top:60px; left:20px; }
+#loading .blockUI { 
+  position:absolute; top:0; left:0; right:0; bottom:0; background-color:white; 
+  opacity:0; z-index:99;
+  text-align: center;
+  vertical-align: middle;
+}
+
 #horizonParent {
 text-align: center;
 margin: 0px auto;
@@ -25,6 +33,7 @@ position: relative;
   display:inline-block;
   padding:0;
   height:70%; margin:auto;
+  width: 410px;
 }
 
 .horizonChart .controls {
@@ -168,4 +177,26 @@ font-size:7pt;
   background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
   bottom: 0px;
   padding: 34px 0 0 0;
+}
+
+#tooltip {
+  font-size:12px;
+  font-family:"Helvetica Neue", Helvetica, arial;
+  position:absolute;
+  padding:5px;
+  z-index:100000;
+}
+
+#tooltip div {
+  background-color:#000;
+  opacity: 0.8;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  color:#fff;
+  color:#fff;
+  padding:5px 8px 4px 8px;
+  text-align:left;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
 }
