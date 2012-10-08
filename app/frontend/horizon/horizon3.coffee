@@ -507,10 +507,11 @@ tip = $('<div id="tooltip"></div>')
   .hide()
   .appendTo($('body'))
 
-tooltip = (chart, verb) ->
+tooltip = (chart, verb, prekey = "") ->
   (d, dobj, t) ->
     if d?
-      tip.find("div").html "In #{dateFormat(t)} #{d.key} #{verb}<br>#{donorsChart.valueFormat()(dobj.value)}"
+      tip.find("div").html "#{donorsChart.valueFormat()(dobj.value)} were"+
+                           "<br> #{verb} #{d.key} in #{dateFormat(t)}"
       e = d3.event
       tip.css
         top: e.pageY - 20
@@ -529,9 +530,7 @@ donorsChart = horizonChart()
     recipientsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(donorsChart, "donated"))
-
-
+  .on("focusOnItem", tooltip(donorsChart, "donated by"))
 
 recipientsChart = horizonChart()
   .title("Recipients")
@@ -542,7 +541,7 @@ recipientsChart = horizonChart()
     donorsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(recipientsChart, "received"))
+  .on("focusOnItem", tooltip(recipientsChart, "received by"))
 
 purposesChart = horizonChart()
   .title("Purposes")
@@ -553,7 +552,7 @@ purposesChart = horizonChart()
     recipientsChart.showRuleAt t
     donorsChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(purposesChart, ""))
+  .on("focusOnItem", tooltip(purposesChart, "donated with purpose"))
 
 
 loadData = do ->
