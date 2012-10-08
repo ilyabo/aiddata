@@ -23,7 +23,7 @@ horizonChart = ->
   chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
 
-  # Supported events: "applyFilter", ""
+  # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
     (eventListeners[eventName] ?= []).push(listener); chart
 
@@ -38,6 +38,19 @@ horizonChart = ->
     if listeners?
       l.apply(chart, args) for l in listeners
 
+  chart.showRuleAt = (t) ->
+    unless t?
+      parent.select(".rule").style("display", "none")
+    else
+      bands = parent.select("div.bands")
+      r = bands[0][0].getBoundingClientRect()
+      cr = bands.select("canvas")[0][0].getBoundingClientRect()
+      pos = tscale(t) + cr.left + Math.floor(stepWidth/2)
+      clip = "rect("+(r.top - 5)+"px,"+r.right+"px,"+Math.round(r.bottom)+"px,0px)"
+      parent.select(".rule")
+        .style("display", "block")
+        .style("clip", clip)
+        .style("left", pos + "px")
 
   colorsBetween = (start, end, numColors) ->
     scale = d3.scale.linear()
@@ -52,6 +65,7 @@ horizonChart = ->
     .concat colorsBetween("#e5f5e0",d3.hcl("#00441b").darker(), numBands)  # positive
 
 
+  parent = null
   width = bandWidth
   height = bandHeight
   tscale = d3.time.scale().range([0, width])
@@ -169,22 +183,22 @@ horizonChart = ->
           unless d3.event.target?.type is "checkbox"
             d3.select(this).select("input")[0][0].click()
 
+
+
     horizonsEnter.append("canvas")
       .attr("width", width)
       .attr("height", height)
       .on("mousemove", ->
         left = this.getBoundingClientRect().left
         t = interval(tscale.invert(d3.event.clientX - left))
-        pos = tscale(t) + left + Math.floor(stepWidth/2)
 
-        r = this.parentNode.parentNode.getBoundingClientRect()
-        clip = "rect("+(r.top - 5)+"px,"+r.right+"px,"+Math.round(r.bottom)+"px,0px)"
-        parent.select(".rule")
-          .style("display", "block")
-          .style("clip", clip)
-          .style("left", pos + "px")
+        chart.showRuleAt t
+        fire "ruleMoved", t
       )
-      .on("mouseout", -> parent.select(".rule").style("display", "none"))
+      .on("mouseout", -> 
+        chart.showRuleAt null
+        fire "ruleMoved", null
+      )
 
     item = horizonsEnter.append("span")
       .attr("class", "item")
@@ -473,18 +487,30 @@ donorsChart = horizonChart()
   .interval(timeInterval)
   .showLegend(true)
   .on("applyFilter", (selected) -> applyFilter "donor", selected)
+  .on("ruleMoved", (t) ->
+    recipientsChart.showRuleAt t
+    purposesChart.showRuleAt t
+  )
 
 recipientsChart = horizonChart()
   .title("Recipients")
   .interval(timeInterval)
   .showLegend(false)
   .on("applyFilter", (selected) -> applyFilter "recipient", selected)
+  .on("ruleMoved", (t) ->
+    donorsChart.showRuleAt t
+    purposesChart.showRuleAt t
+  )
 
 purposesChart = horizonChart()
   .title("Purposes")
   .interval(timeInterval)
   .showLegend(false)
   .on("applyFilter", (selected) -> applyFilter "purpose", selected)
+  .on("ruleMoved", (t) ->
+    recipientsChart.showRuleAt t
+    donorsChart.showRuleAt t
+  )
 
 
 loadData = (filters) ->
