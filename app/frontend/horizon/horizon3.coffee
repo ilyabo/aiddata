@@ -597,16 +597,18 @@ loadData = do ->
         .entries(data)
       #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
 
+  cache = cachingLoad(100)
+
   (filters) ->
     loadingStarted()
 
     filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
 
     queue()
-    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}", prepareData("donor", "sum_amount_usd_constant")))
-    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}", prepareData("recipient", "sum_amount_usd_constant")))
-    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}", prepareData("purpose", "sum_amount_usd_constant")))
-    .defer(cachingLoad(loadJson, "purposes.json"))
+    .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}", prepareData("donor", "sum_amount_usd_constant")))
+    .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}", prepareData("recipient", "sum_amount_usd_constant")))
+    .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}", prepareData("purpose", "sum_amount_usd_constant")))
+    .defer(cache(loadJson, "purposes.json"))
     .await (error, loaded) ->
 
 
@@ -629,7 +631,7 @@ loadData = do ->
 
       loadingFinished()
 
-loadData()
+loadData({})
 
 
 

@@ -50,8 +50,9 @@ root.loadJson = (path, callback) ->
   d3.json(path, (json) -> if json then callback(null, json) else callback("error", null))
 
 
-root.cachingLoad = do ->
+root.cachingLoad = (maxEntries = 100) ->
   cache = {}
+  count = 0
   (loadFun, url, postprocess = null) -> 
     load = (callback) ->
       if cache[url]?
@@ -59,6 +60,12 @@ root.cachingLoad = do ->
       else
         cb = (err, result) ->
           if postprocess? then result = postprocess result
+          if result? and not(cache[url]?) then count++
+          if (not result?) and cache[url]? then count--
+          if count > maxEntries
+            for k, v of cache
+              delete cache[k]
+              break
           cache[url] = result
           callback err, result
         loadFun(url, cb)
