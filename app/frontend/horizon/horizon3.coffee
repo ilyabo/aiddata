@@ -10,6 +10,7 @@ horizonChart = ->
   bandWidth = 350
   valueFormat = formatMagnitudeLong
   interval = d3.time.year
+  labelAttr = "key"
 
   title = ""
   eventListeners = {}
@@ -23,6 +24,7 @@ horizonChart = ->
   chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
+  chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
@@ -227,7 +229,7 @@ horizonChart = ->
 
     item.append("label")
       .attr("class", "title")
-      .text((d) -> d.key)
+      .text((d) -> d[labelAttr])
       # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
@@ -352,7 +354,7 @@ horizonChart = ->
 
 
         for d in data
-          t = Math.ceil(tscale(d.date))
+          t = Math.round(tscale(d.date))
           v = d.value
           
           [band, limits] = valueToBand(v)
@@ -547,6 +549,7 @@ recipientsChart = horizonChart()
 purposesChart = horizonChart()
   .title("Purposes")
   .interval(timeInterval)
+  .labelAttr("purpose")
   .showLegend(false)
   .on("applyFilter", (selected) -> applyFilter "purpose", selected)
   .on("ruleMoved", (t) ->
@@ -597,7 +600,25 @@ loadData = do ->
         .entries(data)
       #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
 
+
   cache = cachingLoad(100)
+  purposesByCode = null
+
+  expandPurposes = (data) ->
+    for obj in data
+      obj.purpose = purposesByCode[obj.key]
+    data
+
+  flatten = (purposeTree) ->
+    codeToName = {}
+    recurse = (node) ->
+      codeToName[node.code] = node.name
+      if node.values?
+        recurse(n) for n in node.values
+    recurse purposeTree
+    codeToName
+
+
 
   (filters) ->
     loadingStarted()
@@ -614,6 +635,8 @@ loadData = do ->
 
       [ donors, recipients, purposes, purposeTree ] = loaded
 
+      purposesByCode = flatten purposeTree
+      purposes = expandPurposes(purposes)
 
       d3.select("#donorsChart")
         .datum(donors)
@@ -627,7 +650,6 @@ loadData = do ->
         .datum(purposes)
         .call(purposesChart)
 
-      #console.log purposeTree
 
       loadingFinished()
 
