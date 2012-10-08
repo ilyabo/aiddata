@@ -495,10 +495,11 @@ applyFilter = do ->
   (attrName, values) ->
     if values?
       filters[attrName] = values
-    else
-      delete filters[attrName]
-
-    loadData filters
+      loadData filters
+    else      
+      if filters[attrName]?
+        delete filters[attrName]
+        loadData filters
 
 
 
@@ -555,6 +556,12 @@ purposesChart = horizonChart()
   .on("focusOnItem", tooltip(purposesChart, "donated with purpose"))
 
 
+
+# queue()
+#   .defer(loadJson, "purposes.json")
+#   .await (error, loaded) ->
+#      console.log loaded[0]
+
 loadData = do ->
 
   loadingStarted = ->
@@ -571,6 +578,24 @@ loadData = do ->
     $("#loading img").stop().fadeOut(500)
     $(".btn").button("complete")
 
+  prepareData = (keyProp, valueProp) ->
+    (data) ->
+      nested = d3.nest()
+        .key((d) -> d[keyProp])
+        .rollup((arr) -> 
+
+          #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
+
+          for obj in arr
+            obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
+            obj.value = +obj[valueProp] #- mean/2
+
+          arr.extent = d3.extent(arr, (d) -> +d.value)
+          arr.timeExtent = d3.extent(arr, (d) -> d.date)
+          arr
+        )
+        .entries(data)
+      #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
 
   (filters) ->
     loadingStarted()
@@ -578,43 +603,29 @@ loadData = do ->
     filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
 
     queue()
-    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}")
-    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}")
-    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}")
+    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}", prepareData("donor", "sum_amount_usd_constant")))
+    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}", prepareData("recipient", "sum_amount_usd_constant")))
+    .defer(cachingLoad(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}", prepareData("purpose", "sum_amount_usd_constant")))
+    .defer(cachingLoad(loadJson, "purposes.json"))
     .await (error, loaded) ->
 
-      prepareData = (data, keyProp, valueProp) ->
-        nested = d3.nest()
-          .key((d) -> d[keyProp])
-          .rollup((arr) -> 
 
-            #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
-
-            for obj in arr
-              obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
-              obj.value = +obj[valueProp] #- mean/2
-
-            arr.extent = d3.extent(arr, (d) -> +d.value)
-            arr.timeExtent = d3.extent(arr, (d) -> d.date)
-            arr
-          )
-          .entries(data)
-        #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
-
-      [ donors, recipients, purposes ] = loaded
+      [ donors, recipients, purposes, purposeTree ] = loaded
 
 
       d3.select("#donorsChart")
-        .datum(prepareData(donors, "donor", "sum_amount_usd_constant"))
+        .datum(donors)
         .call(donorsChart)
 
       d3.select("#recipientsChart")
-        .datum(prepareData(recipients, "recipient", "sum_amount_usd_constant"))
+        .datum(recipients)
         .call(recipientsChart)
 
       d3.select("#purposesChart")
-        .datum(prepareData(purposes, "purpose", "sum_amount_usd_constant"))
+        .datum(purposes)
         .call(purposesChart)
+
+      #console.log purposeTree
 
       loadingFinished()
 

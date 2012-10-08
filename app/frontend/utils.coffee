@@ -50,6 +50,20 @@ root.loadJson = (path, callback) ->
   d3.json(path, (json) -> if json then callback(null, json) else callback("error", null))
 
 
+root.cachingLoad = do ->
+  cache = {}
+  (loadFun, url, postprocess = null) -> 
+    load = (callback) ->
+      if cache[url]?
+        callback null, cache[url]
+      else
+        cb = (err, result) ->
+          if postprocess? then result = postprocess result
+          cache[url] = result
+          callback err, result
+        loadFun(url, cb)
+    load
+
 
 root.loadData = ->
   
