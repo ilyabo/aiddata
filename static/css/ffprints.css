@@ -47,3 +47,6 @@ svg.ffprints g.fingerprint rect.fp {
 
 
 
+#radioset label { margin: 0 7px 0 3px; }
+#radioset input { margin:0; }
+
