@@ -72,7 +72,7 @@
 
                     ''' + (
                       for id, title of menu
-                        "<li" + (if @page is id then ' class=active' else "") + ">" +
+                        "<li" + '<%=(if @page is "'+id+'" then " class=active" else "")%>' + ">" +
                         '<a href="' + id + '">' + title + '</a></li>'
                     ).join("") + '''
 
