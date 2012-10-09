@@ -506,9 +506,11 @@ horizonChart = ->
 
 # TODO: ensure that a uniform scale is used for the three datasets
 
-applyFilter = do ->
+filter = do ->
   filters = {}
   (attrName, values) ->
+    if arguments.length is 1
+      return filters[attrName]
     if values?
       filters[attrName] = values
       loadData filters
@@ -542,7 +544,7 @@ donorsChart = horizonChart()
   .title("Donors")
   .interval(timeInterval)
   .showLegend(true)
-  .on("applyFilter", (selected) -> applyFilter "donor", selected)
+  .on("applyFilter", (selected) -> filter "donor", selected)
   .on("ruleMoved", (t) ->
     recipientsChart.showRuleAt t
     purposesChart.showRuleAt t
@@ -553,7 +555,7 @@ recipientsChart = horizonChart()
   .title("Recipients")
   .interval(timeInterval)
   .showLegend(false)
-  .on("applyFilter", (selected) -> applyFilter "recipient", selected)
+  .on("applyFilter", (selected) -> filter "recipient", selected)
   .on("ruleMoved", (t) ->
     donorsChart.showRuleAt t
     purposesChart.showRuleAt t
@@ -565,7 +567,7 @@ purposesChart = horizonChart()
   .interval(timeInterval)
   .labelAttr("purpose")
   .showLegend(false)
-  .on("applyFilter", (selected) -> applyFilter "purpose", selected)
+  .on("applyFilter", (selected) -> filter "purpose", selected)
   .on("ruleMoved", (t) ->
     recipientsChart.showRuleAt t
     donorsChart.showRuleAt t
@@ -594,6 +596,18 @@ loadData = do ->
     $("#loading .blockUI").hide()
     $("#loading img").stop().fadeOut(500)
     $(".btn").button("complete")
+    updateCtrls()
+
+  updateCtrls = ->
+    d3.select("#donorsChart").select(".btn-group")
+      .classed("applied", filter("donor")?)
+
+    d3.select("#recipientsChart").select(".btn-group")
+      .classed("applied", filter("recipient")?)
+
+    d3.select("#purposesChart").select(".btn-group")
+      .classed("applied", filter("purpose")?)
+
 
   prepareData = (keyProp, valueProp) ->
     (data) ->

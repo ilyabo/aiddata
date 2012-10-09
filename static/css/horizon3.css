@@ -202,3 +202,8 @@ font-size:7pt;
   -moz-border-radius:3px;
   -webkit-border-radius:3px;
 }
+
+.btn-group.applied button {
+  border-color:#f76;
+  border-width:1px;
+}
