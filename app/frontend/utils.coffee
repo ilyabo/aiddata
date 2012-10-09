@@ -22,9 +22,13 @@ root.initFlowData = (conf) ->
   state
 
 
-root.shorten = (str, maxlength) ->
+root.shorten = (str, maxlength, useHtmlTitle = false) ->
   if str.length > maxlength
-    str.substr(0, maxlength-2) + "..."
+    short = str.substr(0, maxlength-2) + "..."
+    if useHtmlTitle
+      '<span title="' + str + '">' + short + '</span>'
+    else
+      short
   else
     str
 

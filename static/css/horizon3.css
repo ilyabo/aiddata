@@ -48,12 +48,14 @@ position: relative;
 padding-left:60px;
 }
 
-/*.horizon:hover {
-outline:1px solid blue;
+.horizon:hover {
+/*outline:1px solid rgba(250, 200, 200, 100);
 outline-offset: -1px;
 border-bottom: solid 1px white;
-}
 */
+background-color: #f0f0f0;
+}
+
 .horizon:first-of-type { border-top: none; }
 
 .horizon canvas {

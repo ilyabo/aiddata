@@ -16,6 +16,7 @@ horizonChart = ->
   eventListeners = {}
   useLog10Bands = true
   numBands = 4
+  valueExtent = null
 
   chart = (selection) -> init(selection)
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
@@ -25,16 +26,12 @@ horizonChart = ->
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
   chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
+  chart.valueExtent = (_) -> if (!arguments.length) then valueExtent else valueExtent = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
     (eventListeners[eventName] ?= []).push(listener); chart
 
-  # colors = ["#08519c","#3182bd","#6baed6","#bdd7e7",
-  #           "#bae4b3","#74c476","#31a354","#006d2c"]
-  # colors = 
-  #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
-  #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
   fire = (eventName, thisObj, args...) -> 
     listeners = eventListeners[eventName]
@@ -63,9 +60,16 @@ horizonChart = ->
 
     (scale(i) for i in [1..numColors])
 
+
+  # colors = ["#08519c","#3182bd","#6baed6","#bdd7e7",
+  #           "#bae4b3","#74c476","#31a354","#006d2c"]
+  # colors = 
+  #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
+  #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
+
   colors = 
     colorsBetween("#313695", "#e0f3f8", numBands)  # negative
-    .concat colorsBetween("#e5f5e0",d3.hcl("#00441b").darker(), numBands)  # positive
+    .concat colorsBetween(d3.hcl("#e5f5e0").darker(0.5),d3.hcl("#00441b").darker(), numBands)  # positive
 
 
   parent = null
@@ -115,7 +119,7 @@ horizonChart = ->
         .attr("class", "controls btn-group")
 
       filterBtns.append("button")
-        .attr("class", "btn btn-mini")
+        .attr("class", "btn btn-mini filter")
         .text("Apply filter")
         .on "click", -> 
           selected = []
@@ -140,8 +144,12 @@ horizonChart = ->
 
 
 
-    extents = (d.values.extent for d in data)
-    extent = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+    if valueExtent?
+      extent = valueExtent
+    else
+      extents = (d.values.extent for d in data)
+      extent = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+
     max = Math.max(-extent[0], extent[1])
     yscale.domain [0, max]
 
@@ -185,6 +193,7 @@ horizonChart = ->
         .on("click", (d) -> 
           unless d3.event.target?.type is "checkbox"
             d3.select(this).select("input")[0][0].click()
+            parent.select("button.filter")[0][0].click()
         )
 
 
@@ -229,7 +238,7 @@ horizonChart = ->
 
     item.append("label")
       .attr("class", "title")
-      .text((d) -> d[labelAttr])
+      .html((d) -> shorten(d[labelAttr], 25, true))
       # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
@@ -619,6 +628,15 @@ loadData = do ->
     codeToName
 
 
+  getValuesExtent = (data) ->
+    extents = (d.values.extent for d in data)
+    [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+
+  getMaxValuesExtent = (datas) ->
+    extents = (getValuesExtent(data)  for data in datas)
+    [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+
+
 
   (filters) ->
     loadingStarted()
@@ -637,6 +655,14 @@ loadData = do ->
 
       purposesByCode = flatten purposeTree
       purposes = expandPurposes(purposes)
+
+
+      maxExtent = getMaxValuesExtent [ donors, recipients, purposes ]
+
+      donorsChart.valueExtent maxExtent
+      recipientsChart.valueExtent maxExtent
+      purposesChart.valueExtent maxExtent
+
 
       d3.select("#donorsChart")
         .datum(donors)
