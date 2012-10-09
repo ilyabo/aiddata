@@ -191,9 +191,14 @@ horizonChart = ->
       .append("div")
         .attr("class", "horizon")
         .on("click", (d) -> 
-          unless d3.event.target?.type is "checkbox"
-            d3.select(this).select("input")[0][0].click()
+          #if d3.event.target?.type is "canvas"
+          tag = d3.event.target?.tagName
+          if tag is "CANVAS"
+            d3.select(this).select("input")[0][0].checked = true
             parent.select("button.filter")[0][0].click()
+          else
+            unless tag is "INPUT"
+              d3.select(this).select("input")[0][0].click()
         )
 
 
