@@ -6,6 +6,8 @@
   @view breaknsplit : ->
 
     @title = "AidData Break'n'split"
+    @page = "breaknsplit"
+
     
     style '@import url("css/charts/time-series.css");'
     style '@import url("css/breaknsplit.css");'
