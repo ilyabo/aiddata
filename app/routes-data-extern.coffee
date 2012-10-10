@@ -81,6 +81,30 @@
 
 
 
+  @get '/wb/all/:indicator.csv': ->
+    q = queue()
+
+    requestWorldBankIndicator @params.indicator, "ALL", (err, results) =>
+      unless err?
+        try
+          entries = results.filter((d) -> d.value?)
+
+          @response.write "code,name,date,value\n"
+          csv()
+            .from(entries)
+            .toStream(@response)
+            .transform (d, i) -> [ d.country.id, d.country.value, d.date, d.value ]
+          # @send JSON.stringify(entries)
+        catch err
+          #msg = "Response from the World Bank API could not be processed: " + body
+          console.error "Response from the World Bank API could not be processed"
+          #@send ""
+          @next(err)
+      else
+        @next(err)
+
+
+
   @get '/wb/brief/:indicator/:countryCode.csv': ->
     q = queue()
 

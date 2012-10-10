@@ -120,16 +120,20 @@ white-space: nowrap;
 
 
 .horizonChart .legend {
-  top:115px; left:5px;
   background-color: white;
   z-index: 1000;
-  position: fixed;
   padding:3px;
   border:1px solid #cccccc;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   border-radius: 10px; 
 }
+
+#donorsChart  .legend {
+  top:115px; left:5px;
+  position: fixed;  
+}
+
 
 .horizonChart .legend text {
 font-size:7pt;
@@ -208,3 +212,17 @@ font-size:7pt;
   border-color:#f76;
   border-width:1px;
 }
+
+
+#indicatorChart  .legend { position:relative; left:450px; top:-300px; width:110px; }
+#indicatorChart { }
+#indicatorModal { width:650px;}
+#indicatorModal h3 { text-align: center;   font: bold 22px sans-serif; }
+#indicatorModal button.close { border:none; background: none; }
+
+.ctl-hint { font-size:8pt; text-align:left !important; color:#999;}
+#indicatorTypeahead { width:400px; }
+
+#indicatorModal .horizonChart { height:300px; }
+
+#indicatorModal .modal-body { height:600px; }

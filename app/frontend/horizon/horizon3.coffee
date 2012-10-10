@@ -8,9 +8,10 @@ horizonChart = ->
   showLegend = true
   bandHeight = 20
   bandWidth = 350
-  valueFormat = formatMagnitudeLong
+  valueFormat = d3.format(",.0f")
   interval = d3.time.year
   labelAttr = "key"
+  filterButtons = true
   indicatorButtons = false
 
   title = ""
@@ -28,6 +29,7 @@ horizonChart = ->
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
   chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
   chart.valueExtent = (_) -> if (!arguments.length) then valueExtent else valueExtent = _; chart
+  chart.filterButtons = (_) -> if (!arguments.length) then filterButtons else filterButtons = _; chart
   chart.indicatorButtons = (_) -> if (!arguments.length) then indicatorButtons else indicatorButtons = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
@@ -81,7 +83,7 @@ horizonChart = ->
   yscale = d3.scale.linear()#.nice() #.interpolate(d3.interpolateRound)
   m = colors.length >> 1   # number of bands
 
-  showNegativeLegend = false
+  
   nextCheckboxId = 1
 
   numSteps = stepWidth = null
@@ -100,16 +102,20 @@ horizonChart = ->
         #.attr("style", "width:#{bandWidth}px")
 
 
-      parent.append("div").attr("class", "viewTitle").text(title)
-      parent.append("div").attr("class", "legend")  if showLegend
+      if title?.length > 0
+        parent.append("div").attr("class", "viewTitle").text(title)
 
-      controls = parent.append("div")
-        .attr("class", "btn-toolbar controls")
+
+      if indicatorButtons or filterButtons
+        controls = parent.append("div")
+          .attr("class", "btn-toolbar controls")
 
       parent.append("div").attr("class", "top axis")
       
       bandsDiv = parent.append("div")
         .attr("class", "bands")
+
+      parent.append("div").attr("class", "legend")  if showLegend
 
       parent.append("div")
           .attr("class", "line rule")
@@ -122,46 +128,47 @@ horizonChart = ->
 
 
       if indicatorButtons
-
         compareBtns = controls.append("div")
           .attr("class", "btn-group")
 
         compareBtns.append("button")
           .attr("class", "btn btn-mini indicator")
           .text("Load indicator")
-          .on "click", -> 
+          .on "click", -> fire "loadIndicator", chart
 
         compareBtns.append("button")
           .attr("class", "btn btn-mini")
           .attr("title", "Clear indicator")
           .html("&times;")
+          .on "click", -> fire "clearIndicator", chart
+
+
+      if filterButtons
+        filterBtns = controls.append("div")
+          .attr("class", "btn-group filter")
+
+        filterBtns.append("button")
+          .attr("class", "btn btn-mini filter")
+          .text("Apply filter")
           .on "click", -> 
+            selected = []
+            parent.selectAll("input")
+              .each (d) -> 
+                that = d3.select(this)
+                if that.property("checked")
+                  selected.push d.key
+                  # that.property("checked", false)
 
-      filterBtns = controls.append("div")
-        .attr("class", "btn-group filter")
+            if selected.length > 0
+              fire "applyFilter", chart, selected
 
-      filterBtns.append("button")
-        .attr("class", "btn btn-mini filter")
-        .text("Apply filter")
-        .on "click", -> 
-          selected = []
-          parent.selectAll("input")
-            .each (d) -> 
-              that = d3.select(this)
-              if that.property("checked")
-                selected.push d.key
-                # that.property("checked", false)
-
-          if selected.length > 0
-            fire "applyFilter", chart, selected
-
-      filterBtns.append("button")
-        .attr("class", "btn btn-mini")
-        .attr("title", "Clear filter")
-        .html("&times;")
-        .on "click", -> 
-          fire "applyFilter", chart, null
-          parent.selectAll("input").property("checked", false)
+        filterBtns.append("button")
+          .attr("class", "btn btn-mini")
+          .attr("title", "Clear filter")
+          .html("&times;")
+          .on "click", -> 
+            fire "applyFilter", chart, null
+            parent.selectAll("input").property("checked", false)
 
 
 
@@ -172,6 +179,7 @@ horizonChart = ->
       extents = (d.values.extent for d in data)
       extent = [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
 
+    showNegativeLegend = extent[0] < 0
     max = Math.max(-extent[0], extent[1])
     yscale.domain [0, max]
 
@@ -259,9 +267,10 @@ horizonChart = ->
     item = horizonsEnter.append("span")
       .attr("class", "item")
 
-    item.append("input")
-      .attr("value", (d) -> d.key)
-      .attr("type", "checkbox")
+    if filterButtons
+      item.append("input")
+        .attr("value", (d) -> d.key)
+        .attr("type", "checkbox")
 
     item.append("label")
       .attr("class", "title")
@@ -287,6 +296,7 @@ horizonChart = ->
       # between orders of magnitudes 
       # (maybe automatically switch to the linear scale?)
       maxOrdMagn = Math.ceil(log10(max))
+
       #minOrdMagn = Math.ceil(log10(min))
       pow10 = (n) -> v = 1; v *= 10 for i in [1..n]; return v
       bands = (for i in [1..m]
@@ -565,6 +575,7 @@ tooltip = (chart, verb, prekey = "") ->
 donorsChart = horizonChart()
   .title("Donors")
   .interval(timeInterval)
+  .valueFormat(formatMagnitudeLong)
   .indicatorButtons(true)
   .showLegend(true)
   .on("applyFilter", (selected) -> filter "donor", selected)
@@ -573,9 +584,12 @@ donorsChart = horizonChart()
     purposesChart.showRuleAt t
   )
   .on("focusOnItem", tooltip(donorsChart, "donated by"))
+  .on("loadIndicator", -> $("#indicatorModal").modal())
+  .on("clearIndicator", -> )
 
 recipientsChart = horizonChart()
   .title("Recipients")
+  .valueFormat(formatMagnitudeLong)
   .interval(timeInterval)
   .indicatorButtons(true)
   .showLegend(false)
@@ -589,6 +603,7 @@ recipientsChart = horizonChart()
 purposesChart = horizonChart()
   .title("Purposes")
   .interval(timeInterval)
+  .valueFormat(formatMagnitudeLong)
   .labelAttr("purpose")
   .showLegend(false)
   .on("applyFilter", (selected) -> filter "purpose", selected)
@@ -599,60 +614,63 @@ purposesChart = horizonChart()
   .on("focusOnItem", tooltip(purposesChart, "donated with purpose"))
 
 
+indicatorChart = horizonChart()
+  .interval(timeInterval)
+  .showLegend(true)
+  .filterButtons(false)
+  .on("focusOnItem", tooltip(indicatorChart, "-"))
+
 
 # queue()
 #   .defer(loadJson, "purposes.json")
 #   .await (error, loaded) ->
 #      console.log loaded[0]
 
+prepareData = (keyProp, valueProp) ->
+  (data) ->
+    nested = d3.nest()
+      .key((d) -> d[keyProp])
+      .rollup((arr) -> 
+
+        #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
+
+        for obj in arr
+          obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
+          obj.value = +obj[valueProp] #- mean/2
+
+        arr.extent = d3.extent(arr, (d) -> +d.value)
+        arr.timeExtent = d3.extent(arr, (d) -> d.date)
+        arr
+      )
+      .entries(data)
+    #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
+
+loadingStarted = ->
+  $("body").css("cursor", "progress")
+  $("#loading .blockUI")
+    .css("cursor", "progress")
+    .show()
+  $("#loading img").stop().fadeIn(100)
+  $(".btn").attr("disabled", true)
+
+loadingFinished = ->
+  $("body").css("cursor", "auto")
+  $("#loading .blockUI").hide()
+  $("#loading img").stop().fadeOut(500)
+  $(".btn").button("complete")
+  updateCtrls()
+
+updateCtrls = ->
+  d3.select("#donorsChart").select(".btn-group.filter")
+    .classed("applied", filter("donor")?)
+
+  d3.select("#recipientsChart").select(".btn-group.filter")
+    .classed("applied", filter("recipient")?)
+
+  d3.select("#purposesChart").select(".btn-group.filter")
+    .classed("applied", filter("purpose")?)
+
 loadData = do ->
-
-  loadingStarted = ->
-    $("body").css("cursor", "progress")
-    $("#loading .blockUI")
-      .css("cursor", "progress")
-      .show()
-    $("#loading img").stop().fadeIn(100)
-    $(".btn").attr("disabled", true)
-
-  loadingFinished = ->
-    $("body").css("cursor", "auto")
-    $("#loading .blockUI").hide()
-    $("#loading img").stop().fadeOut(500)
-    $(".btn").button("complete")
-    updateCtrls()
-
-  updateCtrls = ->
-    d3.select("#donorsChart").select(".btn-group.filter")
-      .classed("applied", filter("donor")?)
-
-    d3.select("#recipientsChart").select(".btn-group.filter")
-      .classed("applied", filter("recipient")?)
-
-    d3.select("#purposesChart").select(".btn-group.filter")
-      .classed("applied", filter("purpose")?)
-
-
-  prepareData = (keyProp, valueProp) ->
-    (data) ->
-      nested = d3.nest()
-        .key((d) -> d[keyProp])
-        .rollup((arr) -> 
-
-          #mean = arr.reduce(((p, v) -> +v[valueProp] + p), 0) / arr.length
-
-          for obj in arr
-            obj.date = timeInterval(dateFormat.parse(obj.date)) #.getTime()
-            obj.value = +obj[valueProp] #- mean/2
-
-          arr.extent = d3.extent(arr, (d) -> +d.value)
-          arr.timeExtent = d3.extent(arr, (d) -> d.date)
-          arr
-        )
-        .entries(data)
-      #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
-
-
 
   cache = cachingLoad(100)
   purposesByCode = null
@@ -737,12 +755,38 @@ $(".horizonChart").disableSelection()
 
 
 fitToWindow = ->
-  $(".horizonChart").each ->
+  $(".horizonChart").not("#indicatorChart").each ->
     $(this).css("height", (window.innerHeight - $(this).position().top - 110) + "px")
+$(window).resize(fitToWindow)
 
 
 $ -> fitToWindow()
-    
-$(window).resize(fitToWindow)
+
+
+indicators = null
+findIndicatorByName = (name) -> (if i.name is name then return i) for i in indicators; null
+
+updateIndicator = ->
+  indicator = findIndicatorByName $("#indicatorTypeahead").val()
+  if indicator?
+    loadingStarted()
+    d3.csv "wb/all/#{indicator.id}.csv", (data) ->
+      d3.select("#indicatorChart")
+        .datum(prepareData("name", "value")(data))
+        .call(indicatorChart)
+      loadingFinished()
+
+  
+
+
+d3.csv "wb/brief/indicators.csv", (data) ->
+  indicators = data
+  $ ->
+    $("#indicatorTypeahead")
+      .data("source", indicators.map((ind) -> ind.name))
+      .data("items", 10)
+      .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
+      .on("change", updateIndicator)
+
 
 
