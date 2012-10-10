@@ -11,6 +11,7 @@ horizonChart = ->
   valueFormat = formatMagnitudeLong
   interval = d3.time.year
   labelAttr = "key"
+  indicatorButtons = false
 
   title = ""
   eventListeners = {}
@@ -27,6 +28,7 @@ horizonChart = ->
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
   chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
   chart.valueExtent = (_) -> if (!arguments.length) then valueExtent else valueExtent = _; chart
+  chart.indicatorButtons = (_) -> if (!arguments.length) then indicatorButtons else indicatorButtons = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
@@ -100,6 +102,10 @@ horizonChart = ->
 
       parent.append("div").attr("class", "viewTitle").text(title)
       parent.append("div").attr("class", "legend")  if showLegend
+
+      controls = parent.append("div")
+        .attr("class", "btn-toolbar controls")
+
       parent.append("div").attr("class", "top axis")
       
       bandsDiv = parent.append("div")
@@ -115,8 +121,24 @@ horizonChart = ->
           .style("pointer-events", "none")
 
 
-      filterBtns = parent.append("div")
-        .attr("class", "controls btn-group")
+      if indicatorButtons
+
+        compareBtns = controls.append("div")
+          .attr("class", "btn-group")
+
+        compareBtns.append("button")
+          .attr("class", "btn btn-mini indicator")
+          .text("Load indicator")
+          .on "click", -> 
+
+        compareBtns.append("button")
+          .attr("class", "btn btn-mini")
+          .attr("title", "Clear indicator")
+          .html("&times;")
+          .on "click", -> 
+
+      filterBtns = controls.append("div")
+        .attr("class", "btn-group filter")
 
       filterBtns.append("button")
         .attr("class", "btn btn-mini filter")
@@ -133,7 +155,6 @@ horizonChart = ->
           if selected.length > 0
             fire "applyFilter", chart, selected
 
-
       filterBtns.append("button")
         .attr("class", "btn btn-mini")
         .attr("title", "Clear filter")
@@ -141,6 +162,7 @@ horizonChart = ->
         .on "click", -> 
           fire "applyFilter", chart, null
           parent.selectAll("input").property("checked", false)
+
 
 
 
@@ -543,6 +565,7 @@ tooltip = (chart, verb, prekey = "") ->
 donorsChart = horizonChart()
   .title("Donors")
   .interval(timeInterval)
+  .indicatorButtons(true)
   .showLegend(true)
   .on("applyFilter", (selected) -> filter "donor", selected)
   .on("ruleMoved", (t) ->
@@ -554,6 +577,7 @@ donorsChart = horizonChart()
 recipientsChart = horizonChart()
   .title("Recipients")
   .interval(timeInterval)
+  .indicatorButtons(true)
   .showLegend(false)
   .on("applyFilter", (selected) -> filter "recipient", selected)
   .on("ruleMoved", (t) ->
@@ -599,13 +623,13 @@ loadData = do ->
     updateCtrls()
 
   updateCtrls = ->
-    d3.select("#donorsChart").select(".btn-group")
+    d3.select("#donorsChart").select(".btn-group.filter")
       .classed("applied", filter("donor")?)
 
-    d3.select("#recipientsChart").select(".btn-group")
+    d3.select("#recipientsChart").select(".btn-group.filter")
       .classed("applied", filter("recipient")?)
 
-    d3.select("#purposesChart").select(".btn-group")
+    d3.select("#purposesChart").select(".btn-group.filter")
       .classed("applied", filter("purpose")?)
 
 
@@ -627,6 +651,7 @@ loadData = do ->
         )
         .entries(data)
       #nested.sort((a, b) -> d3.descending(a.values.extent[1], b.values.extent[1]))
+
 
 
   cache = cachingLoad(100)
@@ -660,7 +685,7 @@ loadData = do ->
   (filters) ->
     loadingStarted()
 
-    filterq = if filters? then ("&filter=" + JSON.stringify filters) else ""
+    filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
 
     queue()
     .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor#{filterq}", prepareData("donor", "sum_amount_usd_constant")))
@@ -711,5 +736,13 @@ loadData({})
 $(".horizonChart").disableSelection()
 
 
+fitToWindow = ->
+  $(".horizonChart").each ->
+    $(this).css("height", (window.innerHeight - $(this).position().top - 110) + "px")
+
+
+$ -> fitToWindow()
+    
+$(window).resize(fitToWindow)
 
 
