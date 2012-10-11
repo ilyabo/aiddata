@@ -19,6 +19,7 @@ horizonChart = ->
   useLog10BandSplitting = true
   numBands = 4
   valueExtent = null
+  timeExtent = null
 
   chart = (selection) -> init(selection)
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
@@ -29,6 +30,7 @@ horizonChart = ->
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
   chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
   chart.valueExtent = (_) -> if (!arguments.length) then valueExtent else valueExtent = _; chart
+  chart.timeExtent = (_) -> if (!arguments.length) then timeExtent else timeExtent = _; chart
   chart.filterButtons = (_) -> if (!arguments.length) then filterButtons else filterButtons = _; chart
   chart.indicatorButtons = (_) -> if (!arguments.length) then indicatorButtons else indicatorButtons = _; chart
 
@@ -183,14 +185,16 @@ horizonChart = ->
     max = Math.max(-extent[0], extent[1])
     yscale.domain [0, max]
 
+    
+    if timeExtent?
+      textent = timeExtent
+    else
+      textents = (d.values.timeExtent for d in data)
+      textent = [ d3.min(textents, (d) -> d[0]), d3.max(textents, (d) -> d[1]) ]
 
-    unless update
-      timeExtents = (d.values.timeExtent for d in data)
-      timeExtent = [ d3.min(timeExtents, (d) -> d[0]), d3.max(timeExtents, (d) -> d[1]) ]
-      tscale.domain(timeExtent)
-
-      numSteps = Math.max(1, interval.range.apply(this, timeExtent).length)
-      stepWidth = Math.ceil(width / numSteps)
+    tscale.domain(textent)
+    numSteps = Math.max(1, interval.range.apply(this, textent).length)
+    stepWidth = Math.ceil(width / numSteps)
 
 
     unless update
@@ -680,6 +684,18 @@ updateCtrls = ->
   d3.select("#purposesChart").select(".btn-group.filter")
     .classed("applied", filter("purpose")?)
 
+
+# prop is either "extent" (for values) or "timeExtent" (for time)
+getMaxExtent = (datas, prop = "extent") ->
+  extent = (data) ->
+    extents = (d.values[prop] for d in data)
+    [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+
+  extents = (extent(data)  for data in datas)
+  [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
+
+
+
 loadData = do ->
 
   cache = cachingLoad(100)
@@ -699,14 +715,6 @@ loadData = do ->
     recurse purposeTree
     codeToName
 
-
-  getValuesExtent = (data) ->
-    extents = (d.values.extent for d in data)
-    [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
-
-  getMaxValuesExtent = (datas) ->
-    extents = (getValuesExtent(data)  for data in datas)
-    [ d3.min(extents, (d) -> d[0]), d3.max(extents, (d) -> d[1]) ]
 
 
 
@@ -728,12 +736,19 @@ loadData = do ->
       purposesByCode = flatten purposeTree
       purposes = expandPurposes(purposes)
 
+      valueExtent = getMaxExtent([ donors, recipients, purposes ], "extent")
+      timeExtent = getMaxExtent([ donors, recipients, purposes ], "timeExtent")
 
-      maxExtent = getMaxValuesExtent [ donors, recipients, purposes ]
+      donorsChart.valueExtent valueExtent
+      donorsChart.timeExtent timeExtent
 
-      donorsChart.valueExtent maxExtent
-      recipientsChart.valueExtent maxExtent
-      purposesChart.valueExtent maxExtent
+      recipientsChart.valueExtent valueExtent
+      recipientsChart.timeExtent timeExtent
+
+      purposesChart.valueExtent valueExtent
+      purposesChart.timeExtent timeExtent
+
+      indicatorChart.timeExtent timeExtent
 
 
       d3.select("#donorsChart")
@@ -752,6 +767,7 @@ loadData = do ->
       loadingFinished()
 
 loadData({})
+
 
 
 
@@ -789,21 +805,60 @@ updateIndicator = ->
   indicator = findIndicatorByName $("#indicatorTypeahead").val()
   if indicator?
     loadingStarted()
-    d3.csv "wb/all/#{indicator.id}.csv", (data) ->
-      d3.select("#indicatorChart")
-        .datum(prepareData("name", "value")(data))
-        .call(indicatorChart)
+    loadCsv "wb/all/#{indicator.id}.csv", (err, data) ->
       loadingFinished()
+      unless err?
+        try
+          prepared = prepareData("name", "value")(data)
+
+          valueExtent = getMaxExtent([ prepared ], "extent")
+
+          max = Math.max(-valueExtent[0], valueExtent[1])
+          if max > 100
+            indicatorChart.valueFormat(d3.format(",.0f"))
+          else if max > 10
+            indicatorChart.valueFormat(d3.format(",.1f"))
+          else if max > 1
+            indicatorChart.valueFormat(d3.format(",.2f"))
+          else
+            indicatorChart.valueFormat(d3.format(",.3f"))
+
+          d3.select("#indicatorChart")
+            .datum(prepared)
+            .call(indicatorChart)
+
+        catch e
+          err = e
+
+      if err?
+        alert("Could not load indicator: " + err)
+
 
   
 
 
 d3.csv "wb/brief/indicators.csv", (data) ->
   indicators = data
+
   $ ->
+    splitWords = (str) -> str.split(/\W+/).filter((s)->s.length > 0)
+    findWordWithPrefix = (words, prefix) -> 
+      for w in words
+        return w if w.indexOf(prefix) is 0
+      return null
+
     $("#indicatorTypeahead")
       .data("source", indicators.map((ind) -> ind.name))
-      .data("items", 1000)
+      .data("items", indicators.length)
+      .data("minLength", 2)
+      .data("matcher", (item) ->
+        q = this.query
+        qwords = splitWords q.toLowerCase()
+        iwords = splitWords item.toLowerCase()
+        for qw in qwords
+          return false unless findWordWithPrefix iwords, qw
+        return true
+      )
       .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
       .on("change", updateIndicator)
 
