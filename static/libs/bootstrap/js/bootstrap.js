@@ -1671,8 +1671,15 @@
 
   , blur: function (e) {
       var that = this
-      setTimeout(function () { that.hide() }, 150)
+      // setTimeout(function () { that.hide() }, 150)
+      // Applied patch: https://github.com/thbar/bootstrap/commit/92189b87ad9e1f46966d5d730e3d8f99f969d92c
+      setTimeout(function () {
+        if (!that.$menu.is(':hover')) {
+          that.hide();
+        }
+      }, 150)
     }
+
 
   , click: function (e) {
       e.stopPropagation()

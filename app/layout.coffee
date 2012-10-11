@@ -88,7 +88,7 @@
 
           <script src="js/browser-check.js"></script>
           <script src="libs/jquery/jquery-1.7.1.min.js"></script>
-          <script src="libs/bootstrap/js/bootstrap.min.js"></script>
+          <script src="libs/bootstrap/js/bootstrap.js"></script>
           <script src="d3.v2.js"></script>
 
           <div class="container">
