@@ -47,6 +47,7 @@ position: relative;
 border-bottom: solid 1px #ccc;
 position: relative;
 padding-left:60px;
+width:350px;
 }
 
 .horizon:hover {
@@ -214,15 +215,16 @@ font-size:7pt;
 }
 
 
-#indicatorChart  .legend { position:relative; left:450px; top:-300px; width:110px; }
-#indicatorChart { }
-#indicatorModal { width:650px;}
+#indicatorChart  .legend { position:fixed; margin-left:450px;  }
+#indicatorChart { position:fixed; }
+
+#indicatorModal { width:700px; top:300px; }
 #indicatorModal h3 { text-align: center;   font: bold 22px sans-serif; }
 #indicatorModal button.close { border:none; background: none; }
 
 .ctl-hint { font-size:8pt; text-align:left !important; color:#999;}
-#indicatorTypeahead { width:400px; }
+#indicatorTypeahead { width:500px; }
+ul.typeahead.dropdown-menu { font-size:11px;}
+#indicatorModal .horizonChart {  }
 
-#indicatorModal .horizonChart { height:300px; }
-
-#indicatorModal .modal-body { height:600px; }
+#indicatorModal .modal-body { max-height:none; }

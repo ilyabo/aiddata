@@ -16,7 +16,7 @@ horizonChart = ->
 
   title = ""
   eventListeners = {}
-  useLog10Bands = true
+  useLog10BandSplitting = true
   numBands = 4
   valueExtent = null
 
@@ -24,7 +24,7 @@ horizonChart = ->
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
   chart.mode = (_) -> if (!arguments.length) then mode else mode = _; chart
   chart.interval = (_) -> if (!arguments.length) then interval else interval = _; chart
-  chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10Bands else useLog10Bands = _; chart
+  chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10BandSplitting else useLog10BandSplitting = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
   chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
@@ -105,6 +105,8 @@ horizonChart = ->
       if title?.length > 0
         parent.append("div").attr("class", "viewTitle").text(title)
 
+      parent.append("div").attr("class", "legend")  if showLegend
+
 
       if indicatorButtons or filterButtons
         controls = parent.append("div")
@@ -114,8 +116,6 @@ horizonChart = ->
       
       bandsDiv = parent.append("div")
         .attr("class", "bands")
-
-      parent.append("div").attr("class", "legend")  if showLegend
 
       parent.append("div")
           .attr("class", "line rule")
@@ -133,7 +133,7 @@ horizonChart = ->
 
         compareBtns.append("button")
           .attr("class", "btn btn-mini indicator")
-          .text("Load indicator")
+          .text("Indicators")
           .on "click", -> fire "loadIndicator", chart
 
         compareBtns.append("button")
@@ -254,14 +254,14 @@ horizonChart = ->
           return null
 
         if dobj
-          fire "focusOnItem", this, d, dobj, t
+          fire "focusOnItem", chart, d, dobj, t
         else
-          fire "focusOnItem", this, null
+          fire "focusOnItem", chart, null
       )
       .on("mouseout", ->
         chart.showRuleAt null
         fire "ruleMoved", this, null
-        fire "focusOnItem", this, null
+        fire "focusOnItem", chart, null
       )
 
     item = horizonsEnter.append("span")
@@ -286,7 +286,15 @@ horizonChart = ->
     horizons.exit().remove()
 
 
-    if useLog10Bands
+    if update
+      parent.select("div.legend").select("svg").remove()          
+
+
+    maxOrdMagn = Math.ceil(log10(max))
+
+    useLog10Bands = (useLog10BandSplitting  and  maxOrdMagn >= m)
+
+    if useLog10Bands  
 
       # TODO: find min nonzero abs value in the data and uniformly 
       # split the interval between the min and max orders of magnitude 
@@ -295,7 +303,6 @@ horizonChart = ->
       # TODO: deal with situations when there is no large difference
       # between orders of magnitudes 
       # (maybe automatically switch to the linear scale?)
-      maxOrdMagn = Math.ceil(log10(max))
 
       #minOrdMagn = Math.ceil(log10(min))
       pow10 = (n) -> v = 1; v *= 10 for i in [1..n]; return v
@@ -309,12 +316,10 @@ horizonChart = ->
       if showLegend then do ->
         n = if showNegativeLegend then 2*m else m
 
-        if update
-          parent.select("div.legend").select("svg").remove()          
 
         parent.select("div.legend")
           .append("svg")
-            .attr("width", 100)
+            .attr("width", maxOrdMagn*8 + 20)
             .attr("height", n * 15 + 15)
           .append("g")
             .attr("class", "content")
@@ -558,11 +563,12 @@ tip = $('<div id="tooltip"></div>')
   .hide()
   .appendTo($('body'))
 
-tooltip = (chart, verb, prekey = "") ->
+tooltip = (verb, prekey = "") ->
   (d, dobj, t) ->
+    chart = this
     if d?
-      tip.find("div").html "#{donorsChart.valueFormat()(dobj.value)} were"+
-                           "<br> #{verb} #{d.key} in #{dateFormat(t)}"
+      tip.find("div").html "#{chart.valueFormat()(dobj.value)} "+
+                           "#{verb} #{d.key} in #{dateFormat(t)}"
       e = d3.event
       tip.css
         top: e.pageY - 20
@@ -583,9 +589,10 @@ donorsChart = horizonChart()
     recipientsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(donorsChart, "donated by"))
+  .on("focusOnItem", tooltip("were donated <br> by"))
   .on("loadIndicator", -> $("#indicatorModal").modal())
   .on("clearIndicator", -> )
+
 
 recipientsChart = horizonChart()
   .title("Recipients")
@@ -598,7 +605,8 @@ recipientsChart = horizonChart()
     donorsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(recipientsChart, "received by"))
+  .on("loadIndicator", -> $("#indicatorModal").modal())
+  .on("focusOnItem", tooltip("were received <br>  by"))
 
 purposesChart = horizonChart()
   .title("Purposes")
@@ -611,14 +619,14 @@ purposesChart = horizonChart()
     recipientsChart.showRuleAt t
     donorsChart.showRuleAt t
   )
-  .on("focusOnItem", tooltip(purposesChart, "donated with purpose"))
+  .on("focusOnItem", tooltip("were donated <br> with purpose"))
 
 
 indicatorChart = horizonChart()
   .interval(timeInterval)
   .showLegend(true)
   .filterButtons(false)
-  .on("focusOnItem", tooltip(indicatorChart, "-"))
+  .on("focusOnItem", tooltip("<br>"))
 
 
 # queue()
@@ -652,12 +660,14 @@ loadingStarted = ->
     .show()
   $("#loading img").stop().fadeIn(100)
   $(".btn").attr("disabled", true)
+  $("#indicatorTypeahead").attr("disabled", true)
 
 loadingFinished = ->
   $("body").css("cursor", "auto")
   $("#loading .blockUI").hide()
   $("#loading img").stop().fadeOut(500)
   $(".btn").button("complete")
+  $("#indicatorTypeahead").attr("disabled", false)
   updateCtrls()
 
 updateCtrls = ->
@@ -757,10 +767,19 @@ $(".horizonChart").disableSelection()
 fitToWindow = ->
   $(".horizonChart").not("#indicatorChart").each ->
     $(this).css("height", (window.innerHeight - $(this).position().top - 110) + "px")
+
+  $("#indicatorChart").css("height", (window.innerHeight - 280) + "px")
+  $("#indicatorModal .modal-body")
+    .css("height", (window.innerHeight - 200) + "px")
+
+  # $("#indicatorModal").css("height", (window.innerHeight - 100) + "px")
+
 $(window).resize(fitToWindow)
 
 
-$ -> fitToWindow()
+$ -> 
+  fitToWindow()
+  $("#indicatorModalClose").click -> $("#indicatorModal").modal("hide")
 
 
 indicators = null
@@ -784,9 +803,10 @@ d3.csv "wb/brief/indicators.csv", (data) ->
   $ ->
     $("#indicatorTypeahead")
       .data("source", indicators.map((ind) -> ind.name))
-      .data("items", 10)
+      .data("items", 1000)
       .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
       .on("change", updateIndicator)
+
 
 
 

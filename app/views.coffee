@@ -223,14 +223,14 @@
     div id:"indicatorModal", class:"modal hide fade", ->
       div class:"modal-header", ->
         button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
-        h3 -> "Indicator"
+        h3 -> "World Bank Indicators"
       div class:"modal-body", ->
-        input id:"indicatorTypeahead", type:"text", "data-provide":"typeahead"
+        input id:"indicatorTypeahead", class:"btn-mini", type:"text", "data-provide":"typeahead"
         div class:'ctl-hint',-> "Start typing to find an indicator"
         div id:'indicatorChart', class:'horizonChart'
 
       div class:"modal-footer", ->
-        a href:"#", class:"btn", -> "Cancel"
+        a href:"#", id:"indicatorModalClose", class:"btn", -> "Cancel"
         a href:"#", class:"btn btn-primary", -> "Load"
 
     style '@import url("css/horizon3.css");'
