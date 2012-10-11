@@ -7,6 +7,8 @@
   _ = require 'underscore'
   utils = require './data-utils'
 
+  validIndicatorRe = /^([A-Z0-9]+)(\.[A-Z0-9]+)+$/
+
 
   getWbIndicators = caching.loader { preload : true }, (callback) ->
     request "http://api.worldbank.org/indicator?format=json&per_page=10000", (err, response, body) =>
@@ -35,7 +37,7 @@
     getWbIndicators (err, indicators) =>
       unless err?
         @response.write "id,name,source\n"
-        re = /^([A-Z0-9]+)(\.[A-Z0-9]+)+$/
+        re = validIndicatorRe
 
         indicators = indicators.filter (d) -> re.test(d.id)
 
@@ -79,6 +81,23 @@
 
 
 
+
+  @get '/wb/describe/:indicator.json': ->
+    indicator = @params.indicator
+
+    unless validIndicatorRe.test indicator 
+      @send "Invalid indicator"
+
+    url = "http://api.worldbank.org/indicators/#{indicator}?format=JSON"
+    console.log "Loading #{url}"
+    request url, (err, response, body) =>
+      if err?
+        @next(err)
+      else 
+        desc = unpage JSON.parse(body)
+        if desc instanceof Array and desc.length is 1
+          desc = desc[0]
+        @send desc
 
 
   @get '/wb/all/:indicator.csv': ->

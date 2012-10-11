@@ -225,9 +225,17 @@
         button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
         h3 -> "World Bank Indicators"
       div class:"modal-body", ->
-        input id:"indicatorTypeahead", class:"btn-mini", type:"text", "data-provide":"typeahead"
+        div class:"input-append", ->
+          input id:"indicatorTypeahead", class:"", type:"text", "data-provide":"typeahead"
+          button id:"indicatorClear", class:"btn", type:"button", -> "&times;"
+
         div class:'ctl-hint',-> "Start typing to find an indicator"
         div id:'indicatorChart', class:'horizonChart'
+        div id:'indicatorDesc', ->
+          div class:'name'
+          div class:'topics'
+          div class:'sourceNote'
+          div class:'source'
 
       div class:"modal-footer", ->
         a href:"#", id:"indicatorModalClose", class:"btn", -> "Cancel"

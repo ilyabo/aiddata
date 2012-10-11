@@ -218,13 +218,20 @@ font-size:7pt;
 #indicatorChart  .legend { position:fixed; margin-left:450px;  }
 #indicatorChart { position:fixed; }
 
-#indicatorModal { width:700px; top:300px; }
+#indicatorModal { width:800px; top:300px; }
 #indicatorModal h3 { text-align: center;   font: bold 22px sans-serif; }
 #indicatorModal button.close { border:none; background: none; }
 
 .ctl-hint { font-size:8pt; text-align:left !important; color:#999;}
-#indicatorTypeahead { width:500px; }
+#indicatorTypeahead { width:500px; margin-bottom:0; }
 ul.typeahead.dropdown-menu { font-size:11px;}
 #indicatorModal .horizonChart {  }
 
 #indicatorModal .modal-body { max-height:none; }
+
+#indicatorDesc { position:relative; margin-left:450px; margin-top:200px;  }
+#indicatorDesc .name { font-weight: bold; font-size:13px; }
+#indicatorDesc .source { font-size:9px; }
+#indicatorDesc .sourceNote { font-size:11px; width:300px; margin-top:10px; margin-bottom:10px; }
+#indicatorDesc .topics { font-size: 12px; }
+

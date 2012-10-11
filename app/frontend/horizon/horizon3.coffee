@@ -808,11 +808,17 @@ updateIndicator = ->
   indicator = findIndicatorByName $("#indicatorTypeahead").val()
   if indicator?
     loadingStarted()
-    loadCsv "wb/all/#{indicator.id}.csv", (err, data) ->
+
+    queue()
+    .defer(loadCsv, "wb/all/#{indicator.id}.csv")
+    .defer(loadJson, "wb/describe/#{indicator.id}.json")
+    .await (err, data) ->
       loadingFinished()
+
+      [ entries, desc ] = data
       unless err?
         try
-          prepared = prepareData("name", "value")(data)
+          prepared = prepareData("name", "value")(entries)
 
           valueExtent = getMaxExtent([ prepared ], "extent")
 
@@ -829,6 +835,13 @@ updateIndicator = ->
           d3.select("#indicatorChart")
             .datum(prepared)
             .call(indicatorChart)
+
+          d3.select("#indicatorDesc .name").text(desc.name)
+          d3.select("#indicatorDesc .source").text("Source: " + desc.source?.value)
+          d3.select("#indicatorDesc .sourceNote").text(desc.sourceNote)
+          d3.select("#indicatorDesc .topics").text(desc.topics?.map((d) -> d.value).join(", "))
+
+
 
         catch e
           err = e
@@ -864,6 +877,8 @@ d3.csv "wb/brief/indicators.csv", (data) ->
       )
       .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
       .on("change", updateIndicator)
+
+    $("#indicatorClear").click -> $("#indicatorTypeahead").val("")
 
 
 
