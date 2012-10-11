@@ -89,6 +89,7 @@ horizonChart = ->
   nextCheckboxId = 1
 
   numSteps = stepWidth = null
+  xAxis = null
 
   init = (selection) ->
 
@@ -214,7 +215,7 @@ horizonChart = ->
             .call(xAxis)
 
 
-      parent.selectAll(".x.axis").call(xAxis)
+    parent.selectAll(".x.axis").call(xAxis)
 
 
 
@@ -717,6 +718,7 @@ loadData = do ->
 
 
 
+  firstLoad = true
 
   (filters) ->
     loadingStarted()
@@ -737,18 +739,19 @@ loadData = do ->
       purposes = expandPurposes(purposes)
 
       valueExtent = getMaxExtent([ donors, recipients, purposes ], "extent")
-      timeExtent = getMaxExtent([ donors, recipients, purposes ], "timeExtent")
-
       donorsChart.valueExtent valueExtent
-      donorsChart.timeExtent timeExtent
-
       recipientsChart.valueExtent valueExtent
-      recipientsChart.timeExtent timeExtent
-
       purposesChart.valueExtent valueExtent
-      purposesChart.timeExtent timeExtent
+  
 
-      indicatorChart.timeExtent timeExtent
+      if firstLoad
+        indicatorChart.timeExtent timeExtent
+        timeExtent = getMaxExtent([ donors, recipients, purposes ], "timeExtent")
+        donorsChart.timeExtent timeExtent
+        recipientsChart.timeExtent timeExtent
+        purposesChart.timeExtent timeExtent
+
+        firstLoad = false
 
 
       d3.select("#donorsChart")
