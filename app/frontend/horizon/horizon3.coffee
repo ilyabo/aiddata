@@ -745,11 +745,11 @@ loadData = do ->
   
 
       if firstLoad
-        indicatorChart.timeExtent timeExtent
         timeExtent = getMaxExtent([ donors, recipients, purposes ], "timeExtent")
         donorsChart.timeExtent timeExtent
         recipientsChart.timeExtent timeExtent
         purposesChart.timeExtent timeExtent
+        indicatorChart.timeExtent timeExtent
 
         firstLoad = false
 
