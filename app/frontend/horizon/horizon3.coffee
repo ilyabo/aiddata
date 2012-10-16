@@ -21,6 +21,9 @@ horizonChart = ->
   valueExtent = null
   timeExtent = null
 
+  negativeColorRange = [d3.hcl(-139.23, 6.94, 94.62), d3.hcl(-60.84, 60.56, 10)]
+  positiveColorRange = [d3.hcl(137.27, 12.24, 85.88), d3.hcl(147.32, 35.76, 10)]
+
   chart = (selection) -> init(selection)
   chart.title = (_) -> if (!arguments.length) then title else title = _; chart
   chart.mode = (_) -> if (!arguments.length) then mode else mode = _; chart
@@ -33,6 +36,8 @@ horizonChart = ->
   chart.timeExtent = (_) -> if (!arguments.length) then timeExtent else timeExtent = _; chart
   chart.filterButtons = (_) -> if (!arguments.length) then filterButtons else filterButtons = _; chart
   chart.indicatorButtons = (_) -> if (!arguments.length) then indicatorButtons else indicatorButtons = _; chart
+  chart.negativeColorRange = (_) -> if (!arguments.length) then negativeColorRange else negativeColorRange = _; chart
+  chart.positiveColorRange = (_) -> if (!arguments.length) then positiveColorRange else positiveColorRange = _; chart
 
   # Supported events: "applyFilter", "ruleMoved"
   chart.on = (eventName, listener) -> 
@@ -73,17 +78,15 @@ horizonChart = ->
   #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
   #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
-  colors = 
-    colorsBetween("#313695", "#e0f3f8", numBands)  # negative
-    .concat colorsBetween(d3.hcl("#e5f5e0").darker(0.5),d3.hcl("#00441b").darker(), numBands)  # positive
 
+  colors = []
 
   parent = null
   width = bandWidth
   height = bandHeight
   tscale = d3.time.scale().range([0, width])
   yscale = d3.scale.linear()#.nice() #.interpolate(d3.interpolateRound)
-  m = colors.length >> 1   # number of bands
+  #m = colors.length >> 1   # number of bands
 
   
   nextCheckboxId = 1
@@ -92,6 +95,12 @@ horizonChart = ->
   xAxis = null
 
   init = (selection) ->
+
+    colors = 
+      colorsBetween(negativeColorRange[1], negativeColorRange[0], numBands)
+      .concat(
+        colorsBetween(positiveColorRange[0], positiveColorRange[1], numBands)
+      )
 
     data = selection.datum()
     parent = selection
@@ -296,6 +305,7 @@ horizonChart = ->
 
 
     maxOrdMagn = Math.ceil(log10(max))
+    m = numBands
 
     useLog10Bands = (useLog10BandSplitting  and  maxOrdMagn >= m)
 
@@ -632,6 +642,8 @@ indicatorChart = horizonChart()
   .showLegend(true)
   .filterButtons(false)
   .on("focusOnItem", tooltip("<br>"))
+  .negativeColorRange([d3.hcl(42,-10, 70), d3.hcl(42,-46, 10)])
+  .positiveColorRange([d3.hcl(52, 43, 70), d3.hcl(14, 45, 10)])
 
 
 # queue()
@@ -716,7 +728,10 @@ loadData = do ->
     recurse purposeTree
     codeToName
 
-
+  # groupCountriesByIso3 = (countries) ->
+  #   d3.nest()
+  #     .key((d) -> d.Code)
+  #     .map(countries)
 
   firstLoad = true
 
@@ -730,6 +745,7 @@ loadData = do ->
     .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,recipient#{filterq}", prepareData("recipient", "sum_amount_usd_constant")))
     .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}", prepareData("purpose", "sum_amount_usd_constant")))
     .defer(cache(loadJson, "purposes.json"))
+    # .defer(cache(loadCsv, "aiddata-countries.csv"), groupCountriesByIso3)
     .await (error, loaded) ->
 
 

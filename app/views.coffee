@@ -223,7 +223,7 @@
     div id:"indicatorModal", class:"modal hide fade", ->
       div class:"modal-header", ->
         button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
-        h3 -> "World Bank Indicators"
+        h3 -> "Indicators"
       div class:"modal-body", ->
         div class:"input-append", ->
           input id:"indicatorTypeahead", class:"", type:"text", "data-provide":"typeahead"
