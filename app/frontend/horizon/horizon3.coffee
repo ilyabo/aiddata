@@ -21,6 +21,9 @@ horizonChart = ->
   valueExtent = null
   timeExtent = null
 
+  # colors = ["#08519c","#3182bd","#6baed6","#bdd7e7",
+  #           "#bae4b3","#74c476","#31a354","#006d2c"]
+
   negativeColorRange = [d3.hcl(-139.23, 6.94, 94.62), d3.hcl(-60.84, 60.56, 10)]
   positiveColorRange = [d3.hcl(137.27, 12.24, 85.88), d3.hcl(147.32, 35.76, 10)]
 
@@ -71,12 +74,13 @@ horizonChart = ->
 
     (scale(i) for i in [1..numColors])
 
+  pow10 = (n) ->
+    v = 1
+    if n > 0
+      v *= 10 for i in [1..n]; return v
+    else
+      v /= 10 for i in [1..-n]; return v
 
-  # colors = ["#08519c","#3182bd","#6baed6","#bdd7e7",
-  #           "#bae4b3","#74c476","#31a354","#006d2c"]
-  # colors = 
-  #   colorsBetween("#e0f3f8","#313695", 6).reverse()  # negative
-  #   .concat(colorsBetween("#e5f5e0","#00441b", 6))   # positive
 
 
   colors = []
@@ -307,20 +311,64 @@ horizonChart = ->
     maxOrdMagn = Math.ceil(log10(max))
     m = numBands
 
+
+    # automatically switch to the linear scale when there is no large difference
+    # between orders of magnitudes
     useLog10Bands = (useLog10BandSplitting  and  maxOrdMagn >= m)
 
+
+    if showLegend then do ->
+      n = if showNegativeLegend then 2*m else m
+
+
+      parent.select("div.legend")
+        .append("svg")
+          .attr("width", maxOrdMagn*8 + (if useLog10Bands then 20 else 40))
+          .attr("height", n * 15 + 15)
+        .append("g")
+          .attr("class", "content")
+          .attr("transform", "translate(0, 10)")
+
+      legend = parent.select("div.legend").select("g.content")
+
+      #items = bands.map (band) -> [ i, [start, end] ] = band; [ colors[m + i - 1], end ]
+
+      legendItem = legend.selectAll("g.item")
+        .data(
+          if showNegativeLegend
+            ["white"].concat colors
+          else
+            ["white"].concat colors.slice(m, 2*m)
+        )
+        .enter()
+          .append("g")
+            .attr("class", "item")
+            .attr("transform", (d, i) -> 
+              "translate(0, #{(n - i) * 15})")
+
+      legendItem.append("rect")
+        .attr("x", 5)
+        .attr("y", 0)
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", (d, i) -> d)
+
+      legendItem.append("text")
+        .attr("dominant-baseline", "central")
+        .attr("x", 25)
+        .attr("y", 0)
+
+    
+    
+
     if useLog10Bands  
+
 
       # TODO: find min nonzero abs value in the data and uniformly 
       # split the interval between the min and max orders of magnitude 
       # (not always by 10, but possibly by 100 or 1000)
 
-      # TODO: deal with situations when there is no large difference
-      # between orders of magnitudes 
-      # (maybe automatically switch to the linear scale?)
 
-      #minOrdMagn = Math.ceil(log10(min))
-      pow10 = (n) -> v = 1; v *= 10 for i in [1..n]; return v
       bands = (for i in [1..m]
         magn = maxOrdMagn + (i - m)
         start = (if i is 1 then 0 else pow10(magn - 1))
@@ -328,62 +376,36 @@ horizonChart = ->
         [ i - 1, [ start, end ] ]
       )
 
-      if showLegend then do ->
-        n = if showNegativeLegend then 2*m else m
+      # colorScale = d3.scale.threshold()
+      # colorScale.range(colors)
+      # colorScale.domain(
+      #   for i in [-m..-1].concat([1..m])
+      #     magn = maxOrdMagn + (Math.abs(i) - m)
+      #     if i == 0
+      #       0
+      #     else if i < 0
+      #       -pow10(magn)
+      #     else
+      #       pow10(magn)                
+      # )
 
 
-        parent.select("div.legend")
-          .append("svg")
-            .attr("width", maxOrdMagn*8 + 20)
-            .attr("height", n * 15 + 15)
-          .append("g")
-            .attr("class", "content")
-            .attr("transform", "translate(0, 10)")
 
-        legend = parent.select("div.legend").select("g.content")
-
-        #items = bands.map (band) -> [ i, [start, end] ] = band; [ colors[m + i - 1], end ]
-
-        gitem = legend.selectAll("g.item")
-          .data(
-            #([[-1, [0, 0]]]).concat(bands)
-            #items
-            if showNegativeLegend
-              ["white"].concat colors
+      parent.select("div.legend").selectAll("g.item").select("text")
+        .text((d, i) ->
+          if showNegativeLegend
+            if i < m
+              valueFormat -bands[m - 1 - i][1][1]
+            else if i == m
+              valueFormat 0
             else
-              ["white"].concat colors.slice(m, 2*m)
-          )
-          .enter()
-            .append("g")
-              .attr("class", "item")
-              .attr("transform", (d, i) -> 
-                "translate(0, #{(n - i) * 15})")
-
-        gitem.append("rect")
-          .attr("x", 5)
-          .attr("y", 0)
-          .attr("width", 15)
-          .attr("height", 15)
-          .attr("fill", (d, i) -> d)
-
-        gitem.append("text")
-          .attr("dominant-baseline", "central")
-          .attr("x", 25)
-          .attr("y", 0)
-          .text((d, i) ->
-            if showNegativeLegend
-              if i < m
-                valueFormat -bands[m - 1 - i][1][1]
-              else if i == m
-                valueFormat 0
-              else
-                valueFormat bands[i - m - 1][1][1]
+              valueFormat bands[i - m - 1][1][1]
+          else
+            if i > 0
+              valueFormat bands[i - 1][1][1]
             else
-              if i > 0
-                valueFormat bands[i - 1][1][1]
-              else
-                valueFormat 0
-          )
+              valueFormat 0
+        )
 
 
       # returns array [ band, [startLimit, endLimit] ] 
@@ -397,6 +419,33 @@ horizonChart = ->
               return bands[i - 1]
 
           return bands[0]
+
+
+    else
+
+
+      parent.select("div.legend").selectAll("g.item").select("text")
+        .text((d, i) ->
+          domain = yscale.domain()
+
+          v = if showNegativeLegend
+            if i < m
+              - (max / m) * (m - i)
+            else if i == m
+              0
+            else
+              (max / m) * (i - m)
+          else
+            if i > 0
+              (max / m) * (i)
+            else
+              0
+
+          valueFormat v
+        )
+
+
+
 
 
     parent.selectAll("div.horizon").each (data) ->
