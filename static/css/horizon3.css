@@ -106,7 +106,7 @@ z-index: 2;
 .horizon .item {
 left:0px;
 font-size: 8pt;
-bottom: 0;
+top: 0;
 line-height: 20px;
 vertical-align: middle;
 position: absolute;

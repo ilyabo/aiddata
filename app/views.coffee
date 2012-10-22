@@ -239,7 +239,7 @@
 
       div class:"modal-footer", ->
         a href:"#", id:"indicatorModalClose", class:"btn", -> "Cancel"
-        a href:"#", class:"btn btn-primary", -> "Load"
+        a href:"#", id:"indicatorModalLoad", class:"btn btn-primary", -> "Load"
 
     style '@import url("css/horizon3.css");'
     script src: 'queue.min.js'

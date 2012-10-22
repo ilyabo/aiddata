@@ -254,6 +254,18 @@ horizonChart = ->
         )
 
 
+    item = horizonsEnter.append("span")
+      .attr("class", "item")
+
+    if filterButtons
+      item.append("input")
+        .attr("value", (d) -> keyGet(d))
+        .attr("type", "checkbox")
+
+    item.append("label")
+      .attr("class", "title")
+      .html((d) -> shorten(labelGet(d), 25, true))
+      # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
     horizonsEnter.append("canvas")
       .attr("width", width)
@@ -287,18 +299,6 @@ horizonChart = ->
         fire "focusOnItem", chart, null
       )
 
-    item = horizonsEnter.append("span")
-      .attr("class", "item")
-
-    if filterButtons
-      item.append("input")
-        .attr("value", (d) -> keyGet(d))
-        .attr("type", "checkbox")
-
-    item.append("label")
-      .attr("class", "title")
-      .html((d) -> shorten(labelGet(d), 25, true))
-      # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
 
@@ -649,6 +649,7 @@ tooltip = (verb, prekey = "") ->
 
 
 nodeCodesToNames = null
+iso2toIso3 = null
 
 donorsChart = horizonChart()
   .title("Donors")
@@ -663,7 +664,7 @@ donorsChart = horizonChart()
     purposesChart.showRuleAt t
   )
   .on("focusOnItem", tooltip("were donated <br> by"))
-  .on("loadIndicator", -> $("#indicatorModal").modal())
+  .on("loadIndicator", -> $("#indicatorModal").data("target", "donors").modal())
   .on("clearIndicator", -> )
 
 
@@ -679,7 +680,7 @@ recipientsChart = horizonChart()
     donorsChart.showRuleAt t
     purposesChart.showRuleAt t
   )
-  .on("loadIndicator", -> $("#indicatorModal").modal())
+  .on("loadIndicator", -> $("#indicatorModal").data("target", "recipients").modal())
   .on("focusOnItem", tooltip("were received <br>  by"))
 
 purposesChart = horizonChart()
@@ -697,6 +698,8 @@ purposesChart = horizonChart()
 
 
 indicatorChart = horizonChart()
+  .key((dd) -> if (d = dd.values[0])? then (if d.code?.length > 0 then d.code else d.name) else "")
+  .label((dd) -> if (d = dd.values[0])? then d.name else "")
   .interval(timeInterval)
   .showLegend(true)
   .filterButtons(false)
@@ -793,6 +796,12 @@ loadData = do ->
       .rollup((list) -> list[0].name)
       .map(nodes)
 
+  groupCountryCodesByIso2 = (nodes) ->
+    d3.nest()
+      .key((d) -> d.iso2)
+      .rollup((list) -> list[0].iso3)
+      .map(nodes)
+
   firstLoad = true
 
   (filters) ->
@@ -807,10 +816,11 @@ loadData = do ->
     .defer(cache(loadJson, "purposes.json"))
     # .defer(cache(loadCsv, "aiddata-countries.csv"), groupCountriesByIso3)
     .defer(cache(loadCsv, "aiddata-nodes.csv", groupNodesByCode))
+    .defer(cache(loadCsv, "data/countries-iso2-iso3.csv", groupCountryCodesByIso2))
     .await (error, loaded) ->
 
 
-      [ donors, recipients, purposes, purposeTree, nodeCodesToNames ] = loaded
+      [ donors, recipients, purposes, purposeTree, nodeCodesToNames, iso2toIso3 ] = loaded
 
       purposesByCode = flatten purposeTree
       purposes = expandPurposes(purposes)
@@ -878,6 +888,19 @@ $(window).resize(fitToWindow)
 $ -> 
   fitToWindow()
   $("#indicatorModalClose").click -> $("#indicatorModal").modal("hide")
+  $("#indicatorModalLoad").click -> addIndicatorBandsTo($("#indicatorModal").data("target"))
+
+
+addIndicatorBandsTo = (target) ->
+  chart = $("#" + target + "Chart")
+  
+  horizonByCode = {}
+  $("canvas", chart).each -> horizonByCode[$(this).data("key")] = this
+
+  $("#indicatorChart canvas").each ->
+    $(horizonByCode[iso2toIso3[$(this).data("key")]]).after(this)
+
+  $("#indicatorModal").modal("hide")
 
 
 indicators = null
