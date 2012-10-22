@@ -10,7 +10,8 @@ horizonChart = ->
   bandWidth = 350
   valueFormat = d3.format(",.0f")
   interval = d3.time.year
-  labelAttr = "key"
+  keyGet = (d) -> d.key
+  labelGet = (d) -> d.name
   filterButtons = true
   indicatorButtons = false
 
@@ -34,7 +35,8 @@ horizonChart = ->
   chart.useLog10BandSplitting = (_) -> if (!arguments.length) then useLog10BandSplitting else useLog10BandSplitting = _; chart
   chart.showLegend = (_) -> if (!arguments.length) then showLegend else showLegend = _; chart
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
-  chart.labelAttr = (_) -> if (!arguments.length) then labelAttr else labelAttr = _; chart
+  chart.key = (_) -> if (!arguments.length) then keyGet else keyGet = (if _ instanceof Function then _ else (d) -> d[_]) ; chart
+  chart.label = (_) -> if (!arguments.length) then labelGet else labelGet = (if _ instanceof Function then _ else (d) -> d[_]) ; chart
   chart.valueExtent = (_) -> if (!arguments.length) then valueExtent else valueExtent = _; chart
   chart.timeExtent = (_) -> if (!arguments.length) then timeExtent else timeExtent = _; chart
   chart.filterButtons = (_) -> if (!arguments.length) then filterButtons else filterButtons = _; chart
@@ -172,7 +174,7 @@ horizonChart = ->
               .each (d) -> 
                 that = d3.select(this)
                 if that.property("checked")
-                  selected.push d.key
+                  selected.push keyGet(d)
                   # that.property("checked", false)
 
             if selected.length > 0
@@ -233,12 +235,14 @@ horizonChart = ->
 
 
     horizons = parent.select("div.bands").selectAll("div.horizon")
-        .data(data, (d) -> d.key)
+        .data(data, (d) -> keyGet(d))
 
     horizonsEnter = horizons.enter()
       .append("div")
         .attr("class", "horizon")
-        .on("click", (d) -> 
+
+    if filterButtons
+      horizonsEnter.on("click", (d) -> 
           #if d3.event.target?.type is "canvas"
           tag = d3.event.target?.tagName
           if tag is "CANVAS"
@@ -254,6 +258,7 @@ horizonChart = ->
     horizonsEnter.append("canvas")
       .attr("width", width)
       .attr("height", height)
+      .attr("data-key", (d) -> keyGet(d))
       .on("mousemove", (d) ->
         # otherwise, d for the first horizon is not properly set for some reason
         d = this.parentElement.__data__
@@ -287,12 +292,12 @@ horizonChart = ->
 
     if filterButtons
       item.append("input")
-        .attr("value", (d) -> d.key)
+        .attr("value", (d) -> keyGet(d))
         .attr("type", "checkbox")
 
     item.append("label")
       .attr("class", "title")
-      .html((d) -> shorten(d[labelAttr], 25, true))
+      .html((d) -> shorten(labelGet(d), 25, true))
       # .on "click", ->  d3.select(this.parentElement).select("input")[0][0].click()
 
 
@@ -642,12 +647,16 @@ tooltip = (verb, prekey = "") ->
       tip.hide()
 
 
+
+nodeCodesToNames = null
+
 donorsChart = horizonChart()
   .title("Donors")
   .interval(timeInterval)
   .valueFormat(formatMagnitudeLong)
   .indicatorButtons(true)
   .showLegend(true)
+  .label((d) -> nodeCodesToNames[d.key])
   .on("applyFilter", (selected) -> filter "donor", selected)
   .on("ruleMoved", (t) ->
     recipientsChart.showRuleAt t
@@ -661,6 +670,7 @@ donorsChart = horizonChart()
 recipientsChart = horizonChart()
   .title("Recipients")
   .valueFormat(formatMagnitudeLong)
+  .label((d) -> nodeCodesToNames[d.key])
   .interval(timeInterval)
   .indicatorButtons(true)
   .showLegend(false)
@@ -676,7 +686,7 @@ purposesChart = horizonChart()
   .title("Purposes")
   .interval(timeInterval)
   .valueFormat(formatMagnitudeLong)
-  .labelAttr("purpose")
+  .label("purpose")
   .showLegend(false)
   .on("applyFilter", (selected) -> filter "purpose", selected)
   .on("ruleMoved", (t) ->
@@ -777,10 +787,11 @@ loadData = do ->
     recurse purposeTree
     codeToName
 
-  # groupCountriesByIso3 = (countries) ->
-  #   d3.nest()
-  #     .key((d) -> d.Code)
-  #     .map(countries)
+  groupNodesByCode = (nodes) ->
+    d3.nest()
+      .key((d) -> d.code)
+      .rollup((list) -> list[0].name)
+      .map(nodes)
 
   firstLoad = true
 
@@ -795,10 +806,11 @@ loadData = do ->
     .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,purpose#{filterq}", prepareData("purpose", "sum_amount_usd_constant")))
     .defer(cache(loadJson, "purposes.json"))
     # .defer(cache(loadCsv, "aiddata-countries.csv"), groupCountriesByIso3)
+    .defer(cache(loadCsv, "aiddata-nodes.csv", groupNodesByCode))
     .await (error, loaded) ->
 
 
-      [ donors, recipients, purposes, purposeTree ] = loaded
+      [ donors, recipients, purposes, purposeTree, nodeCodesToNames ] = loaded
 
       purposesByCode = flatten purposeTree
       purposes = expandPurposes(purposes)
@@ -817,6 +829,8 @@ loadData = do ->
         indicatorChart.timeExtent timeExtent
 
         firstLoad = false
+
+
 
 
       d3.select("#donorsChart")
@@ -921,29 +935,28 @@ updateIndicator = ->
 d3.csv "wb/brief/indicators.csv", (data) ->
   indicators = data
 
-  $ ->
-    splitWords = (str) -> str.split(/\W+/).filter((s)->s.length > 0)
-    findWordWithPrefix = (words, prefix) -> 
-      for w in words
-        return w if w.indexOf(prefix) is 0
-      return null
+  splitWords = (str) -> str.split(/\W+/).filter((s)->s.length > 0)
+  findWordWithPrefix = (words, prefix) -> 
+    for w in words
+      return w if w.indexOf(prefix) is 0
+    return null
 
-    $("#indicatorTypeahead")
-      .data("source", indicators.map((ind) -> ind.name))
-      .data("items", indicators.length)
-      .data("minLength", 2)
-      .data("matcher", (item) ->
-        q = this.query
-        qwords = splitWords q.toLowerCase()
-        iwords = splitWords item.toLowerCase()
-        for qw in qwords
-          return false unless findWordWithPrefix iwords, qw
-        return true
-      )
-      .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
-      .on("change", updateIndicator)
+  $("#indicatorTypeahead")
+    .data("source", indicators.map((ind) -> ind.name))
+    .data("items", indicators.length)
+    .data("minLength", 2)
+    .data("matcher", (item) ->
+      q = this.query
+      qwords = splitWords q.toLowerCase()
+      iwords = splitWords item.toLowerCase()
+      for qw in qwords
+        return false unless findWordWithPrefix iwords, qw
+      return true
+    )
+    .on("blur", -> $(this).val("") unless findIndicatorByName($(this).val())?  )
+    .on("change", updateIndicator)
 
-    $("#indicatorClear").click -> $("#indicatorTypeahead").val("")
+  $("#indicatorClear").click -> $("#indicatorTypeahead").val("")
 
 
 

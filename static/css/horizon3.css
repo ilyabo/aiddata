@@ -218,7 +218,7 @@ font-size:7pt;
 #indicatorChart  .legend { position:fixed; margin-left:450px;  }
 #indicatorChart { position:fixed; }
 
-#indicatorModal { width:800px; top:300px; }
+#indicatorModal { width:800px; top:300px; margin-left:-400px;  }
 #indicatorModal h3 { text-align: center;   font: bold 22px sans-serif; }
 #indicatorModal button.close { border:none; background: none; }
 
