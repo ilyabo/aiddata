@@ -192,7 +192,7 @@
               for v in values
                 if v instanceof RegExp
                   if v.test(propVal)
-                    c = true
+                    found = true
                     break
                 else
                   if (propVal is v)
