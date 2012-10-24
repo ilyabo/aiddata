@@ -365,7 +365,7 @@
 
             else
               t =
-                #key : tree.code
+                key : tree.code + "*"
                 name : tree.name
                 values : (recurse(n) for n in tree.values)
 

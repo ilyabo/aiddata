@@ -4,13 +4,13 @@
   fill:#666;
 }
 
-.barHierarchy text.barLabel.hasChildren:hover {
+.barHierarchy text.barLabel.selectable:hover {
   text-shadow: 0 0 0.1em red;
 }
 
 .barHierarchy svg { margin-top:1em; } 
 
-.barHierarchy text.barLabel.hasChildren {
+.barHierarchy text.barLabel.selectable {
 }
 
 .barHierarchy rect.background {
@@ -29,15 +29,15 @@
 }
 
 .barHierarchy rect.bar {
-  fill:#a1c0de;
+  fill:steelblue;
   stroke-width:0.3;
   stroke:black;
 }
-.barHierarchy text.hasChildren {
+.barHierarchy text.selectable {
   font-weight: bold
 }
-.barHierarchy rect.bar.hasChildren {
-  fill:#a1c0de;
+.barHierarchy rect.bar.selectable {
+  fill:steelblue;
 }
 .barHierarchy rect.bar:hover {
   stroke:#B2182B; 

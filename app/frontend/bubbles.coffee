@@ -1,6 +1,8 @@
 years = [1947..2011]
 startYear = 2007
 
+filter = {}
+
 # Bubbles
 bubbles = bubblesChart()
   .conf(
@@ -21,6 +23,7 @@ barHierarchy = barHierarchyChart()
   .labelsWidth(200)
   .childrenAttr("values")
   .nameAttr("name")
+  .leafsSelectable(true)
   .valueFormat(formatMagnitude)
   .values((d) -> d["sum_#{startYear}"] ? 0)
   # .values((d) -> d.totals[startYear].sum ? 0)
@@ -35,6 +38,9 @@ barHierarchy = barHierarchyChart()
         data = currentNode; (data = data.parent while data.parent?)
         formatMagnitude(v(currentNode)) + " (" + 
         percentageFormat(v(currentNode) / v(data)) + " of total)"
+  )
+  .on("select", (sel) ->
+    console.log sel.key
   )
 
 
@@ -103,6 +109,7 @@ queue()
     purposeTree.name = "Purposes"
 
 
+
     # list of flows with every year separated
     #   -> list grouped by o/d, all years' values in one object
     flows = groupFlowsByOD flows 
@@ -137,6 +144,9 @@ queue()
       arr
 
     utils.aiddata.purposes.provideWithTotals(purposeTree, valueAttrs, "values", "totals")
+
+
+
 
     d3.select("#purposeBars")
       .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))

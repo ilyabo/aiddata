@@ -11,11 +11,12 @@ this.barHierarchyChart = () ->
   barSpacing = null
   labelsFormat = (d) -> d[nameAttr]
   labelsTooltipFormat = (d) -> d[nameAttr]
+  leafsSelectable = false
 
   fullwidth = 550
   fullheight = 300
 
-
+  
 
 
   chart = (selection) -> init(selection)
@@ -36,6 +37,8 @@ this.barHierarchyChart = () ->
 
   chart.childrenAttr = (_) -> if (!arguments.length) then childrenAttr else childrenAttr = _; chart
 
+  chart.leafsSelectable = (_) -> if (!arguments.length) then leafsSelectable else leafsSelectable = (if _ then true else false); chart
+
   chart.values = (_) ->
     if (!arguments.length)
       valueAccessor
@@ -47,6 +50,13 @@ this.barHierarchyChart = () ->
   chart.valueFormat = (_) -> if (!arguments.length) then valueFormat else valueFormat = _; chart
 
   chart.breadcrumbText = (_) -> if (!arguments.length) then breadcrumbText else breadcrumbText = _; chart
+
+
+  dispatch = d3.dispatch("select")
+
+  # Expose the dispatch's "on" method.
+  d3.rebind(chart, dispatch, "on");
+
 
   currentNode = null
   data = null
@@ -69,15 +79,17 @@ this.barHierarchyChart = () ->
     shortDuration = 50
 
     update = ->
+
       # bar ordering
-      vis.selectAll("g.barg")
-        .sort(comparator)
-        .transition()
-          .duration(duration)
-          .attr("transform", barTranslate)
+      if currentNode.children?
+        vis.selectAll("g.barg")
+          .sort(comparator)
+          .transition()
+            .duration(duration)
+            .attr("transform", barTranslate)
 
       # x axis scale
-      x.domain([ 0, d3.max(currentNode.children, valueAccessor ) ]).nice()
+      x.domain([ 0, d3.max((if currentNode.children? then currentNode.children else [currentNode]), valueAccessor ) ]).nice()
       vis.selectAll(".x.axis")
         .transition()
           .duration(duration)
@@ -174,17 +186,12 @@ this.barHierarchyChart = () ->
     vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
 
 
-  leafNodeClass = (d, nodeClass, leafClass) ->
-    if d.children? then nodeClass else leafClass
-
-  barClass = (d) -> leafNodeClass(d, "bar hasChildren", "bar")
-  labelClass = (d) -> leafNodeClass(d, "barLabel hasChildren", "barLabel")
   barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
 
 
   down = (d, i) ->
-    return  if not d.children or @__transition__
-    end = duration + d.children.length * delay
+    return  if (!leafsSelectable and !d.children) or @__transition__
+    end = duration + (if d.children then d.children.length else 1)* delay
     exit = vis.selectAll(".enter").attr("class", "exit")
     
     exit.selectAll("rect")
@@ -200,7 +207,7 @@ this.barHierarchyChart = () ->
     #  .attr("class", "bar")
     #  .style "fill", z(true)
 
-    x.domain([ 0, d3.max(d.children, valueAccessor ) ]).nice()
+    x.domain([ 0, d3.max((if d.children? then d.children else [d]), valueAccessor ) ]).nice()
 
     vis.selectAll(".x.axis").transition().duration(duration).call xAxis
 
@@ -212,15 +219,13 @@ this.barHierarchyChart = () ->
         .attr("transform", barTranslate)
 
     enterTransition.select("text")
-      #.attr("class", labelClass)
       .style("fill-opacity", 1)
 
     enterTransition.select("rect")
       #.classed("bar", true)
-      #.attr("class", barClass)
       .attr("width", (d) -> x(valueAccessor(d)))
       #.style("fill", (d) -> z(d.children?))
-      #.classed("hasChildren", d.children?)
+      #.classed("selectable", d.children?)
 
 
     exitTransition = exit.transition()
@@ -237,6 +242,7 @@ this.barHierarchyChart = () ->
     currentNode = d
     updateBreadcrumb(d)
     updateVisHeight(d)
+    dispatch.select.apply(chart, [d])
 
 
 
@@ -246,7 +252,7 @@ this.barHierarchyChart = () ->
   up = (d) ->
     return  if not d.parent or @__transition__
     
-    end = duration + d.children.length * delay
+    end = duration + (if d.children? then d.children.length else 1) * delay
     exit = vis.selectAll(".enter").attr("class", "exit")
     
     enter = bar(d.parent)
@@ -256,7 +262,6 @@ this.barHierarchyChart = () ->
 
 
     enter.select("rect")
-    #.attr("class", barClass)
       #.style("fill", (d) -> z(!!d.children))
       .filter((p) -> p is d)
       .style "fill-opacity", 1e-6
@@ -291,7 +296,6 @@ this.barHierarchyChart = () ->
     ###
 
     enterTransition.select("rect")
-      #.attr("class", barClass)
       .attr("width", (d) -> x(valueAccessor(d)))
 
 
@@ -301,6 +305,7 @@ this.barHierarchyChart = () ->
     currentNode = d.parent
     updateBreadcrumb(d.parent)
     updateVisHeight(d.parent)
+    dispatch.select.apply(chart, [d.parent])
 
 
 
@@ -310,22 +315,28 @@ this.barHierarchyChart = () ->
         .attr("class", "enter")
         .attr("transform", "translate(0,5)")
       .selectAll("g")
-        .data(d.children)
+        .data(if d.children? then d.children else [d])
           .enter()
       .append("g")
         .attr("class", "barg")
-        .on("click", down)
-        ###
-        .style("cursor", (d) ->
-          (if not d.children then null else "pointer")
-        )
-        ###
+    
+    if d.children? then b.on("click", down)
+
+    ###
+    .style("cursor", (d) ->
+      (if not d.children then null else "pointer")
+    )
+    ###
 
     b.append("svg:title")
         .text(labelsTooltipFormat)
 
     b.append("text")
-      .attr("class", labelClass)
+      .attr("class",
+        if d.children?
+          ((d) -> if d.children? or leafsSelectable then "barLabel selectable" else "barLabel") 
+        else "barLabel"
+      )
       .attr("x", -6)
       .attr("y", barHeight / 2)
       .attr("dy", ".35em")
@@ -333,7 +344,11 @@ this.barHierarchyChart = () ->
       .text(labelsFormat)
 
     b.append("rect")
-      .attr("class", barClass)
+      .attr("class", 
+        if d.children?
+          ((d) -> if d.children? or leafsSelectable then "bar selectable" else "bar") 
+        else "bar"
+      )
       .attr("x", 1)
       .attr("width", (d) -> x(valueAccessor(d)))
       .attr("height", barHeight)
@@ -409,7 +424,7 @@ this.barHierarchyChart = () ->
 
 
   updateVisHeight = (d) ->
-    h = (d.children.length) * (barHeight + barSpacing) #+ margin.top + margin.bottom
+    h = (if d.children then d.children.length else 1) * (barHeight + barSpacing) #+ margin.top + margin.bottom
     svg.transition()
       .duration(duration)
       .attr("height", h + margin.top + margin.bottom)
