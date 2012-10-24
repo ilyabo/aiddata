@@ -160,7 +160,7 @@ this.barHierarchyChart = () ->
 
     hierarchy.nodes(data)
     x.domain([ 0, valueAccessor(data) ]).nice()
-    down data, 0
+    down data, 0, true
 
 
 
@@ -189,7 +189,7 @@ this.barHierarchyChart = () ->
   barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
 
 
-  down = (d, i) ->
+  down = (d, i, init = false) ->
     return  if (!leafsSelectable and !d.children) or @__transition__
     end = duration + (if d.children then d.children.length else 1)* delay
     exit = vis.selectAll(".enter").attr("class", "exit")
@@ -242,7 +242,7 @@ this.barHierarchyChart = () ->
     currentNode = d
     updateBreadcrumb(d)
     updateVisHeight(d)
-    dispatch.select.apply(chart, [d])
+    dispatch.select.apply(chart, [d]) unless init
 
 
 

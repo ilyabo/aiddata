@@ -167,6 +167,17 @@
         agg.by.apply(this, @query.breakby?.split(","))
 
         filter = (if @query.filter? then JSON.parse(@query.filter) else null)
+        
+        if filter?.purpose?
+          filter.purpose = filter.purpose.map (v) ->
+            if /^[0-9]*\*[0-9]*$/.test(v)
+              re = "^"+v.replace("*", ".*")
+              console.log re
+              new RegExp(re)
+            else
+              v
+
+
         agg.where((get) ->
 
 
@@ -174,7 +185,22 @@
 
           if filter?
             for prop, values of filter
-              return false unless get(prop) in values
+              propVal = get(prop)
+
+              found = false
+
+              for v in values
+                if v instanceof RegExp
+                  if v.test(propVal)
+                    c = true
+                    break
+                else
+                  if (propVal is v)
+                    found = true
+                    break
+
+              return false unless found
+
           return true
         )
 

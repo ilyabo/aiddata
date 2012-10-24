@@ -1,7 +1,7 @@
 years = [1947..2011]
 startYear = 2007
 
-filter = {}
+filters = {}
 
 # Bubbles
 bubbles = bubblesChart()
@@ -40,7 +40,11 @@ barHierarchy = barHierarchyChart()
         percentageFormat(v(currentNode) / v(data)) + " of total)"
   )
   .on("select", (sel) ->
-    console.log sel.key
+    if sel.key is null or sel.key is ""
+      delete filters.purpose
+    else
+      filters.purpose = [ sel.key ]
+    reloadFlows()
   )
 
 
@@ -87,6 +91,26 @@ timeSlider = timeSliderControl()
 #   .json('purposeTree', "purposes-with-totals.json")
 #   .onload (data) ->
 
+
+reloadFlows = ->
+  filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
+  queue()
+    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}")
+    .await (err, loaded) ->
+
+      # list of flows with every year separated
+      #   -> list grouped by o/d, all years' values in one object
+      flows = groupFlowsByOD loaded[0] 
+
+      chart = d3.select("#bubblesChart")
+      data = chart.datum()
+      data.flows = flows
+      chart
+        .datum(data)
+        .call(bubbles)
+
+
+
 queue()
   .defer(loadCsv, "#{dynamicDataPath}aiddata-nodes.csv")
   .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient")
@@ -110,14 +134,16 @@ queue()
 
 
 
-    # list of flows with every year separated
-    #   -> list grouped by o/d, all years' values in one object
-    flows = groupFlowsByOD flows 
 
     provideCountryNodesWithCoords(
       nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
       countries, { code: "Code", lat: "Lat", lon: "Lon" }
     )
+
+
+    # list of flows with every year separated
+    #   -> list grouped by o/d, all years' values in one object
+    flows = groupFlowsByOD flows 
 
     data = 
       map : map
