@@ -308,8 +308,6 @@ this.barHierarchyChart = () ->
     dispatch.select.apply(chart, [d.parent])
 
 
-
-
   bar = (d) ->
     b = vis.insert("g", ".y.axis")
         .attr("class", "enter")
@@ -319,8 +317,13 @@ this.barHierarchyChart = () ->
           .enter()
       .append("g")
         .attr("class", "barg")
-    
-    if d.children? then b.on("click", down)
+        .on("mouseover", -> d3.select(this).classed("highlight", true))
+        .on("mouseout", -> d3.select(this).classed("highlight", false))
+
+    if d.children? then b.on("click", (d) -> 
+      d3.select(this).classed("highlight", false)
+      down(d)
+    )
 
     ###
     .style("cursor", (d) ->

@@ -4,7 +4,7 @@
   fill:#666;
 }
 
-.barHierarchy text.barLabel.selectable:hover {
+.barHierarchy .barg.highlight text.barLabel.selectable {
   text-shadow: 0 0 0.1em red;
 }
 
@@ -39,7 +39,7 @@
 .barHierarchy rect.bar.selectable {
   fill:steelblue;
 }
-.barHierarchy rect.bar:hover {
+.barHierarchy .barg.highlight rect.bar {
   stroke:#B2182B; 
   cursor:pointer;
 }
