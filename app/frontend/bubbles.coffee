@@ -77,7 +77,7 @@ timeSlider = timeSliderControl()
   .width(250 - 30 - 8) # timeSeries margins
   .height(10)
   .on "change", (current, old) ->
-    bubbles.setSelDateTo(current, true)
+    bubbles.setSelDateTo(current, false)
     barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
 
 # loadData()
@@ -178,7 +178,7 @@ queue()
       .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
       .call(barHierarchy)
 
-    bubbles.setSelDateTo(utils.date.yearToDate(startYear), true)
+    bubbles.setSelDateTo(utils.date.yearToDate(startYear), false)
 
     $("#loading").remove()
 

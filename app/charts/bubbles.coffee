@@ -229,26 +229,28 @@ this.bubblesChart = ->
 
     data = selection.datum()
 
-    svg = selection 
-      .append("svg")
-        .attr("width", bubblesChartWidth)
-        .attr("height", bubblesChartHeight)
-        .attr("class", "bubble")
+    isUpdate = not selection.select("svg").empty()
+
+    unless isUpdate
+      svg = selection 
+        .append("svg")
+          .attr("width", bubblesChartWidth)
+          .attr("height", bubblesChartHeight)
+          .attr("class", "bubble")
+
+
+
 
 
 
     idToNode = {}
 
-
-    # After loadData
-
-
-
     provideNodesWithTotals(data.flows, data.nodes, conf)
 
+    unless isUpdate
+      state = initFlowData(conf)
+      state.selAttrIndex = 0 # state.magnAttrs().length - 7  # state.magnAttrs().length - 1
 
-    state = initFlowData(conf)
-    state.selAttrIndex = 0 # state.magnAttrs().length - 7  # state.magnAttrs().length - 1
     state.totalsMax = calcMaxTotalMagnitudes(data, conf)
 
 
@@ -272,17 +274,18 @@ this.bubblesChart = ->
 
     #createYearTicks()
 
-    svg.append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", bubblesChartWidth)
-      .attr("height", bubblesChartHeight)
-      .attr("fill", "white")
-      .on 'click', (d) -> clearNodeSelection()
+    unless isUpdate
+      svg.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", bubblesChartWidth)
+        .attr("height", bubblesChartHeight)
+        .attr("fill", "white")
+        .on 'click', (d) -> clearNodeSelection()
 
 
-    fitProjection(mapProj, data.map, 
-      [[-bubblesChartWidth*0.15,bubblesChartHeight*0.15],[bubblesChartWidth, bubblesChartHeight * 0.8]], true)
+      fitProjection(mapProj, data.map, 
+        [[-bubblesChartWidth*0.15,bubblesChartHeight*0.15],[bubblesChartWidth, bubblesChartHeight * 0.8]], true)
 
 
 
@@ -397,7 +400,7 @@ this.bubblesChart = ->
           svg.selectAll("g.bubble")
             .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
 
-          flows.selectAll("line")
+          svg.select("g.flows").selectAll("line")
             .attr("x1", (d) -> d.source.x )
             .attr("y1", (d) -> d.source.y )
             .attr("x2", (d) -> d.target.x )
@@ -405,17 +408,18 @@ this.bubblesChart = ->
     )
 
 
-    svg.append("g")
-      .attr("class", "map")
-      .selectAll('path')
-        .data(data.map.features)
-      .enter().append('path')
-        .attr('d', mapProjPath)
-        .attr("fill", "#f0f0f0")
-        .on 'click', (d) -> clearNodeSelection()
+    unless isUpdate
+      svg.append("g")
+        .attr("class", "map")
+        .selectAll('path')
+          .data(data.map.features)
+        .enter().append('path')
+          .attr('d', mapProjPath)
+          .attr("fill", "#f0f0f0")
+          .on 'click', (d) -> clearNodeSelection()
 
-    flows = svg.append("g")
-      .attr("class", "flows")
+      flows = svg.append("g")
+        .attr("class", "flows")
 
 
 
@@ -535,9 +539,10 @@ this.bubblesChart = ->
         createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
 
 
-    bubble = svg.selectAll("g.bubble")
-        .data(nodes)
-      .enter()
+    bubbled = svg.selectAll("g.bubble")
+        .data(nodes, (d) -> d.code)
+    
+    bubble = bubbled.enter()
         .append("g")
           .attr("class", "bubble")
           .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
@@ -583,6 +588,8 @@ this.bubblesChart = ->
   
             $(this).tipsy("hide")
 
+
+    bubbled.exit().remove()
 
     clearNodeSelection = ->
       if selectedNode != null
