@@ -552,7 +552,7 @@ this.bubblesChart = ->
 
 
     bubble = svg.selectAll("g.bubble")
-      .data(nodes, (d) -> d.code)
+      .data(nodes, (d) -> d[conf.nodeIdAttr])
 
     # update subnodes data
     bubble.selectAll("circle").datum((d) -> this.parentNode.__data__)
@@ -571,7 +571,7 @@ this.bubblesChart = ->
       .attr("y", 5)
       .attr("font-size", 9)
       .attr("text-anchor", "middle")
-      .text((d)-> if d.code.length < 7 then d.code else d.code.substring(0,5)+".." )
+      .text((d)-> c = d[conf.nodeIdAttr]; if c.length < 7 then c else c.substring(0,5)+".." )
 
     bubbleEnter.on 'click', (d, i) ->
       if selectedNode == this
