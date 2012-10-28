@@ -41,6 +41,7 @@ this.bubblesChart = ->
 
   state = null
   stopAnimation = null
+  selectedNode = null
 
 
   mapProj = winkelTripel()
@@ -442,7 +443,6 @@ this.bubblesChart = ->
     flows = svg.selectAll("g.flows")
 
 
-    selectedNode = null
 
 
     bubble = svg.selectAll("g.bubble")
@@ -511,21 +511,33 @@ this.bubblesChart = ->
     update()
 
 
+
+    if selectedNode?
+      if nodes.nodeById(d3.select(selectedNode).datum()[conf.nodeIdAttr])?
+        showFlowsOf(selectedNode)
+        
+      else        
+        # selected node does not have any flows
+        flows.selectAll("line").remove()
+
+
     clearNodeSelection = ->
-      if selectedNode != null
+      if selectedNode?
         d3.select(selectedNode).selectAll("circle").classed("selected", false)
         flows.selectAll("line").remove()
         selectedNode = null
 
-    $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
-    $('g.bubble').tipsy
-      gravity: 'w'
-      html: true
-      opacity: 0.9
-      trigger: "manual"
-      title: ->
-        bubbleTooltip(d3.select(this).data()[0])
+    unless isUpdate
+
+      $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
+
+      $('g.bubble').tipsy
+        gravity: 'w'
+        html: true
+        opacity: 0.9
+        trigger: "manual"
+        title: -> bubbleTooltip(d3.select(this).data()[0])
 
 
     ###
@@ -603,7 +615,8 @@ this.bubblesChart = ->
 
   showFlowsOf = (bbl) ->
     flows = svg.selectAll("g.flows")
-    d = d3.select(bbl).datum() #data()?[0]
+    d = d3.select(bbl).datum()
+
     ###
     ffwscale = d3.scale.linear()
       .range([0, rscale.range()[1]/2])
@@ -611,11 +624,13 @@ this.bubblesChart = ->
     ###
 
     if (d.outlinks?)
-      flows.selectAll("line.out")
-          .data(d.outlinks) #.filter (d) -> flowLineValue(d) > 0)
-        .enter().append("svg:line")
+      outflow = flows.selectAll("line.out")
+          .data(d.outlinks, (d) -> d.target[conf.nodeIdAttr]) #.filter (d) -> flowLineValue(d) > 0)
+        
+      outflow.exit().remove()
+
+      outflow.enter().append("svg:line")
           .attr("class", "out")
-          #.attr("stroke", outboundColor)
           .attr("opacity", 0)
           .transition()
             .duration(300)
@@ -623,12 +638,13 @@ this.bubblesChart = ->
 
 
     if (d.inlinks?)
-      flows.selectAll("line.in")
-          .data(d.inlinks) #.filter (d) -> flowLineValue(d) > 0)
-        .enter().append("svg:line")
+      inflow = flows.selectAll("line.in")
+          .data(d.inlinks, (d) -> d.source[conf.nodeIdAttr]) #.filter (d) -> flowLineValue(d) > 0)
+
+      inflow.exit().remove()
+
+      inflow.enter().append("svg:line")
           .attr("class", "in")
-          #.attr("stroke", inboundColor)
-          #.attr("opacity",0.5)
           .attr("opacity", 0)
           .transition()
             .duration(300)
@@ -660,13 +676,15 @@ this.bubblesChart = ->
         $(this).tipsy("hide")
         tseriesPanel.remove("flow" + i)
 
-
-    $('line').tipsy
+    $('g.flows line').tipsy
       gravity: 'w'
       opacity: 0.9
       html: true
       trigger: "manual"
-      title: -> flowTooltip(d3.select(this).data()[0])
+      title: -> flowTooltip(d3.select(this).datum())
+
+
+
 
 
 
