@@ -290,19 +290,15 @@ this.bubblesChart = ->
       maxOrd = Math.floor(log10(maxTotalMagnitude))
       values = []
 
-      addValue = (v) ->
-        values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
-          
-
-      addValue maxTotalMagnitude
-      addValue pow10(maxOrd) * 5
-      addValue pow10(maxOrd)
-      addValue pow10(maxOrd) / 2
-      values.push(pow10(maxOrd - 1))
-
-      #pow10(maxOrd), pow10(maxOrd - 1) ]
-        #(pow10(i) for i in [maxOrd .. (maxOrd - 2)])
-      
+      unless isNaN(maxTotalMagnitude)
+        addValue = (v) ->
+          values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
+        addValue maxTotalMagnitude
+        addValue pow10(maxOrd) * 5
+        addValue pow10(maxOrd)
+        addValue pow10(maxOrd) / 2
+        values.push(pow10(maxOrd - 1))
+    
 
       legend
         .attr("width", maxR*2 + legendMargin.left + legendMargin.right)
@@ -317,22 +313,43 @@ this.bubblesChart = ->
         .innerRadius(0)
         .outerRadius(rscale)
       
+      legend = selection.select("svg.legend g.outer")
 
-      legend = selection.select("svg.legend g.outer").selectAll("path")
-        .data(values)
 
-      legendEnter = legend.enter()
-      legendEnter.append("path")
-        .attr("d", arc)
-      legendEnter.append("text")
+      item = legend.selectAll("g.item")
+        .data(values, (d) -> d)
+
+      console.log values
+      
+      # enter
+      itemEnter = item.enter().append("g")
+        .attr("class", "item")
+
+      itemEnter.append("path")
+      itemEnter.append("text")
         .attr("text-anchor", "middle")
         #.attr("alignment-baseline", "central")
         .attr("x", 0)
-        .attr("y", (d, i) -> if (i < values.length - 1) then (-rscale(d)-1) else 10)
+
+      itemEnter.transition().duration(200).attr("opacity", 1)
+
+
+      # update
+      item.selectAll("path")
+        .transition().duration(200)
+        .attr("d", arc)
+
+      item.selectAll("text")
         .text(magnitudeFormat)
+        .transition().duration(200)
+        .attr("y", (d, i) -> -rscale(d)-1)
 
-      legend.exit().remove()
+      legend.selectAll("g.item").sort((a, b) -> d3.descending(a, b))
 
+      # exit
+      item.exit()
+        .transition().duration(200).attr("opacity", 0)
+        .remove()
 
     
 

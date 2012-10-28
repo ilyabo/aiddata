@@ -1,7 +1,7 @@
-.bubbleChart .tipsy { font-size:9pt !important; }
-.bubbleChart .tipsy .sm { font-size:8pt;}
-.bubbleChart .tipsy-inner { background-color:#333; }
-.bubbleChart .tipsy-arrow { border-color:#333; }
+.tipsy { font-size:10pt !important; }
+.tipsy .sm { font-size:9pt;}
+.tipsy-inner { background-color:#333; }
+.tipsy-arrow { border-color:#333; }
 
 .bubbleChart .nodeLabel { cursor:default;}
 
@@ -29,5 +29,5 @@
 .bubbleChart g.bubble text { pointer-events: none; /* text-shadow: 0 0 0.3em #FFF */ }
 
 
-.bubbleChart .legend path { stroke:#ccc; fill:#eee; fill-opacity:10%; stroke-width:1.5; }
+.bubbleChart .legend path { stroke:#999; fill:#eee; opacity:0.3; stroke-width:1.5; }
 .bubbleChart .legend text { fill:black; font-size:9px;  text-shadow: 0 0 0.2em white; }
