@@ -307,7 +307,6 @@ this.bubblesChart = ->
 
 
 
-    idToNode = {}
 
     provideNodesWithTotals(data.flows, data.nodes, conf)
 
@@ -382,20 +381,28 @@ this.bubblesChart = ->
 
     #nodesWithoutLocationX = 0
 
-    nodes = nodesWithFlows.map (d) ->
-      xy = projectNode(d)
+    nodes = do ->
+      idToNode = {}
+      nodesArr = nodesWithFlows.map (d) ->
+        xy = projectNode(d)
 
-      maxin = d3.max(d.totals.inbound ? [0])
-      maxout = d3.max(d.totals.outbound ? [0])
+        maxin = d3.max(d.totals.inbound ? [0])
+        maxout = d3.max(d.totals.outbound ? [0])
 
-      idToNode[d[conf.nodeIdAttr]] =
-        data : d
-        max : Math.max(maxin, maxout)
-        name: d[conf.nodeLabelAttr] 
-        code: d[conf.nodeIdAttr]
-        x: xy?[0]
-        y: xy?[1]
-        gravity: {x: xy?[0], y: xy?[1]}
+        n =
+          data : d
+          max : Math.max(maxin, maxout)
+          name: d[conf.nodeLabelAttr] 
+          code: d[conf.nodeIdAttr]
+          x: xy?[0]
+          y: xy?[1]
+          gravity: {x: xy?[0], y: xy?[1]}
+
+        idToNode[d[conf.nodeIdAttr]] = n
+        return n
+
+      nodesArr.nodeById = (id) -> idToNode[id]
+      nodesArr
 
 
 
@@ -403,11 +410,11 @@ this.bubblesChart = ->
     placeNodesWithoutCoords(nodes)
 
 
-    nodeById = (id) -> idToNode[id]
+    
 
     for f in data.flows
-      src = nodeById(f[conf.flowOriginAttr])
-      target = nodeById(f[conf.flowDestAttr])
+      src = nodes.nodeById(f[conf.flowOriginAttr])
+      target = nodes.nodeById(f[conf.flowDestAttr])
       if src? and target?
         link = 
           source: src
@@ -436,119 +443,6 @@ this.bubblesChart = ->
 
 
     selectedNode = null
-
-    showFlowsOf = (bbl) ->
-      d = d3.select(bbl).data()?[0]
-      ###
-      ffwscale = d3.scale.linear()
-        .range([0, rscale.range()[1]/2])
-        .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
-      ###
-
-      if (d.outlinks?)
-        flows.selectAll("line.out")
-            .data(d.outlinks) #.filter (d) -> flowLineValue(d) > 0)
-          .enter().append("svg:line")
-            .attr("class", "out")
-            #.attr("stroke", outboundColor)
-            .attr("opacity", 0)
-            .transition()
-              .duration(300)
-                .attr("opacity", 1)
-
-
-      if (d.inlinks?)
-        flows.selectAll("line.in")
-            .data(d.inlinks) #.filter (d) -> flowLineValue(d) > 0)
-          .enter().append("svg:line")
-            .attr("class", "in")
-            #.attr("stroke", inboundColor)
-            #.attr("opacity",0.5)
-            .attr("opacity", 0)
-            .transition()
-              .duration(300)
-                .attr("opacity", 1)
-
-      createFlowTimeSeries = (flow, d, i) ->
-        
-        dir = (if d3.select(flow).classed("in") then "in" else "out")
-
-        flowData = (for attr in state.magnAttrs() when d.data[attr]?
-          date: dateFromMagnAttr(attr)
-          value: +d.data[attr]
-        )
-
-        data = if dir is "in"
-          inbound : flowData
-          outbound : []
-        else
-          inbound : []
-          outbound : flowData
-
-  
-        if not tseriesPanel.contains("flow" + i)
-          tseries = tseriesPanel.addNew("flow" + i, "tseries")
-          recipient = d.target.data[conf.nodeLabelAttr]
-          donor = d.source.data[conf.nodeLabelAttr]
-
-          flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
-
-          createTimeSeries(tseries, data, flowLabel, dir)
-
-
-
-      flows.selectAll("line")
-        .attr("x1", (d) -> d.source.x)
-        .attr("y1", (d) -> d.source.y)
-        .attr("x2", (d) -> d.target.x)
-        .attr("y2", (d) -> d.target.y)
-        .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
-        .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
-        .on "mouseover", (d, i) ->
-          if this.parentNode?
-            this.parentNode.appendChild(this)
-
-          $(this).tipsy("show")
-          # $("#tseriesPanel").add('<div id="tseries"></div>')
-
-          createFlowTimeSeries(this, d, i)
-
-          $(tipsy.$tip)
-              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
-              .css('left', d3.event.pageX + 10)
-
-
-        .on "mouseout", (d, i) ->
-          $(this).tipsy("hide")
-          tseriesPanel.remove("flow" + i)
-
-
-      $('line').tipsy
-        gravity: 'w'
-        opacity: 0.9
-        html: true
-        trigger: "manual"
-        title: ->
-          flowTooltip(d3.select(this).data()[0])
-
-
-
-    createNodeTimeSeries = (node, d, i) ->
-      data = 
-        inbound : state.magnAttrs().map (attr, i) -> 
-          date: dateFromMagnAttr(attr)
-          value: d.data.totals?.inbound?[i] ? 0
-
-        outbound : state.magnAttrs().map (attr, i) -> 
-          date: dateFromMagnAttr(attr)
-          value: d.data.totals?.outbound?[i] ? 0
-
-      if not tseriesPanel.contains("node" + i)
-        tseries = tseriesPanel.addNew("node" + i, "tseries")
-        nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-        #parent = d3.select(tseries)
-        #parent.setSelDateTo = setSelDateTo
-        createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
 
 
     bubble = svg.selectAll("g.bubble")
@@ -702,6 +596,124 @@ this.bubblesChart = ->
           utils.date.yearToDate(state.magnAttrs(old)))
       #$("#yearSlider").slider('value', state.selAttrIndex)
     chart
+
+
+
+
+
+  showFlowsOf = (bbl) ->
+    flows = svg.selectAll("g.flows")
+    d = d3.select(bbl).datum() #data()?[0]
+    ###
+    ffwscale = d3.scale.linear()
+      .range([0, rscale.range()[1]/2])
+      .domain([0, Math.max(d3.max(max.inbound), d3.max(max.outbound))])
+    ###
+
+    if (d.outlinks?)
+      flows.selectAll("line.out")
+          .data(d.outlinks) #.filter (d) -> flowLineValue(d) > 0)
+        .enter().append("svg:line")
+          .attr("class", "out")
+          #.attr("stroke", outboundColor)
+          .attr("opacity", 0)
+          .transition()
+            .duration(300)
+              .attr("opacity", 1)
+
+
+    if (d.inlinks?)
+      flows.selectAll("line.in")
+          .data(d.inlinks) #.filter (d) -> flowLineValue(d) > 0)
+        .enter().append("svg:line")
+          .attr("class", "in")
+          #.attr("stroke", inboundColor)
+          #.attr("opacity",0.5)
+          .attr("opacity", 0)
+          .transition()
+            .duration(300)
+              .attr("opacity", 1)
+
+
+    flows.selectAll("line")
+      .attr("x1", (d) -> d.source.x)
+      .attr("y1", (d) -> d.source.y)
+      .attr("x2", (d) -> d.target.x)
+      .attr("y2", (d) -> d.target.y)
+      .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
+      .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
+      .on "mouseover", (d, i) ->
+        if this.parentNode?
+          this.parentNode.appendChild(this)
+
+        $(this).tipsy("show")
+        # $("#tseriesPanel").add('<div id="tseries"></div>')
+
+        createFlowTimeSeries(this, d, i)
+
+        $(tipsy.$tip)
+            .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+            .css('left', d3.event.pageX + 10)
+
+
+      .on "mouseout", (d, i) ->
+        $(this).tipsy("hide")
+        tseriesPanel.remove("flow" + i)
+
+
+    $('line').tipsy
+      gravity: 'w'
+      opacity: 0.9
+      html: true
+      trigger: "manual"
+      title: -> flowTooltip(d3.select(this).data()[0])
+
+
+
+  createNodeTimeSeries = (node, d, i) ->
+    data = 
+      inbound : state.magnAttrs().map (attr, i) -> 
+        date: dateFromMagnAttr(attr)
+        value: d.data.totals?.inbound?[i] ? 0
+
+      outbound : state.magnAttrs().map (attr, i) -> 
+        date: dateFromMagnAttr(attr)
+        value: d.data.totals?.outbound?[i] ? 0
+
+    if not tseriesPanel.contains("node" + i)
+      tseries = tseriesPanel.addNew("node" + i, "tseries")
+      nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
+      #parent = d3.select(tseries)
+      #parent.setSelDateTo = setSelDateTo
+      createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
+
+
+  createFlowTimeSeries = (flow, d, i) ->
+    
+    dir = (if d3.select(flow).classed("in") then "in" else "out")
+
+    flowData = (for attr in state.magnAttrs() when d.data[attr]?
+      date: dateFromMagnAttr(attr)
+      value: +d.data[attr]
+    )
+
+    data = if dir is "in"
+      inbound : flowData
+      outbound : []
+    else
+      inbound : []
+      outbound : flowData
+
+
+    if not tseriesPanel.contains("flow" + i)
+      tseries = tseriesPanel.addNew("flow" + i, "tseries")
+      recipient = d.target.data[conf.nodeLabelAttr]
+      donor = d.source.data[conf.nodeLabelAttr]
+
+      flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
+
+      createTimeSeries(tseries, data, flowLabel, dir)
+
 
   updateNodeSizes = ->
     for n in nodes
