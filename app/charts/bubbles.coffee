@@ -33,15 +33,9 @@ this.bubblesChart = ->
   playButtonWidth = 40
   ###
 
-  lightVersionMode = false #$.browser.mozilla
-  if lightVersionMode
-    dontUseForceLayout = true
-    noAnimation = true
-    flowMagnitudeThreshold = 1000*1e6-1
-  else
-    dontUseForceLayout = false
-    noAnimation = false
-    flowMagnitudeThreshold = 0
+  dontUseForceLayout = false
+  noAnimation = false
+  flowMagnitudeThreshold = 0
 
 
 
@@ -165,6 +159,74 @@ this.bubblesChart = ->
 
 
 
+  updateLegend = (selection, maxTotalMagnitude) ->
+    legendMargin = {top: 15, right: 0, bottom: 10, left: 0}
+
+    maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
+    legend = selection.select("svg.legend")
+    
+    maxOrd = Math.floor(log10(maxTotalMagnitude))
+    values = []
+
+    unless isNaN(maxTotalMagnitude)
+      addValue = (v) ->
+        values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
+      addValue maxTotalMagnitude
+      addValue pow10(maxOrd) * 5
+      addValue pow10(maxOrd)
+      addValue pow10(maxOrd) / 2
+      values.push(pow10(maxOrd - 1))
+  
+
+    legend
+      .attr("width", maxR*2 + legendMargin.left + legendMargin.right)
+      .attr("height",maxR + legendMargin.top + legendMargin.bottom)
+
+    legend.select("g.outer")
+      .attr("transform", "translate(#{legendMargin.left + maxR},#{legendMargin.top + maxR})")
+
+    arc = d3.svg.arc()
+      .startAngle(-Math.PI/2)
+      .endAngle(Math.PI/2)
+      .innerRadius(0)
+      .outerRadius(rscale)
+    
+    legend = selection.select("svg.legend g.outer")
+
+
+    item = legend.selectAll("g.item")
+      .data(values, (d) -> d)
+
+
+    # enter
+    itemEnter = item.enter().append("g")
+      .attr("class", "item")
+
+    itemEnter.append("path")
+    itemEnter.append("text")
+      .attr("text-anchor", "middle")
+      #.attr("alignment-baseline", "central")
+      .attr("x", 0)
+
+    itemEnter.transition().duration(200).attr("opacity", 1)
+
+
+    # update
+    item.selectAll("path")
+      .transition().duration(200)
+      .attr("d", arc)
+
+    item.selectAll("text")
+      .text(magnitudeFormat)
+      .transition().duration(200)
+      .attr("y", (d, i) -> -rscale(d)-1)
+
+    legend.selectAll("g.item").sort((a, b) -> d3.descending(a, b))
+
+    # exit
+    item.exit()
+      .transition().duration(200).attr("opacity", 0)
+      .remove()
 
 
   ###
@@ -281,75 +343,8 @@ this.bubblesChart = ->
         .attr("class", "outer")
 
 
-    do ->
-      legendMargin = {top: 15, right: 0, bottom: 10, left: 0}
+    updateLegend(selection, maxTotalMagnitude)
 
-      maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
-      legend = selection.select("svg.legend")
-      
-      maxOrd = Math.floor(log10(maxTotalMagnitude))
-      values = []
-
-      unless isNaN(maxTotalMagnitude)
-        addValue = (v) ->
-          values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
-        addValue maxTotalMagnitude
-        addValue pow10(maxOrd) * 5
-        addValue pow10(maxOrd)
-        addValue pow10(maxOrd) / 2
-        values.push(pow10(maxOrd - 1))
-    
-
-      legend
-        .attr("width", maxR*2 + legendMargin.left + legendMargin.right)
-        .attr("height",maxR + legendMargin.top + legendMargin.bottom)
-
-      legend.select("g.outer")
-        .attr("transform", "translate(#{legendMargin.left + maxR},#{legendMargin.top + maxR})")
-
-      arc = d3.svg.arc()
-        .startAngle(-Math.PI/2)
-        .endAngle(Math.PI/2)
-        .innerRadius(0)
-        .outerRadius(rscale)
-      
-      legend = selection.select("svg.legend g.outer")
-
-
-      item = legend.selectAll("g.item")
-        .data(values, (d) -> d)
-
-      console.log values
-      
-      # enter
-      itemEnter = item.enter().append("g")
-        .attr("class", "item")
-
-      itemEnter.append("path")
-      itemEnter.append("text")
-        .attr("text-anchor", "middle")
-        #.attr("alignment-baseline", "central")
-        .attr("x", 0)
-
-      itemEnter.transition().duration(200).attr("opacity", 1)
-
-
-      # update
-      item.selectAll("path")
-        .transition().duration(200)
-        .attr("d", arc)
-
-      item.selectAll("text")
-        .text(magnitudeFormat)
-        .transition().duration(200)
-        .attr("y", (d, i) -> -rscale(d)-1)
-
-      legend.selectAll("g.item").sort((a, b) -> d3.descending(a, b))
-
-      # exit
-      item.exit()
-        .transition().duration(200).attr("opacity", 0)
-        .remove()
 
     
 
@@ -405,28 +400,10 @@ this.bubblesChart = ->
 
 
     updateNodeSizes()
-
-    placeNodesWithoutCoords = (nodes) ->
-      squeezeFactor = 0.75
-      totalw = 0
-      for n in nodes
-        if not n.x? or not n.y? then totalw += 2 * n.maxr * squeezeFactor
-      x = 0
-      for n in nodes
-        if not n.x? or not n.y?
-          n.x = x + n.maxr * squeezeFactor + (bubblesChartWidth - totalw)/2
-          n.y = bubblesChartHeight - nodesWithoutCoordsMarginBottom
-          n.gravity = {x: n.x, y: n.y}
-          x += 2 * n.maxr * squeezeFactor
-
     placeNodesWithoutCoords(nodes)
 
 
-    nodeById = (id) ->
-      #if not idToNode[id]? then console.log "Warning: No node by id '#{id}' found"
-      idToNode[id]
-
-    links = []
+    nodeById = (id) -> idToNode[id]
 
     for f in data.flows
       src = nodeById(f[conf.flowOriginAttr])
@@ -439,55 +416,6 @@ this.bubblesChart = ->
         
         (src.outlinks ?= []).push link
         (target.inlinks ?= []).push link
-        links.push link
-
-
-    force
-        .nodes(nodes)
-        #.links(links)
-        #.linkStrength(0)
-        #.linkDistance(1)
-        #.start()
-        .on("tick", (e) -> 
-          
-          k = e.alpha
-          kg = k * .02
-
-
-          nodes.forEach((a, i) ->
-            # Apply gravity forces
-            a.x += (a.gravity.x - a.x) * kg
-            a.y += (a.gravity.y - a.y) * kg
-            nodes.slice(i + 1).forEach((b) -> 
-              # Check for collisions.
-              dx = a.x - b.x
-              dy = a.y - b.y
-              #l = Math.sqrt(dx * dx + dy * dy)
-              l2 = (dx * dx + dy * dy)
-              d = a.r + b.r
-              d2 = d * d 
-              #if (l < d)
-              if (l2 < d2)
-                l = Math.sqrt(l2)
-                l = (l - d) / l * k
-                dx *= l
-                dy *= l
-                a.x -= dx
-                a.y -= dy
-                b.x += dx
-                b.y += dy
-            )
-          )
-
-          svg.selectAll("g.bubble")
-            .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
-
-          svg.select("g.flows").selectAll("line")
-            .attr("x1", (d) -> d.source.x )
-            .attr("y1", (d) -> d.source.y )
-            .attr("x2", (d) -> d.target.x )
-            .attr("y2", (d) -> d.target.y )
-    )
 
 
     unless isUpdate
@@ -500,9 +428,11 @@ this.bubblesChart = ->
           .attr("fill", "#f0f0f0")
           .on 'click', (d) -> clearNodeSelection()
 
-      flows = svg.append("g")
+      svg.append("g")
         .attr("class", "flows")
 
+
+    flows = svg.selectAll("g.flows")
 
 
     selectedNode = null
@@ -621,77 +551,20 @@ this.bubblesChart = ->
         createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
 
 
-    bubbled = svg.selectAll("g.bubble")
-        .data(nodes, (d) -> d.code)
-    
-    bubbleEnter = bubbled.enter()
-        .append("g")
-          .attr("class", "bubble")
-          .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
-          .on 'click', (d, i) ->
+    bubble = svg.selectAll("g.bubble")
+      .data(nodes, (d) -> d.code)
 
-            if selectedNode == this
-              tseriesPanel.remove("node" + i)
-              selectedNode = null
-              d3.select(this).selectAll("circle").classed("selected", false)
-            else 
-              if selectedNode != null
-                tseriesPanel.removeOthers("node" + i)
-                d3.select(selectedNode).selectAll("circle").classed("selected", false)
-                flows.selectAll("line").remove()
-              else
-                createNodeTimeSeries(this, d, i)  
-              selectedNode = this
-              d3.select(this).selectAll("circle").classed("selected", true)
-              showFlowsOf this
+    # update subnodes data
+    bubble.selectAll("circle").datum((d) -> this.parentNode.__data__)
+    bubble.selectAll("text").datum((d) -> this.parentNode.__data__)
 
+    bubble.exit().remove()
 
-          .on 'mouseover', (d, i) ->
-            d3.select(this).classed("highlighted", true)
-            if selectedNode == null
-              showFlowsOf this
+    bubbleEnter = bubble.enter()
+      .append("g").attr("class", "bubble")
 
-            createNodeTimeSeries(this, d, i)
-
-            $(this).tipsy("show")
-            $(tipsy.$tip)  # fix vertical position
-                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
-
-
-
-          .on 'mouseout', (d, i) ->
-            d3.select(this).classed("highlighted", false)
-
-            if selectedNode == null
-              flows.selectAll("line").remove()
-
-            if selectedNode != this
-              tseriesPanel.remove("node" + i)
-  
-            $(this).tipsy("hide")
-
-
-    bubbled.exit().remove()
-
-    clearNodeSelection = ->
-      if selectedNode != null
-        d3.select(selectedNode).selectAll("circle").classed("selected", false)
-        flows.selectAll("line").remove()
-        selectedNode = null
-
-    $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
-
-
-    bubbleEnter.append("circle")
-      .attr("class", "rin")
-      #.attr("opacity", 0.5)
-      #.attr("fill", "#f00")
-
-    bubbleEnter.append("circle")
-      .attr("class", "rout")
-      #.attr("opacity", 0.5)
-      #.attr("fill", "#00f")
-
+    bubbleEnter.append("circle").attr("class", "rin")
+    bubbleEnter.append("circle").attr("class", "rout")
 
     bubbleEnter.append("text")
       .attr("class", "nodeLabel")
@@ -700,34 +573,57 @@ this.bubblesChart = ->
       .attr("text-anchor", "middle")
       .text((d)-> if d.code.length < 7 then d.code else d.code.substring(0,5)+".." )
 
+    bubbleEnter.on 'click', (d, i) ->
+      if selectedNode == this
+        tseriesPanel.remove("node" + i)
+        selectedNode = null
+        d3.select(this).selectAll("circle").classed("selected", false)
+      else 
+        if selectedNode != null
+          tseriesPanel.removeOthers("node" + i)
+          d3.select(selectedNode).selectAll("circle").classed("selected", false)
+          flows.selectAll("line").remove()
+        else
+          createNodeTimeSeries(this, d, i)  
+        selectedNode = this
+        d3.select(this).selectAll("circle").classed("selected", true)
+        showFlowsOf this
+
+    .on 'mouseover', (d, i) ->
+      d3.select(this).classed("highlighted", true)
+      if selectedNode == null
+        showFlowsOf this
+
+      createNodeTimeSeries(this, d, i)
+
+      $(this).tipsy("show")
+      $(tipsy.$tip)  # fix vertical position
+          .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+
+    .on 'mouseout', (d, i) ->
+      d3.select(this).classed("highlighted", false)
+
+      if selectedNode == null
+        flows.selectAll("line").remove()
+
+      if selectedNode != this
+        tseriesPanel.remove("node" + i)
+
+      $(this).tipsy("hide")
 
 
-    ###
-    svg.append("text")
-      .attr("id", "yearText")
-      .attr("font-size", bubblesChartWidth/15)
-      .attr("x", 20) #bubblesChartWidth - 20)
-      .attr("y", 100)
-      .attr("text-anchor", "start")
-        .text(state.selMagnAttr())
-    ###
-
+    force.nodes(nodes)
 
     update()
 
-    ###
-    $("#yearSlider")
-      .slider
-        min: 0
-        max: state.magnAttrs().length - 1
-        value: state.selAttrIndex
-        slide: (e, ui) -> stopAnimation(); setSelAttrIndexTo(ui.value, false)
-        change: (e, ui) -> setSelAttrIndexTo(ui.value, false)
 
-    $("#yearSlider").focus()
+    clearNodeSelection = ->
+      if selectedNode != null
+        d3.select(selectedNode).selectAll("circle").classed("selected", false)
+        flows.selectAll("line").remove()
+        selectedNode = null
 
-    #$("#playButton").button()
-    ###
+    $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
     $('g.bubble').tipsy
       gravity: 'w'
@@ -797,6 +693,7 @@ this.bubblesChart = ->
       #console.log "bubbles ",state.selAttrIndex, "<>",newSelAttr
       old = state.selAttrIndex
       state.selAttrIndex = newSelAttr
+      updateNodeSizes()
       update(noAnim)
       $(".tseries line.rule").trigger("updateYear")
       for handler in listeners.changeSelDate
@@ -816,8 +713,25 @@ this.bubblesChart = ->
       n.r = Math.max(n.rin, n.rout)
       n.maxr = rscale(n.max)
 
+  placeNodesWithoutCoords = do -> 
+    squeezeFactor = 0.75
+    (nodes) ->
+      totalw = 0
+      for n in nodes
+        if not n.x? or not n.y? then totalw += 2 * n.maxr * squeezeFactor
+      x = 0
+      for n in nodes
+        if not n.x? or not n.y?
+          n.x = x + n.maxr * squeezeFactor + (bubblesChartWidth - totalw)/2
+          n.y = bubblesChartHeight - nodesWithoutCoordsMarginBottom
+          n.gravity = {x: n.x, y: n.y}
+          x += 2 * n.maxr * squeezeFactor
+
+
   update = (noAnim) ->
-    updateNodeSizes()
+    #updateNodeSizes()
+    
+
     duration = if noAnim or noAnimation then 0 else 200
 
     ###
@@ -837,6 +751,7 @@ this.bubblesChart = ->
       .duration(duration)
       .attr("r", (d) -> d.rout)
 
+
     bubble.selectAll("text.nodeLabel")
       .transition()
       .duration(duration).attr("opacity", (d) -> if d.r > 10 then 1.0 else 0)
@@ -849,7 +764,51 @@ this.bubblesChart = ->
       .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
       .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
 
-    force.start() unless dontUseForceLayout
-     
+    if dontUseForceLayout
+      bubble.attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+    else     
+      force.start() 
+
+
+  force.on "tick", (e) -> 
+    
+    k = e.alpha
+    kg = k * .02
+
+    force.nodes().forEach((a, i) ->
+      # Apply gravity forces
+      a.x += (a.gravity.x - a.x) * kg
+      a.y += (a.gravity.y - a.y) * kg
+      force.nodes().slice(i + 1).forEach((b) -> 
+        # Check for collisions.
+        dx = a.x - b.x
+        dy = a.y - b.y
+        #l = Math.sqrt(dx * dx + dy * dy)
+        l2 = (dx * dx + dy * dy)
+        d = a.r + b.r
+        d2 = d * d 
+        #if (l < d)
+        if (l2 < d2)
+          l = Math.sqrt(l2)
+          l = (l - d) / l * k
+          dx *= l
+          dy *= l
+          a.x -= dx
+          a.y -= dy
+          b.x += dx
+          b.y += dy
+      )
+    )
+
+    svg.selectAll("g.bubble")
+      .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+
+    svg.select("g.flows").selectAll("line")
+      .attr("x1", (d) -> d.source.x )
+      .attr("y1", (d) -> d.source.y )
+      .attr("x2", (d) -> d.target.x )
+      .attr("y2", (d) -> d.target.y )
+
+
 
   chart

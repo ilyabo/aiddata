@@ -12,7 +12,7 @@
 
 .bubbleChart g.bubble circle { stroke:#ccc; stroke-width:1; }
 /*g.bubble circle:hover { stroke:#fff; }*/
-.bubbleChart g.bubble circle.selected { stroke:Khaki ; stroke-width:2;}
+.bubbleChart g.bubble circle.selected { stroke:#ccc; /*Khaki*/ stroke-width:2;}
 
 .bubbleChart g.bubble circle.rin { fill:#d56869 ; }
 .bubbleChart g.bubble circle.rout { fill:steelblue; }
