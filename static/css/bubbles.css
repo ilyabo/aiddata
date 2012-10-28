@@ -42,6 +42,13 @@ text-align:center;
   position: fixed; 
   left:0;
 }
+
+.bubbleChart .legend {
+  position: fixed;
+  right:20px;
+  bottom:120px;
+}
+
 #timeSlider {
   width:255px;
   margin-left:15px;

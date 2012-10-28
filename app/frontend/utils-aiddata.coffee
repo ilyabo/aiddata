@@ -1,4 +1,4 @@
-fmt = d3.format(",.0f")
+fmt = d3.format(",.1f")
 
 @shortNumberFormat = (d) ->
   abs = Math.abs(d)

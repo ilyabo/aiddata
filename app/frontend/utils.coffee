@@ -44,6 +44,13 @@ root.log10 = (->
   (x) -> Math.log(x) / l10
 )()
 
+root.pow10 = (n) ->
+  v = 1
+  if n > 0
+    v *= 10 for i in [1..n]; return v
+  else
+    v /= 10 for i in [1..-n]; return v
+
 
 ## These functions might not be needed anymore in the next d3 release
 ## see https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ

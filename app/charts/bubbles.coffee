@@ -227,6 +227,8 @@ this.bubblesChart = ->
 
   init = (selection) ->
 
+    selection.attr("class", "bubbleChart")
+
     data = selection.datum()
 
     isUpdate = not selection.select("svg").empty()
@@ -270,6 +272,69 @@ this.bubblesChart = ->
 
     #timescale = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
   
+
+
+    unless isUpdate
+      selection.append("svg")
+        .attr("class", "legend")
+      .append("g")
+        .attr("class", "outer")
+
+
+    do ->
+      legendMargin = {top: 15, right: 0, bottom: 10, left: 0}
+
+      maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
+      legend = selection.select("svg.legend")
+      
+      maxOrd = Math.floor(log10(maxTotalMagnitude))
+      values = []
+
+      addValue = (v) ->
+        values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
+          
+
+      addValue maxTotalMagnitude
+      addValue pow10(maxOrd) * 5
+      addValue pow10(maxOrd)
+      addValue pow10(maxOrd) / 2
+      values.push(pow10(maxOrd - 1))
+
+      #pow10(maxOrd), pow10(maxOrd - 1) ]
+        #(pow10(i) for i in [maxOrd .. (maxOrd - 2)])
+      
+
+      legend
+        .attr("width", maxR*2 + legendMargin.left + legendMargin.right)
+        .attr("height",maxR + legendMargin.top + legendMargin.bottom)
+
+      legend.select("g.outer")
+        .attr("transform", "translate(#{legendMargin.left + maxR},#{legendMargin.top + maxR})")
+
+      arc = d3.svg.arc()
+        .startAngle(-Math.PI/2)
+        .endAngle(Math.PI/2)
+        .innerRadius(0)
+        .outerRadius(rscale)
+      
+
+      legend = selection.select("svg.legend g.outer").selectAll("path")
+        .data(values)
+
+      legendEnter = legend.enter()
+      legendEnter.append("path")
+        .attr("d", arc)
+      legendEnter.append("text")
+        .attr("text-anchor", "middle")
+        #.attr("alignment-baseline", "central")
+        .attr("x", 0)
+        .attr("y", (d, i) -> if (i < values.length - 1) then (-rscale(d)-1) else 10)
+        .text(magnitudeFormat)
+
+      legend.exit().remove()
+
+
+    
 
 
     #createYearTicks()
@@ -542,7 +607,7 @@ this.bubblesChart = ->
     bubbled = svg.selectAll("g.bubble")
         .data(nodes, (d) -> d.code)
     
-    bubble = bubbled.enter()
+    bubbleEnter = bubbled.enter()
         .append("g")
           .attr("class", "bubble")
           .attr("transform", (d) -> "translate(#{d.x},#{d.y})")
@@ -600,18 +665,18 @@ this.bubblesChart = ->
     $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
 
-    bubble.append("circle")
+    bubbleEnter.append("circle")
       .attr("class", "rin")
       #.attr("opacity", 0.5)
       #.attr("fill", "#f00")
 
-    bubble.append("circle")
+    bubbleEnter.append("circle")
       .attr("class", "rout")
       #.attr("opacity", 0.5)
       #.attr("fill", "#00f")
 
 
-    bubble.append("text")
+    bubbleEnter.append("text")
       .attr("class", "nodeLabel")
       .attr("y", 5)
       .attr("font-size", 9)
@@ -756,7 +821,9 @@ this.bubblesChart = ->
       .attr("r", (d) -> d.rout)
 
     bubble.selectAll("text.nodeLabel")
-      .attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
+      .transition()
+      .duration(duration).attr("opacity", (d) -> if d.r > 10 then 1.0 else 0)
+      #.delay(duration).attr("visibility", (d) -> if d.r > 10 then "visible" else "hidden")
 
     flows = svg.selectAll("g.flows line")
     flows

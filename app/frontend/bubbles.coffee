@@ -28,7 +28,7 @@ barHierarchy = barHierarchyChart()
   .values((d) -> d["sum_#{startYear}"] ? 0)
   # .values((d) -> d.totals[startYear].sum ? 0)
   #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
-  .labelsFormat((d) -> shorten(d.name ? d.key, 33))
+  .labelsFormat((d) -> shorten(d.name ? d.key, 30))
   .labelsTooltipFormat((d) -> name = d.name ? d.key)
   .breadcrumbText(
     do ->
