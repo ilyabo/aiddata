@@ -15,7 +15,7 @@
     script src: 'coffee/utils-aiddata.js'
     script src: 'coffee/utils.js'
     script src: 'coffee/query-history.js'
-    script src: 'queue.js'
+    script src: 'queue.min.js'
     script src: 'libs/history.js/html5/jquery.history.js'
     # script src: 'libs/chroma/chroma.min.js'
     # script src: 'libs/chroma/chroma.colors.js'
@@ -131,7 +131,10 @@
 
 
 
-    div id:"loading", -> "Loading..."
+    div id:"loading", -> 
+      div class:"blockUI"
+      img src:"images/loading.gif"
+
     div id:"error", class:"alert-error alert", ->
 
     div id:"leftSidebar", ->
@@ -141,6 +144,7 @@
     div id:"purposeBars"
 
     div id:"bubblesChart"
+
 
 
     ###
@@ -252,6 +256,57 @@
     #script src: 'js/horizon.js'
     script src: 'coffee/horizon3.js'
 
+
+
+
+
+
+
+
+
+  @view horizon4: ->
+    @page = "horizon4"
+  
+    div id:"loading", -> 
+      div class:"blockUI"
+      img src:"images/loading.gif"
+
+    div id:'horizonParent', ->
+      div id:'donorsChart', class:'horizonChart'
+      div id:'recipientsChart', class:'horizonChart'
+      # div id:'purposesChart', class:'horizonChart'
+
+    # div id:"indicatorModal", class:"modal hide fade", ->
+    #   div class:"modal-header", ->
+    #     button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
+    #     h3 -> "Indicators"
+    #   div class:"modal-body", ->
+    #     div class:"input-append", ->
+    #       input id:"indicatorTypeahead", class:"", type:"text", "data-provide":"typeahead"
+    #       button id:"indicatorClear", class:"btn", type:"button", -> "&times;"
+
+    #     div class:'ctl-hint',-> "Start typing to find an indicator"
+    #     div id:'indicatorChart', class:'horizonChart'
+    #     div id:'indicatorDesc', ->
+    #       div class:'name'
+    #       div class:'topics'
+    #       div class:'sourceNote'
+    #       div class:'source'
+
+    #   div class:"modal-footer", ->
+    #     a href:"#", id:"indicatorModalClose", class:"btn", -> "Cancel"
+    #     a href:"#", id:"indicatorModalLoad", class:"btn btn-primary", -> "Load"
+
+    style '@import url("css/horizon4.css");'
+    script src: 'queue.min.js'
+    # script src: 'js/cubism.v1.my.js'
+    script src: 'coffee/utils.js'
+    script src: 'coffee/utils-aiddata.js'
+    # #script src: 'js/cubism-aiddata.js'
+    # script src: 'libs/chroma/chroma.min.js'
+    # script src: 'libs/chroma/chroma.colors.js'
+    #script src: 'js/horizon.js'
+    script src: 'coffee/horizon4.js'
 
 
 
@@ -436,4 +491,42 @@
     script src: 'coffee/utils.js'
     script src: 'coffee/utils-aiddata.js'
     script src: "coffee/us-donations.js"
+
+
+
+
+
+
+
+
+
+
+  ############# break and split ###############
+
+  @view spatialTreemap : ->
+
+    @page = "spatialTreemap"
+    script src: 'queue.min.js'
+    script src: 'coffee/utils.js'
+    script src: "coffee/spatial-treemap.js"
+    script src: "spatialTreemapView.js"
+
+  
+  @coffee '/spatialTreemapView.js': ->
+
+    map1 = spatialTreemap()
+      .width(1000)
+      .height(600)
+
+
+    queue()
+      .defer(loadCsv, "data/aiddata-countries.csv")
+      .await (err, loaded) ->
+        [ countries ] = loaded
+
+        d3.select("body").append("div")
+          .datum(countries)
+          .call(map1)
+        
+    
 

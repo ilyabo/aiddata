@@ -92,22 +92,45 @@ timeSlider = timeSliderControl()
 #   .onload (data) ->
 
 
-reloadFlows = ->
-  filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
-  queue()
-    .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}")
-    .await (err, loaded) ->
 
-      # list of flows with every year separated
-      #   -> list grouped by o/d, all years' values in one object
-      flows = groupFlowsByOD loaded[0] 
+loadingStarted = ->
+  $("body").css("cursor", "progress")
+  $("#loading .blockUI")
+    .css("cursor", "progress")
+    .show()
+  # $("#loading img").stop().fadeIn(100)
+  # $(".btn").attr("disabled", true)
+  # $("#indicatorTypeahead").attr("disabled", true)
 
-      chart = d3.select("#bubblesChart")
-      data = chart.datum()
-      data.flows = flows
-      chart
-        .datum(data)
-        .call(bubbles)
+loadingFinished = ->
+  $("body").css("cursor", "auto")
+  $("#loading .blockUI").hide()
+  # $("#loading img").stop().fadeOut(500)
+  # $(".btn").button("complete")
+  # $("#indicatorTypeahead").attr("disabled", false)
+  # updateCtrls()
+
+
+reloadFlows = do ->
+  cache = cachingLoad(100)
+  ->
+    filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
+    queue()
+      .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
+      .await (err, loaded) ->
+
+        # list of flows with every year separated
+        #   -> list grouped by o/d, all years' values in one object
+        flows = groupFlowsByOD loaded[0] 
+
+        chart = d3.select("#bubblesChart")
+        data = chart.datum()
+        data.flows = flows
+        chart
+          .datum(data)
+          .call(bubbles)
+
+
 
 
 

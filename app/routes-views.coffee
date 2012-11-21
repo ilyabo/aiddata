@@ -12,6 +12,7 @@
   @get '/horizon': -> @render horizon: {layout: 'bootstrap.eco'}
  
   @get '/horizon3': -> @render horizon3: {layout: 'bootstrap.eco'}
+  @get '/horizon4': -> @render horizon4: {layout: 'bootstrap.eco'}
  
   @get '/flowmap': -> @render flowmap: {layout: 'bootstrap.eco'}
  
@@ -28,6 +29,8 @@
   @get '/purpose-bars': -> @render purposeBars: {layout: 'bootstrap.eco'}
 
   @get '/us-donations': -> @render "us-donations": {layout: 'bootstrap.eco'}
+
+  @get '/streemap': -> @render spatialTreemap: {layout: 'bootstrap.eco'}
 
   @get '/ffprints?refugees': -> 
     @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}
