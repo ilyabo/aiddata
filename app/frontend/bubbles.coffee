@@ -95,7 +95,8 @@ timeSlider = timeSliderControl()
 
 loadingStarted = ->
   $("body").css("cursor", "progress")
-  $("#loading .blockUI")
+  $("#loading").show()
+  $("#blockUI")
     .css("cursor", "progress")
     .show()
   # $("#loading img").stop().fadeIn(100)
@@ -104,7 +105,8 @@ loadingStarted = ->
 
 loadingFinished = ->
   $("body").css("cursor", "auto")
-  $("#loading .blockUI").hide()
+  $("#loading").hide()
+  $("#blockUI").hide()
   # $("#loading img").stop().fadeOut(500)
   # $(".btn").button("complete")
   # $("#indicatorTypeahead").attr("disabled", false)
@@ -114,6 +116,7 @@ loadingFinished = ->
 reloadFlows = do ->
   cache = cachingLoad(100)
   ->
+    loadingStarted()
     filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
     queue()
       .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
@@ -130,6 +133,8 @@ reloadFlows = do ->
           .datum(data)
           .call(bubbles)
 
+        loadingFinished()
+
 
 
 
@@ -144,7 +149,8 @@ queue()
   .await (err, loaded) ->
 
     if err?  or  not(loaded?)
-      $("#loading").remove()
+      $("#loading").hide()
+      $("#blockUI").hide()
       $("#error")
         .addClass("alert-error alert")
         .html("Could not load data")
@@ -203,7 +209,8 @@ queue()
 
     bubbles.setSelDateTo(utils.date.yearToDate(startYear), false)
 
-    $("#loading").remove()
+    $("#loading").hide()
+    $("#blockUI").hide()
 
 
 

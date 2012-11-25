@@ -131,8 +131,8 @@
 
 
 
+    div id:"blockUI"
     div id:"loading", -> 
-      div class:"blockUI"
       img src:"images/loading.gif"
 
     div id:"error", class:"alert-error alert", ->
