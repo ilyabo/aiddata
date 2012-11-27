@@ -12,8 +12,8 @@
 
 .bubbleChart g.bubble circle { stroke:#ccc; stroke-width:1; }
 /*g.bubble circle:hover { stroke:#fff; }*/
-/*.bubbleChart g.bubble circle.selected { stroke:#ccc; /*Khaki*/ stroke-width:2;}*/
-.bubbleChart g.bubble circle.selected.rin { stroke:rgb(160,57,62); }
+/*.bubbleChart g.bubble circle.selected { stroke:#ccc; /Khaki/ stroke-width:2;}*/
+.bubbleChart g.bubble circle.selected.rin { stroke:rgb(108,1,24); }
 .bubbleChart g.bubble circle.selected.rout { stroke:rgb(0,45,87); }
 .bubbleChart g.bubble.highlighted circle.selected.rin { stroke:rgb(108,1,24); stroke-width:2; }
 .bubbleChart g.bubble.highlighted circle.selected.rout { stroke:rgb(0,45,87); stroke-width:2; }
