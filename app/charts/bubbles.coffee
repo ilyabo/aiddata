@@ -563,15 +563,14 @@ this.bubblesChart = ->
 
 
     unless isUpdate
-
       $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
-      $('g.bubble').tipsy
-        gravity: 'w'
-        html: true
-        opacity: 0.9
-        trigger: "manual"
-        title: -> bubbleTooltip(d3.select(this).data()[0])
+    $('g.bubble').tipsy
+      gravity: 'w'
+      html: true
+      opacity: 0.9
+      trigger: "manual"
+      title: -> bubbleTooltip(d3.select(this).data()[0])
 
 
     ###
@@ -859,7 +858,7 @@ this.bubblesChart = ->
         dy = a.y - b.y
         #l = Math.sqrt(dx * dx + dy * dy)
         l2 = (dx * dx + dy * dy)
-        d = a.r + b.r
+        d = a.r + b.r + 2     # +2 to leave space for the border
         d2 = d * d 
         #if (l < d)
         if (l2 < d2)
