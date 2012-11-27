@@ -359,13 +359,13 @@ this.bubblesChart = ->
           .attr("x", "28")
           .attr("y", "0")
           .attr("width", "15")
-          .attr("height", "10")
+          .attr("height", "11")
           .attr("fill", (d) -> d.color)
 
         itemEnter.append("text")
           .attr("x", "47")
           .attr("y", "5")
-          .attr("dominant-baseline", "middle")
+          .attr("alignment-baseline", "central")
           .text((d) -> d.name)
 
 
@@ -490,7 +490,7 @@ this.bubblesChart = ->
 
     bubbleEnter.append("text")
       .attr("class", "nodeLabel")
-      .attr("y", 5)
+      .attr("y", 1)
       .attr("font-size", 9)
       .attr("text-anchor", "middle")
       .text((d)-> c = d[conf.nodeIdAttr]; if c.length < 7 then c else c.substring(0,5)+".." )
