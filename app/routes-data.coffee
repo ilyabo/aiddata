@@ -177,27 +177,35 @@
             else
               v
 
+        findMatch = (values, propVal) ->                
+          found = false
+          for v in values
+            if v instanceof RegExp
+              if v.test(propVal)
+                found = true
+                break
+            else
+              if (propVal is v)
+                found = true
+                break
+          found
+
+
 
         agg.where((get) ->
-
 
           return false unless (minDate <= +get("date") <= maxDate)
 
           if filter?
             for prop, values of filter
-              propVal = get(prop)
 
-              found = false
-
-              for v in values
-                if v instanceof RegExp
-                  if v.test(propVal)
-                    found = true
-                    break
+              found = (
+                if prop is "node"
+                  (findMatch(values, get("donor")) or findMatch(values, get("recipient")))
                 else
-                  if (propVal is v)
-                    found = true
-                    break
+                  findMatch(values, get(prop))
+              )
+
 
               return false unless found
 

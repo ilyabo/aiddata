@@ -72,10 +72,10 @@ text-align:center;
 }
 
 #tseriesPanel { 
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
+  width:250px;
   padding-right:15px;
-  height: auto;
   background-color:#fff;
   padding:5px;
   -moz-border-radius: 5px;

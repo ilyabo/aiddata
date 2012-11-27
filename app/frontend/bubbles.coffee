@@ -14,7 +14,16 @@ bubbles = bubblesChart()
     lonAttr: 'Lon'
     flowMagnAttrs: years
     )
-  .on "changeSelDate", (current, old) -> timeSlider.setTime(current)
+  .on("selectDate", (current, old) -> 
+    timeSlider.setTime(current)
+  )
+  .on("selectNode", (sel) ->
+    unless sel?
+      delete filters.node
+    else
+      filters.node = [ sel.code ]
+    reloadFlows()
+  )
 
 
 barHierarchy = barHierarchyChart()

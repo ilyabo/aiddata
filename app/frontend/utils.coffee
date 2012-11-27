@@ -196,11 +196,11 @@ root.provideNodesWithTotals =
         d.inbound ?= []
 
         for attr,i in conf.flowMagnAttrs
-          o.outbound[i] ?= 0
-          d.inbound[i] ?= 0
 
           magnitude = asNumber(flow[attr])
           unless isNaN(magnitude)
+            o.outbound[i] ?= 0
+            d.inbound[i] ?= 0
             o.outbound[i] += magnitude
             d.inbound[i] += magnitude
             if (o.outbound[i] > max) then max = o.outbound[i]

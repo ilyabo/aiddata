@@ -70,7 +70,6 @@ this.bubblesChart = ->
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
   createTimeSeries = (tseriesDiv, data, title, dir) ->
     
-
     dateDomain = [ dateFromMagnAttrInd(0), dateFromMagnAttrInd(state.magnAttrs().length - 1) ]
 
     tschart = timeSeriesChart()
@@ -106,9 +105,9 @@ this.bubblesChart = ->
       unless @div.length > 0 
         throw new Error("Element with id '#{@panelDivId}' not found")
 
-    find : (did) -> $(@div).children("[data-id="+did+"]")
+    find : (did) -> $(@div).children("[data-id='"+did+"']")
 
-    findNot : (did) -> $(@div).children(":not([data-id="+did+"])")
+    findNot : (did) -> $(@div).children(":not([data-id='"+did+"'])")
 
     addNew : (did, cssClass) -> 
       $(@div).append('<div data-id="'+did+'" class="'+cssClass+'"></div>')
@@ -448,6 +447,7 @@ this.bubblesChart = ->
     bubble = svg.selectAll("g.bubble")
       .data(nodes, (d) -> d[conf.nodeIdAttr])
 
+
     # update subnodes data
     bubble.selectAll("circle").datum((d) -> this.parentNode.__data__)
     bubble.selectAll("text").datum((d) -> this.parentNode.__data__)
@@ -468,19 +468,22 @@ this.bubblesChart = ->
       .text((d)-> c = d[conf.nodeIdAttr]; if c.length < 7 then c else c.substring(0,5)+".." )
 
     bubbleEnter.on 'click', (d, i) ->
+      old = selectedNode
       if selectedNode == this
-        tseriesPanel.remove("node" + i)
+        tseriesPanel.remove("node_" + d.code)
         selectedNode = null
         d3.select(this).selectAll("circle").classed("selected", false)
+        dispatch.selectNode(null, old?.__data__)
       else 
         if selectedNode != null
-          tseriesPanel.removeOthers("node" + i)
+          tseriesPanel.removeOthers("node_" + d.code)
           d3.select(selectedNode).selectAll("circle").classed("selected", false)
           flows.selectAll("line").remove()
         else
           createNodeTimeSeries(this, d, i)  
         selectedNode = this
         d3.select(this).selectAll("circle").classed("selected", true)
+        dispatch.selectNode(this.__data__, old?.__data__)
         showFlowsOf this
 
     .on 'mouseover', (d, i) ->
@@ -501,7 +504,7 @@ this.bubblesChart = ->
         flows.selectAll("line").remove()
 
       if selectedNode != this
-        tseriesPanel.remove("node" + i)
+        tseriesPanel.remove("node_" + d.code)
 
       $(this).tipsy("hide")
 
@@ -525,7 +528,9 @@ this.bubblesChart = ->
       if selectedNode?
         d3.select(selectedNode).selectAll("circle").classed("selected", false)
         flows.selectAll("line").remove()
+        old = selectedNode
         selectedNode = null
+        dispatch.selectNode(null, old?.__data__)
 
 
     unless isUpdate
@@ -582,11 +587,9 @@ this.bubblesChart = ->
 
     ###
 
-  listeners = { changeSelDate : [] }
+  dispatch = d3.dispatch("selectDate", "selectNode")
 
-  chart.on = (event, handler) ->
-    listeners.changeSelDate.push handler
-    chart
+  d3.rebind(chart, dispatch, "on");
 
 
   chart.setSelDateTo = (date, noAnim) ->
@@ -602,10 +605,10 @@ this.bubblesChart = ->
       updateNodeSizes()
       update(noAnim)
       $(".tseries line.rule").trigger("updateYear")
-      for handler in listeners.changeSelDate
-        handler(
-          utils.date.yearToDate(state.magnAttrs(newSelAttr)),
-          utils.date.yearToDate(state.magnAttrs(old)))
+      dispatch.selectDate(
+        utils.date.yearToDate(state.magnAttrs(newSelAttr)),
+        utils.date.yearToDate(state.magnAttrs(old))
+      )
       #$("#yearSlider").slider('value', state.selAttrIndex)
     chart
 
@@ -689,17 +692,29 @@ this.bubblesChart = ->
 
 
   createNodeTimeSeries = (node, d, i) ->
-    data = 
-      inbound : state.magnAttrs().map (attr, i) -> 
-        date: dateFromMagnAttr(attr)
-        value: d.data.totals?.inbound?[i] ? 0
+    
+    totals = d.data.totals
 
-      outbound : state.magnAttrs().map (attr, i) -> 
-        date: dateFromMagnAttr(attr)
-        value: d.data.totals?.outbound?[i] ? 0
 
-    if not tseriesPanel.contains("node" + i)
-      tseries = tseriesPanel.addNew("node" + i, "tseries")
+    data = do ->
+      inbound :
+        if totals?.inbound?
+          (for val,i in totals.inbound when val?
+            date: dateFromMagnAttr(state.magnAttrs()[i])
+            value: val
+          )
+        else []
+
+      outbound :
+        if totals?.outbound?
+          (for val,i in totals.outbound when val?
+            date: dateFromMagnAttr(state.magnAttrs()[i])
+            value: val
+          )
+        else []
+
+    if not tseriesPanel.contains("node_" + d.code)
+      tseries = tseriesPanel.addNew("node_" + d.code, "tseries")
       nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
       #parent = d3.select(tseries)
       #parent.setSelDateTo = setSelDateTo
