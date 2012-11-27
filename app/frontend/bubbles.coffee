@@ -122,27 +122,27 @@ loadingFinished = ->
   # updateCtrls()
 
 
-reloadFlows = do ->
-  cache = cachingLoad(100)
-  ->
-    loadingStarted()
-    filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
-    queue()
-      .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
-      .await (err, loaded) ->
+cache = cachingLoad(100)
 
-        # list of flows with every year separated
-        #   -> list grouped by o/d, all years' values in one object
-        flows = groupFlowsByOD loaded[0] 
+reloadFlows = ->
+  loadingStarted()
+  filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
+  queue()
+    .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
+    .await (err, loaded) ->
 
-        chart = d3.select("#bubblesChart")
-        data = chart.datum()
-        data.flows = flows
-        chart
-          .datum(data)
-          .call(bubbles)
+      # list of flows with every year separated
+      #   -> list grouped by o/d, all years' values in one object
+      flows = groupFlowsByOD loaded[0] 
 
-        loadingFinished()
+      chart = d3.select("#bubblesChart")
+      data = chart.datum()
+      data.flows = flows
+      chart
+        .datum(data)
+        .call(bubbles)
+
+      loadingFinished()
 
 
 
@@ -150,7 +150,7 @@ reloadFlows = do ->
 
 queue()
   .defer(loadCsv, "#{dynamicDataPath}aiddata-nodes.csv")
-  .defer(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient")
+  .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient&filter=%7B%7D"))
   .defer(loadJson, "data/world-countries.json")
   .defer(loadCsv, "data/aiddata-countries.csv")
   #.defer(loadCsv, "dv/flows/by/purpose.csv")
@@ -220,6 +220,9 @@ queue()
 
     $("#loading").hide()
     $("#blockUI").hide()
+
+    $("#purposeBars").show()
+
 
 
 

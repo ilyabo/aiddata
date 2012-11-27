@@ -27,6 +27,8 @@ text-align:center;
 
 
 #purposeBars {
+  display:none;
+  
 	height: auto;
   position: fixed;
   right:10px;
@@ -72,12 +74,13 @@ text-align:center;
 }
 
 #tseriesPanel { 
-  overflow-y: scroll;
+  overflow-y: hidden;
   overflow-x: hidden;
   width:250px;
   padding-right:15px;
   background-color:#fff;
   padding:5px;
+  height:auto;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;  

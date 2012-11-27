@@ -160,7 +160,7 @@ this.bubblesChart = ->
 
 
   updateLegend = (selection, maxTotalMagnitude) ->
-    legendMargin = {top: 15, right: 0, bottom: 10, left: 0}
+    legendMargin = {top: 15, right: 2, bottom: 10, left: 2}
 
     maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
     legend = selection.select("svg.legend")
@@ -170,7 +170,7 @@ this.bubblesChart = ->
 
     unless isNaN(maxTotalMagnitude)
       addValue = (v) ->
-        values.push(v) if values.length is 0 or rscale(values[values.length - 1]) - rscale(v) > 11
+        values.push(v) if values.length is 0 or (rscale(values[values.length - 1]) - rscale(v)) > 6
       addValue maxTotalMagnitude
       addValue pow10(maxOrd) * 5
       addValue pow10(maxOrd)
@@ -180,14 +180,14 @@ this.bubblesChart = ->
 
     legend
       .attr("width", maxR*2 + legendMargin.left + legendMargin.right)
-      .attr("height",maxR + legendMargin.top + legendMargin.bottom)
+      .attr("height",maxR*2 + legendMargin.top + legendMargin.bottom)
 
     legend.select("g.outer")
       .attr("transform", "translate(#{legendMargin.left + maxR},#{legendMargin.top + maxR})")
 
     arc = d3.svg.arc()
-      .startAngle(-Math.PI/2)
-      .endAngle(Math.PI/2)
+      .startAngle(-Math.PI)
+      .endAngle(Math.PI)
       .innerRadius(0)
       .outerRadius(rscale)
     
@@ -212,6 +212,8 @@ this.bubblesChart = ->
 
 
     # update
+    item.attr("transform", (d) -> "translate(0,#{maxR-rscale(d)})")
+
     item.selectAll("path")
       .transition().duration(200)
       .attr("d", arc)
@@ -838,10 +840,15 @@ this.bubblesChart = ->
           l = (l - d) / l * k
           dx *= l
           dy *= l
-          a.x -= dx
-          a.y -= dy
-          b.x += dx
-          b.y += dy
+          
+          # the larger body should move less
+          ka = 1 - (a.r / d)
+          kb = 1 - (b.r / d)
+
+          a.x -= dx * ka
+          a.y -= dy * ka
+          b.x += dx * kb
+          b.y += dy * kb
       )
     )
 
