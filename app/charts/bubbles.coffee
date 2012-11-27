@@ -160,7 +160,7 @@ this.bubblesChart = ->
 
 
   updateLegend = (selection, maxTotalMagnitude) ->
-    legendMargin = {top: 60, right: 2, bottom: 10, left: 2}
+    legendMargin = {top: 85, right: 2, bottom: 10, left: 2}
 
     maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
     legend = selection.select("svg.legend")
@@ -346,6 +346,18 @@ this.bubblesChart = ->
         colors = legend.append("g")
           .attr("class", "colors")
 
+        legend.append("text")
+          .attr("x", "70")
+          .attr("y", "15")
+          .attr("text-anchor", "middle")
+          .text("Aid commitment amount")
+
+        legend.append("text")
+          .attr("x", "70")
+          .attr("y", "28")
+          .attr("text-anchor", "middle")
+          .text("US$ constant (2009)")
+
         legend.append("g").attr("class", "outer")
 
         itemEnter = colors.selectAll("g.item")
@@ -353,20 +365,21 @@ this.bubblesChart = ->
           .enter()
         .append("g")
           .attr("class", "item")
-          .attr("transform", (d,i) -> "translate(0, #{i*15})")
+          .attr("transform", (d,i) -> "translate(42, #{40 + i*15})")
 
         itemEnter.append("rect")
-          .attr("x", "28")
+          .attr("x", "0")
           .attr("y", "0")
           .attr("width", "15")
           .attr("height", "11")
           .attr("fill", (d) -> d.color)
 
         itemEnter.append("text")
-          .attr("x", "47")
+          .attr("x", "19")
           .attr("y", "5")
           .attr("alignment-baseline", "central")
           .text((d) -> d.name)
+
 
 
 
