@@ -1,4 +1,8 @@
 Code,Name,Lat,Lon,region1,region2
+"Far East Asia, regional","Far East Asia, regional",44,115,Far East Asia,Far East Asia
+"Middle East, regional","Middle East, regional",29.2,42.6,Middle East,Middle East
+"South Asia, regional","South Asia, regional",25,77,Asia,Southern Asia
+"Europe, regional","Europe, regional",53.4,19.3,Europe,Europe
 PSE,Palestine,31.92157,35.20329,Asia,Western Asia
 TUV,Tuvalu,-7.540024,178.283237,Oceania,Polynesia
 THA,Thailand,15.502027,101.199542,Asia,South-Eastern Asia

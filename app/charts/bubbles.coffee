@@ -470,6 +470,7 @@ this.bubblesChart = ->
       .text((d)-> c = d[conf.nodeIdAttr]; if c.length < 7 then c else c.substring(0,5)+".." )
 
     bubbleEnter.on 'click', (d, i) ->
+      #flows.selectAll("line").remove()
       old = selectedNode
       if selectedNode == this
         tseriesPanel.remove("node_" + d.code)
@@ -486,7 +487,7 @@ this.bubblesChart = ->
         selectedNode = this
         d3.select(this).selectAll("circle").classed("selected", true)
         dispatch.selectNode(this.__data__, old?.__data__)
-        showFlowsOf this
+      showFlowsOf this
 
     .on 'mouseover', (d, i) ->
       d3.select(this).classed("highlighted", true)
@@ -619,6 +620,7 @@ this.bubblesChart = ->
 
 
   showFlowsOf = (bbl) ->
+
     flows = svg.selectAll("g.flows")
     d = d3.select(bbl).datum()
 
@@ -635,12 +637,8 @@ this.bubblesChart = ->
       outflow.exit().remove()
 
       outflow.enter().append("svg:line")
-          .attr("class", "out")
-          .attr("opacity", 0)
-          .transition()
-            .duration(300)
-              .attr("opacity", 1)
-
+        .attr("class", "out")
+        .attr("stroke-width", 0)
 
     if (d.inlinks?)
       inflow = flows.selectAll("line.in")
@@ -649,19 +647,17 @@ this.bubblesChart = ->
       inflow.exit().remove()
 
       inflow.enter().append("svg:line")
-          .attr("class", "in")
-          .attr("opacity", 0)
-          .transition()
-            .duration(300)
-              .attr("opacity", 1)
+        .attr("class", "in")
+        .attr("stroke-width", 0)
 
 
-    flows.selectAll("line")
+    lines = flows.selectAll("line")
+
+    lines
       .attr("x1", (d) -> d.source.x)
       .attr("y1", (d) -> d.source.y)
       .attr("x2", (d) -> d.target.x)
       .attr("y2", (d) -> d.target.y)
-      .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
       .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
       .on "mouseover", (d, i) ->
         if this.parentNode?
@@ -675,11 +671,16 @@ this.bubblesChart = ->
         $(tipsy.$tip)
             .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
             .css('left', d3.event.pageX + 10)
-
-
       .on "mouseout", (d, i) ->
         $(this).tipsy("hide")
         tseriesPanel.remove("flow" + i)
+
+      lines
+        .transition()
+            .duration(200)
+              .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
+              #.attr("opacity", 1)
+
 
     $('g.flows line').tipsy
       gravity: 'w'
