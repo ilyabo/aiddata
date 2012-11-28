@@ -509,12 +509,21 @@ this.bubblesChart = ->
     bubbleEnter.append("circle").attr("class", "rin")
     bubbleEnter.append("circle").attr("class", "rout")
 
+    parensre = /^\((.*)\)$/
+
     bubbleEnter.append("text")
       .attr("class", "nodeLabel")
       .attr("y", 1)
       .attr("font-size", 9)
       .attr("text-anchor", "middle")
-      .text((d)-> c = d[conf.nodeIdAttr]; if c.length < 7 then c else c.substring(0,5)+".." )
+      .text((d)-> 
+        c = d[conf.nodeIdAttr]
+
+        m = parensre.exec c
+        c = (if m? then m[1] else c)
+
+        (if c.length < 5 then c else c.substring(0,3)+"..")
+      )
 
     bubbleEnter.on 'click', (d, i) ->
       #flows.selectAll("line").remove()
