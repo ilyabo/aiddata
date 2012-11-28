@@ -176,7 +176,7 @@ this.barHierarchyChart = () ->
     duration = 500
     shortDuration = 50
 
-    update = (delay = 1000) ->
+    update = ->
       children = (if currentNode.children? then currentNode.children else [currentNode])
 
       # bar ordering
@@ -208,7 +208,7 @@ this.barHierarchyChart = () ->
       return true  # causes the timer to stop
 
 
-    ->
+    (delay = 1000) ->
       updateBreadcrumbCaption(currentNode)
       vis.selectAll("rect")
         .transition()
