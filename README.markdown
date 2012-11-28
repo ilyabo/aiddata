@@ -5,6 +5,11 @@ To install dependencies run
 
     npm install
 
+Then, run
+
+    cake refresh-cached
+
+    
 To run the app in the development mode use
   
     cake restart
