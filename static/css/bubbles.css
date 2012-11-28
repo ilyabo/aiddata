@@ -28,7 +28,7 @@ text-align:center;
 
 #purposeBars {
   display:none;
-  
+
 	height: auto;
   position: fixed;
   right:10px;
@@ -70,14 +70,14 @@ text-align:center;
 
 #timeSlider {
   width:255px;
-  margin-left:15px;
+  margin-left:22px;
 }
 
 #tseriesPanel { 
   overflow-y: hidden;
   overflow-x: hidden;
-  width:250px;
-  padding-right:15px;
+  width:267px;
+  
   background-color:#fff;
   padding:5px;
   height:auto;
@@ -91,6 +91,7 @@ text-align:center;
 .tseries .pi_0 .dot  { stroke-width:0.5; }
 
 
+/*
 #yearSliderOuter {
   margin: 0 auto;
   display:none;
@@ -123,6 +124,4 @@ text-align:center;
  }
 
 #yearText {  fill:#ccc;  font-weight:bold; }
-
-
-
+*/

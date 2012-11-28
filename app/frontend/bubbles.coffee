@@ -23,6 +23,7 @@ bubbles = bubblesChart()
     else
       filters.node = [ sel.code ]
     reloadFlows()
+    reloadPurposes()
   )
 
 
@@ -45,8 +46,8 @@ barHierarchy = barHierarchyChart()
       (currentNode) ->
         v = barHierarchy.values()
         data = currentNode; (data = data.parent while data.parent?)
-        formatMagnitude(v(currentNode)) + " (" + 
-        percentageFormat(v(currentNode) / v(data)) + " of total)"
+        formatMagnitude(v(currentNode)) + " in total"
+        #" (" + percentageFormat(v(currentNode) / v(data)) + " of total)"
   )
   .on("select", (sel) ->
     if sel.key is null or sel.key is ""
@@ -124,29 +125,53 @@ loadingFinished = ->
 
 cache = cachingLoad(100)
 
-reloadFlows = ->
+reloadFlows = (callback) ->
   loadingStarted()
   filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
   queue()
     .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
     .await (err, loaded) ->
+      if err?
+        callback err if callback?
+      else
+        # list of flows with every year separated
+        #   -> list grouped by o/d, all years' values in one object
+        flows = groupFlowsByOD loaded[0] 
 
-      # list of flows with every year separated
-      #   -> list grouped by o/d, all years' values in one object
-      flows = groupFlowsByOD loaded[0] 
+        chart = d3.select("#bubblesChart")
+        data = chart.datum()
+        data.flows = flows
+        chart
+          .datum(data)
+          .call(bubbles)
 
-      chart = d3.select("#bubblesChart")
-      data = chart.datum()
-      data.flows = flows
-      chart
-        .datum(data)
-        .call(bubbles)
+        callback(null, data) if callback?
 
       loadingFinished()
 
 
+reloadPurposes = do ->
+  valueAttrs = do ->
+    arr = []
+    for y in years
+      for attr in ["sum", "count"]
+        arr.push "#{attr}_#{y}"
+    arr
+
+  ->
+    if (filters.node? and filters.node.length > 0)
+      filterq = "?node=" + filters.node[0] # todo: support for multiple node selection
+    else
+      filterq = ""
+    d3.json "purposes-with-totals.json#{filterq}", (purposeTree) ->
+      purposeTree.name = "Purposes"
+      utils.aiddata.purposes.provideWithTotals(purposeTree, valueAttrs, "values", "totals")
+      d3.select("#purposeBars")
+        .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
+        .call(barHierarchy)
 
 
+reloadPurposes()
 
 queue()
   .defer(loadCsv, "#{dynamicDataPath}aiddata-nodes.csv")
@@ -154,7 +179,6 @@ queue()
   .defer(loadJson, "data/world-countries.json")
   .defer(loadCsv, "data/aiddata-countries.csv")
   #.defer(loadCsv, "dv/flows/by/purpose.csv")
-  .defer(loadJson, "purposes-with-totals.json")
   .await (err, loaded) ->
 
     if err?  or  not(loaded?)
@@ -166,10 +190,7 @@ queue()
       return
 
 
-    [ nodes, flows, map, countries, purposeTree ] = loaded
-
-    purposeTree.name = "Purposes"
-
+    [ nodes, flows, map, countries,  ] = loaded
 
 
 
@@ -196,25 +217,7 @@ queue()
     d3.select("#timeSlider")
       .call(timeSlider)
 
-    # purposes = d3.nest()
-    #   .key((d) -> d.date)
-    #   .map(purposes)
-
-    valueAttrs = do ->
-      arr = []
-      for y in years
-        for attr in ["sum", "count"]
-          arr.push "#{attr}_#{y}"
-      arr
-
-    utils.aiddata.purposes.provideWithTotals(purposeTree, valueAttrs, "values", "totals")
-
-
-
-
-    d3.select("#purposeBars")
-      .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
-      .call(barHierarchy)
+ 
 
     bubbles.setSelDateTo(utils.date.yearToDate(startYear), false)
 

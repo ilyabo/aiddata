@@ -280,7 +280,7 @@
         if @query.origin? or @query.dest?
           [origin, dest] = [@query.origin, @query.dest]
 
-          re = /^[A-Za-z\-0-9]{2,10}$/
+          re = /^[A-Za-z\-0-9\,\.\s\(\)]{2,64}$/
           if (origin? and not re.test origin) or (dest and not re.test dest)
             @send { err: "Bad origin/dest" }
             return
@@ -332,50 +332,62 @@
 
 
 
-  getFlowTotalsByPurposeAndDate = caching.loader { preload : true }, (callback) ->
-    getFlows (err, table) -> 
-      if err? then callback err
-      else
-        data = table.aggregate().sparse()
-          .by("date", "purpose")
-          .sum("sum_amount_usd_constant")
-          .as("sum_amount_usd_constant", "sum")
-          .as("purpose", "code")
-          .count()
-          .columns()
+  #getFlowTotalsByPurposeAndDate = caching.loader { preload : true }, (callback) ->
 
-        rows = columnsAsRows(data)
+  getFlowTotalsByPurposeAndDate = (origin, dest, node) ->
+    (callback) ->
+      getFlows (err, table) -> 
+        if err? then callback err
+        else
+          agg = table.aggregate().sparse()
+            .by("date", "purpose")
+            .sum("sum_amount_usd_constant")
+            .as("sum_amount_usd_constant", "sum")
+            .as("purpose", "code")
+            .count()
 
-        nested = d3.nest()
-          .key((d) -> d.code)
-          .key((d) -> d.date)
-          .rollup((arr) ->
-            for d in arr
-              delete d.code; delete d.date
-              #d.sum = ~~(d.sum / 1000)
-            if arr.length is 1 then arr[0] else arr
-          )
-          .map(rows)
+          if origin? or dest? or node?
+            agg.where((get) -> 
+              (not(origin) or (get("donor") is origin)) and 
+              (not(dest) or (get("recipient") is dest)) and
+              (not(node) or (get("donor") is node)  or (get("recipient") is node)) 
+            )
 
-        callback null, nested
+          data = agg.columns()
+
+          rows = columnsAsRows(data)
+
+          nested = d3.nest()
+            .key((d) -> d.code)
+            .key((d) -> d.date)
+            .rollup((arr) ->
+              for d in arr
+                delete d.code; delete d.date
+                #d.sum = ~~(d.sum / 1000)
+              if arr.length is 1 then arr[0] else arr
+            )
+            .map(rows)
+
+          callback null, nested
 
 
 
 
   @get '/purposes-with-totals.json': ->
 
-    if @query.origin? or @query.dest?
-      [ origin, dest ] = [ @query.origin, @query.dest ]
+    # 'node' means we need flows of a specific node, both incoming and outgoing
+    if @query.origin? or @query.dest? or @query.node
+      [ origin, dest, node ] = [ @query.origin, @query.dest, @query.node ]
 
-      re = /^[A-Za-z\-0-9]{2,10}$/
-      if (origin? and not re.test origin) or (dest and not re.test dest)
-        @send { err: "Bad origin/dest" }
+      re = /^.{2,64}$/
+      if (origin? and not re.test origin) or (dest and not re.test dest) or (node and not re.test node)
+        @send { err: "Bad origin/dest/node" }
         return
 
 
     queue()
       .defer(getPurposeTree)
-      .defer(getFlowTotalsByPurposeAndDate)
+      .defer(getFlowTotalsByPurposeAndDate(origin, dest, node))
       .await (err, results) =>
 
         if err? then @next(err)

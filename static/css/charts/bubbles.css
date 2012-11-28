@@ -36,3 +36,6 @@
 
 .bubbleChart .legend path { stroke:#999; fill:#eee; opacity:0.3; stroke-width:1.5; }
 .bubbleChart .legend text { fill:black; font-size:9px;  text-shadow: 0 0 0.2em white; }
+
+.bubbleChart .legend text.caption { font-size:10px; text-shadow:none; }
+.bubbleChart .legend .colors text { font-size:10px; text-shadow:none; }

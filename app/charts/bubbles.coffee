@@ -20,9 +20,9 @@ this.bubblesChart = ->
 
 
 
-  tseriesw = 250 #bubblesChartWidth*0.25
+  tseriesw = 261 #bubblesChartWidth*0.25
   tseriesh = 100 #bubblesChartHeight*0.18
-  tseriesMarginLeft = 33  
+  tseriesMarginLeft = 40
 
   nodesWithoutCoordsMarginBottom = 50
 
@@ -68,7 +68,7 @@ this.bubblesChart = ->
 
   # data is expected to be in the following form:
   # [{date:new Date(1978, 0), inbound:123, outbound:321}, ...]
-  createTimeSeries = (tseriesDiv, data, title, dir) ->
+  createTimeSeriesChart = (tseriesDiv, data, title, dir) ->
     
     dateDomain = [ dateFromMagnAttrInd(0), dateFromMagnAttrInd(state.magnAttrs().length - 1) ]
 
@@ -79,6 +79,7 @@ this.bubblesChart = ->
       .height(tseriesh)
       .dotRadius(1)
       .marginLeft(tseriesMarginLeft)
+      .marginRight(12)
       .title(title)
       .yticks(3)
       .ytickFormat(shortMagnitudeFormat)
@@ -93,7 +94,9 @@ this.bubblesChart = ->
 
     updateYear = -> tschart.moveRule(dateFromMagnAttrInd(state.selAttrIndex))
     updateYear()
-    $(tseriesDiv).bind "updateYear", updateYear
+    $(tseriesDiv).bind("updateYear", updateYear)
+
+    tschart
 
 
 
@@ -105,19 +108,21 @@ this.bubblesChart = ->
       unless @div.length > 0 
         throw new Error("Element with id '#{@panelDivId}' not found")
 
-    find : (did) -> $(@div).children("[data-id='"+did+"']")
+    find : (id) -> $(@div).children("[data-id='#{id}']")
 
-    findNot : (did) -> $(@div).children(":not([data-id='"+did+"'])")
+    findNot : (id) -> $(@div).children(":not([data-id='#{id}'])")
 
-    addNew : (did, cssClass) -> 
-      $(@div).append('<div data-id="'+did+'" class="'+cssClass+'"></div>')
-      @find(did).get(0)
+    addNew : (id, cssClass) -> 
+      $(@div).append('<div data-id="'+id+'" class="'+cssClass+'"></div>')
+      @find(id).get(0)
 
-    remove : (did) -> @find(did).remove()
+    remove : (id) -> @find(id).remove()
 
-    removeOthers : (did) -> @findNot(did).remove()
+    removeAll : -> $(@div).children().remove()
 
-    contains : (did) -> @find(did).length > 0
+    removeOthers : (id) -> @findNot(id).remove()
+
+    contains : (id) -> @find(id).length > 0
 
 
   tseriesPanel = new DivPanel("tseriesPanel")
@@ -159,8 +164,9 @@ this.bubblesChart = ->
 
 
 
+  legendMargin = {top: 85, right: 15, bottom: 10, left: 15}
+
   updateLegend = (selection, maxTotalMagnitude) ->
-    legendMargin = {top: 85, right: 2, bottom: 10, left: 2}
 
     maxR = rscale.range()[1]  # rscale(pow10(maxOrd))
     legend = selection.select("svg.legend")
@@ -347,13 +353,15 @@ this.bubblesChart = ->
           .attr("class", "colors")
 
         legend.append("text")
-          .attr("x", "70")
+          .attr("class", "caption")
+          .attr("x", legendMargin.left + maxr)
           .attr("y", "15")
           .attr("text-anchor", "middle")
           .text("Aid commitment amount")
 
         legend.append("text")
-          .attr("x", "70")
+          .attr("class", "caption")
+          .attr("x", legendMargin.left + maxr)
           .attr("y", "28")
           .attr("text-anchor", "middle")
           .text("US$ constant (2009)")
@@ -365,7 +373,7 @@ this.bubblesChart = ->
           .enter()
         .append("g")
           .attr("class", "item")
-          .attr("transform", (d,i) -> "translate(42, #{40 + i*15})")
+          .attr("transform", (d,i) -> "translate(#{legendMargin.left + maxr - 28}, #{40 + i*15})")
 
         itemEnter.append("rect")
           .attr("x", "0")
@@ -512,13 +520,13 @@ this.bubblesChart = ->
       #flows.selectAll("line").remove()
       old = selectedNode
       if selectedNode == this
-        tseriesPanel.remove("node_" + d.code)
+        tseriesPanel.remove(d[conf.nodeIdAttr])
         selectedNode = null
         d3.select(this).selectAll("circle").classed("selected", false)
         dispatch.selectNode(null, old?.__data__)
       else 
         if selectedNode != null
-          tseriesPanel.removeOthers("node_" + d.code)
+          tseriesPanel.removeOthers(d[conf.nodeIdAttr])
           d3.select(selectedNode).selectAll("circle").classed("selected", false)
           flows.selectAll("line").remove()
         else
@@ -546,7 +554,7 @@ this.bubblesChart = ->
         flows.selectAll("line").remove()
 
       if selectedNode != this
-        tseriesPanel.remove("node_" + d.code)
+        tseriesPanel.remove(d[conf.nodeIdAttr])
 
       $(this).tipsy("hide")
 
@@ -554,6 +562,7 @@ this.bubblesChart = ->
     force.nodes(nodes)
 
     update()
+    updateTimeSeries(nodes)
 
 
 
@@ -570,6 +579,7 @@ this.bubblesChart = ->
       if selectedNode?
         d3.select(selectedNode).selectAll("circle").classed("selected", false)
         flows.selectAll("line").remove()
+        tseriesPanel.removeAll()
         old = selectedNode
         selectedNode = null
         dispatch.selectNode(null, old?.__data__)
@@ -702,7 +712,6 @@ this.bubblesChart = ->
           this.parentNode.appendChild(this)
 
         $(this).tipsy("show")
-        # $("#tseriesPanel").add('<div id="tseries"></div>')
 
         createFlowTimeSeries(this, d, i)
 
@@ -730,36 +739,52 @@ this.bubblesChart = ->
 
 
 
-
-
-  createNodeTimeSeries = (node, d, i) ->
-    
+  nodeTimeSeriesData = (d) ->
     totals = d.data.totals
+    inbound :
+      if totals?.inbound?
+        (for val,i in totals.inbound when val?
+          date: dateFromMagnAttr(state.magnAttrs()[i])
+          value: val
+        )
+      else []
+
+    outbound :
+      if totals?.outbound?
+        (for val,i in totals.outbound when val?
+          date: dateFromMagnAttr(state.magnAttrs()[i])
+          value: val
+        )
+      else []
 
 
-    data = do ->
-      inbound :
-        if totals?.inbound?
-          (for val,i in totals.inbound when val?
-            date: dateFromMagnAttr(state.magnAttrs()[i])
-            value: val
-          )
-        else []
-
-      outbound :
-        if totals?.outbound?
-          (for val,i in totals.outbound when val?
-            date: dateFromMagnAttr(state.magnAttrs()[i])
-            value: val
-          )
-        else []
-
-    if not tseriesPanel.contains("node_" + d.code)
-      tseries = tseriesPanel.addNew("node_" + d.code, "tseries")
+  createNodeTimeSeries = (node, d, i) ->    
+    if not tseriesPanel.contains(d[conf.nodeIdAttr])
+      tseriesDiv = tseriesPanel.addNew(d[conf.nodeIdAttr], "tseries")
+      d3.select(tseriesDiv).attr("data-type", "node")
       nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
       #parent = d3.select(tseries)
       #parent.setSelDateTo = setSelDateTo
-      createTimeSeries(tseries, data, shortenLabel(nodeLabel, 40))        
+      tschart = createTimeSeriesChart(tseriesDiv, nodeTimeSeriesData(d), shortenLabel(nodeLabel, 40))        
+      tseriesDiv.__chart__ = tschart
+
+
+  updateTimeSeries = (nodesData) ->
+    byId = d3.nest()
+      .key((d) -> d[conf.nodeIdAttr])
+      .rollup((list) -> if list.length is 1 then list[0] else list)
+      .map(nodesData)
+
+    d3.select("#tseriesPanel")
+        .selectAll("div.tseries")
+        .each ->
+          _div = d3.select(this)
+          _chart = this.__chart__
+          _type = _div.attr("data-type")
+          _data = byId[_div.attr("data-id")]
+          switch _type
+            when "node" then _div.datum(nodeTimeSeriesData(_data)).call(_chart)   
+
 
 
   createFlowTimeSeries = (flow, d, i) ->
@@ -786,7 +811,7 @@ this.bubblesChart = ->
 
       flowLabel = shortenLabel(donor, 20) + " -> " + shortenLabel(recipient, 20)
 
-      createTimeSeries(tseries, data, flowLabel, dir)
+      createTimeSeriesChart(tseries, data, flowLabel, dir)
 
 
   updateNodeSizes = ->

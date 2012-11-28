@@ -1,7 +1,8 @@
 
 this.barHierarchyChart = () ->
 
-  nameAttr = "name" 
+  nameAttr = "name"
+  keyAttr = "key"
   childrenAttr = "children"
   valueAccessor = (d) -> d["value"]
   valueFormat = d3.format(",.0f")
@@ -71,14 +72,112 @@ this.barHierarchyChart = () ->
   x = null
 
 
+
+    #bar(currentNode).transition().duration(duration).attr("transform", barTranslate)
+
+
+  #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
+  duration = 300
+  delay = 25
+
+  comparator = (a,b) -> valueAccessor(b) - valueAccessor(a)
+  hierarchy = d3.layout.partition()
+    .value(valueAccessor)
+    .children((d) -> d[childrenAttr])  # the sorted child list is stored in .children
+                                       # thus .children is used further on
+    .sort(comparator)
+
+
+  xAxis = null
+
+  findNodeByKey = (key, data) ->
+    recurse = (node) ->
+      return node if (node[keyAttr] is key)
+      if node[childrenAttr]?
+        for child in node[childrenAttr]
+          found = recurse(child)
+          return found if found?
+      return null
+    recurse(data)
+
+
+  isUpdate = false
+
+  init = (selection) ->
+    barSpacing = barHeight * 0.2
+    width = fullwidth - margin.right - margin.left
+    height = fullheight - margin.top - margin.bottom
+
+    svg = selection.select("svg")
+    isUpdate = not svg.empty()
+
+    if isUpdate
+      vis = svg.select("g.vis")
+    else
+      x = d3.scale.linear().range([ 0, width ])
+      xAxis = d3.svg.axis().scale(x)
+        .orient("top")
+        .ticks(3)
+        .tickFormat(valueFormat)
+      initVis(selection)
+
+
+    data = selection.datum()
+    if isUpdate
+      # keep the same node selected
+      currentNode = findNodeByKey(currentNode[keyAttr], data) ? data
+      #children = (if currentNode.children? then currentNode.children else [currentNode])
+      #vis.selectAll("g.barg").data(children).selectAll("rect").data((d) -> d)
+    else
+      currentNode = data
+
+    hierarchy.nodes(data)
+    x.domain([ 0, valueAccessor(data) ]).nice()
+
+
+    down currentNode, 0, true
+    # if isUpdate
+    #   updateValues(0)
+    # else
+    #   down data, 0, true
+
+
+
+  initVis = (selection) ->
+    unless isUpdate
+      selection.attr("class", "barHierarchy")
+      initBreadcrumb(selection)
+
+      svg = selection.append("svg")
+      
+      svg.attr("width", width + margin.right + margin.left)
+         .attr("height", height + margin.top + margin.bottom)
+
+
+      vis = svg.append("g")
+        .attr("class", "vis")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+      vis.append("rect")
+        .attr("class", "background")
+        .attr("width", width)
+        .attr("height", height)
+        .on("click", up)
+
+      vis.append("g").attr("class", "x axis")
+      vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
+
+
+  barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
+
+
   # update upon the change of the represented value (e.g. year)
   updateValues = do ->
-
-    delay = 1000
     duration = 500
     shortDuration = 50
 
-    update = ->
+    update = (delay = 1000) ->
+      children = (if currentNode.children? then currentNode.children else [currentNode])
 
       # bar ordering
       if currentNode.children?
@@ -89,7 +188,7 @@ this.barHierarchyChart = () ->
             .attr("transform", barTranslate)
 
       # x axis scale
-      x.domain([ 0, d3.max((if currentNode.children? then currentNode.children else [currentNode]), valueAccessor ) ]).nice()
+      x.domain([ 0, d3.max(children, valueAccessor ) ]).nice()
       vis.selectAll(".x.axis")
         .transition()
           .duration(duration)
@@ -119,74 +218,6 @@ this.barHierarchyChart = () ->
       prev = Date.now()
       d3.timer maybeUpdate, delay
 
-
-
-
-    #bar(currentNode).transition().duration(duration).attr("transform", barTranslate)
-
-
-  #z = d3.scale.ordinal().range([ "steelblue", "#ccc" ])
-  duration = 300
-  delay = 25
-
-  comparator = (a,b) -> valueAccessor(b) - valueAccessor(a)
-  hierarchy = d3.layout.partition()
-    .value(valueAccessor)
-    .children((d) -> d[childrenAttr])  # the sorted child list is stored in .children
-                                       # thus .children is used further on
-    .sort(comparator)
-
-
-  xAxis = null
-
- 
-
-  init = (selection) ->
-    barSpacing = barHeight * 0.2
-    width = fullwidth - margin.right - margin.left
-    height = fullheight - margin.top - margin.bottom
-    x = d3.scale.linear().range([ 0, width ])
-
-
-    initVis(selection)
-    data = selection.datum()
-    currentNodeData = data
-
-
-    xAxis = d3.svg.axis().scale(x)
-      .orient("top")
-      .ticks(3)
-      .tickFormat(valueFormat)
-
-    hierarchy.nodes(data)
-    x.domain([ 0, valueAccessor(data) ]).nice()
-    down data, 0, true
-
-
-
-  initVis = (selection) ->
-    selection.attr("class", "barHierarchy")
-    initBreadcrumb(selection)
-
-    svg = selection
-      .append("svg")
-        .attr("width", width + margin.right + margin.left)
-        .attr("height", height + margin.top + margin.bottom)
-
-    vis = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-
-    vis.append("rect")
-      .attr("class", "background")
-      .attr("width", width)
-      .attr("height", height)
-      .on("click", up)
-
-    vis.append("g").attr("class", "x axis")
-    vis.append("g").attr("class", "y axis").append("line").attr "y1", "100%"
-
-
-  barTranslate = (d, i) -> "translate(0," + (barHeight + barSpacing) * i + ")"
 
 
   down = (d, i, init = false) ->
@@ -312,7 +343,7 @@ this.barHierarchyChart = () ->
     b = vis.insert("g", ".y.axis")
         .attr("class", "enter")
         .attr("transform", "translate(0,5)")
-      .selectAll("g")
+      .selectAll("g.barg")
         .data(if d.children? then d.children else [d])
           .enter()
       .append("g")

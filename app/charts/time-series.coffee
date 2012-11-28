@@ -203,9 +203,9 @@ this.timeSeriesChart = ->
 
 
       g.append("path")
+        .attr("stroke", color)
         .attr("class", "line")
         .attr("d", line)
-        .attr("stroke", color)
 
 
       # g = vis.select("g.#{prop}")
