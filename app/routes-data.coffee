@@ -441,7 +441,6 @@
 
 
 
-
   @get '/aiddata-nodes.csv': ->
     pg.sql "select donor as Name,donorcode as Code from totals_for_donor_ma
         UNION 
@@ -540,6 +539,68 @@
 
 
 
+  @get '/top-commitments.json': ->
+    cond = ""
+    if @query.node
+      node = @query.node
+
+      re = /^[A-Za-z\-0-9\,\.\s\(\)]{2,64}$/
+      unless re.test node
+        @send { err: "Bad node" }
+        return
+      else
+        cond += " AND (recipientcode='#{node}' OR recipient='#{node}' OR donor='#{node}' OR donorcode='#{node}')"
+
+    if @query.purpose
+      purpose = @query.purpose
+      re = /^[0-9]{0,10}\*?$/
+
+      unless re.test purpose
+        @send { err: "Bad purpose" }
+        return
+      else
+        if purpose.indexOf("*") >= 0
+          purpose = purpose.replace("*", "%")
+          cond += " AND (aiddata_purpose_code like '#{purpose}')"
+        else
+          cond += " AND (aiddata_purpose_code='#{purpose}')"
+
+
+    pageSize = 10
+    page = 0
+
+
+    if @query.page
+      unless /^[0-9]{0,15}$/.test @query.page
+        @send { err: "Bad page" }
+        return
+      else
+        offset = @query.page
+
+
+    pg.sql "
+      select 
+        donor, recipient,
+        short_description,
+        short_description_original_language,
+        long_description, 
+        long_description_original_language, additional_info, additional_info_original_language,
+        other_involved_institutions,
+        to_char(commitment_amount_usd_constant, 'FM99999999999999999999') as amount_constant,
+        COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose_code,
+        aiddata_purpose_name AS purpose_name
+       from aiddata2
+      WHERE
+        commitment_amount_usd_constant is not null
+        #{cond}
+      order by commitment_amount_usd_constant desc
+      limit #{pageSize} OFFSET #{pageSize * page}
+    ",
+      (err, data) =>
+        unless err?
+          @send data.rows
+        else
+          @next(err)
 
 
 
