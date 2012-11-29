@@ -23,6 +23,23 @@ text-align:center;
 
 
 
+#showCommitmentsBut {
+  display:none;
+  position: fixed;
+  left:20px;
+  bottom:20px;  
+}
+
+table.commitments { font-size:9pt; }
+table.commitments  td { padding:3px; }
+table.commitments  tr, table.commitments  td { cursor:pointer;}
+table.commitments  td pre { font-size:8pt;}
+table.commitments  td.r { text-align: right; }
+table.commitments div.accordion-group { padding:5px; }
+#commitmentListModal .modal-body { max-height:none; }
+#commitmentListModal { width:800px; top:300px; margin-left:-400px;  }
+#commitmentListModal h3 { text-align: center;   font: bold 22px sans-serif; }
+#commitmentListModal button.close { border:none; background: none; }
 
 
 

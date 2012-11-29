@@ -227,5 +227,80 @@ queue()
     $("#purposeBars").show()
 
 
+    # do ->
+    #   text = (name, c, attr, parentid) ->
+    #       if c[attr]?
+    #         id = 'commListItemDesc_'+parentid+'_'+attr
+    #         return ''+
+    #           '<div class="accordion-heading">'+
+    #           '<a class="accordion-toggle" data-toggle="collapse" data-parent="#'+parentid+'" href="#'+id+'">'+name+'</a>'+
+    #           '<div id="'+id+'" class="accordion-body collapse">'+
+    #           '<pre>'+c[attr]+'</pre>'+
+    #           '</div>'+
+    #           '</div>'
+    #       else 
+    #         ""
+    #   #collink = (text, rowi) -> "<a data-toggle=\"collapse\" data-target=\"#commlist_#{rowi}\">#{text}</a>"
+
+    #   $("#showCommitmentsBut").show().click -> 
+    #     loadingStarted()
+    #     url = "top-commitments.json?page=0"
+    #     url += "&node=#{filters.node}" if filters.node?
+    #     url += "&purpose=#{filters.purpose[0]}" if filters.purpose? and filters.purpose.length>0
+    #     #### TODO: add year!
+    #     #### TODO: use NAME as node key, not CODE
+    #     $.ajax(
+    #       data : "json"
+    #       url : "#{url}",
+    #     ).done (data) ->
+    #       list = $("#commitmentListModal div.modal-body table tbody").empty()
+    #       for c,i in data
+    #         list.append("
+    #           <tr class=\"item\">
+    #             <td>#{shorten(c.donor,50,true)}</td>
+    #             <td>#{shorten(c.recipient,50,true)}</td>
+    #             <td>#{shorten(c.purpose_name ? "",50,true)}</td>
+    #             <td class=\"r\">#{formatMagnitudeLong(c.amount_constant)}</td>
+    #           </tr>
+    #           <tr><td colspan=\"4\" data-index=\"#{i}\"></td></tr>
+    #         ")
+
+    #       $("#commitmentListModal tr.item").click ->
+    #         next = $(this).next("tr").find("td")
+    #         div = next.find("div")
+    #         if div.size() == 0
+    #           index = next.data("index")
+    #           c = data[index]
+    #           id = "commDescAccordion#{index}"
+    #           info = ''+
+    #             text('Short description', c, 'short_description', id)+
+    #             text('Short description in original language',c, 'short_description_original_language', id)+
+    #             text('Long description', c, 'long_description', id)+
+    #             text('Long description in original language',c,'long_description_original_language', id)+
+    #             text('Additional info', c, 'additional_info', id)+
+    #             text('Additional info in original language',c,'additional_info_original_language', id)+
+    #             text('Other involved institutions',c,'other_involved_institution', id)
+    #           info = "No detailed information available" if (/^\s*$/.test info)
+    #           next.append(
+    #               "<div class=\"accordion\" id=\"#{id}\">"+
+    #               "<div class=\"accordion-group\">
+    #                 #{info}
+    #               </div></div>"
+    #           )
+    #         else
+    #           div.remove()
+
+    #       $("#commitmentListModal").modal()
+    #       loadingFinished()
+
+    #   $("#commitmentListModalClose").click -> $("#commitmentListModal").modal("hide")
+      
+    #   fitToWindow = ->
+    #     $("#commitmentListModal .modal-body")
+    #       .css("height", (window.innerHeight - 200) + "px")
+    #   fitToWindow()
+    #   $(window).resize(fitToWindow)
+
+
 
 

@@ -146,6 +146,26 @@
     div id:"bubblesChart"
 
 
+    button id:"showCommitmentsBut", type:"button", class:"btn btn-mini", -> "Show commitments"
+
+    div id:"commitmentListModal", class:"modal hide fade", ->
+      div class:"modal-header", ->
+        button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
+        h3 -> "Top of the selected commitments"
+      div class:"modal-body", ->
+        table class:"table table-striped table-hover commitments", ->
+          thead ->
+            tr -> 
+              th width:"30%",-> "Donor"
+              th width:"30%",-> "Recipient"
+              th width:"30%",-> "Purpose"
+              th width:"10%",-> "Amount"
+          tbody -> ""
+
+
+      div class:"modal-footer", ->
+        a href:"#", id:"commitmentListModalClose", class:"btn", -> "Close"
+
 
     ###
     div id: "yearSliderOuter", ->

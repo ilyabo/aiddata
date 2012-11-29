@@ -540,6 +540,9 @@
 
 
   @get '/top-commitments.json': ->
+    pageSize = 10
+    page = 0
+
     cond = ""
     if @query.node
       node = @query.node
@@ -565,8 +568,7 @@
         else
           cond += " AND (aiddata_purpose_code='#{purpose}')"
 
-    pageSize = 10
-    page = 0
+
 
     if @query.page
       unless /^[0-9]{0,15}$/.test @query.page
