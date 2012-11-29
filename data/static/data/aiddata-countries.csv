@@ -3,6 +3,28 @@ Code,Name,Lat,Lon,region1,region2
 "Middle East, regional","Middle East, regional",29.2,42.6,Middle East,Middle East
 "South Asia, regional","South Asia, regional",25,77,Asia,Southern Asia
 "Europe, regional","Europe, regional",53.4,19.3,Europe,Europe
+"Africa, regional","Africa, regional",7,22,Africa,Africa
+"South America, regional","South America, regional",-16,-55,Americas,South America
+"America, regional","America, regional",11.2,-84.6,Americas,America
+"N. & C. America, regional","N. & C. America, regional",25.7,-97.2,Americas,America
+Kosovo,Kosovo,42.57,20.85,Europe,Eastern Europe
+"North of Sahara, regional","North of Sahara, regional",30,9.5,Africa,Northern Africa
+"South of Sahara, regional","South of Sahara, regional",13.7,13.7,Africa,Middle Africa
+"Oceania, regional","Oceania, regional",-8,179,Oceania,Oceania
+"Asia, regional","Asia, regional",49,87,Asia,Asia
+"Central Asia, regional","Central Asia, regional",45.6,65.6,Asia,Central Asia
+"South & Central Asia, regional","South & Central Asia, regional",37.2,74.9,Asia,South & Central Asia
+NIU,Niue,-19.05,-169.8,Oceania,Polynesia
+AIA,Anguilla,18.210,-63.05,Americas,Caribbean
+VGB,Virgin Islands (UK),18.45,-64.60,Americas,Caribbean
+TWN,Taiwan,23.75,121.00,Asia,Eastern Asia
+FLK,Falkland Islands,-51.73,-59.47,Americas,South America
+SPM,St. Pierre & Miquelon,46.957,-56.33,Americas,Northern America
+Sts Ex-Yugo. Unspec.,Sts Ex-Yugo. Unspec.,45.19,16.5,Europe,Southern Europe
+Arab Countries,Arab Countries,31.7,25.1,Arab Countries,Arab Countries
+"West Indies, regional","West Indies, regional",20.2,-76.1,Americas,Caribbean
+WLF,Wallis & Futuna,-14.28,-178.11,Oceania,Polynesia
+MSR,Montserrat,16.74,-62.19,Americas,Caribbean
 PSE,Palestine,31.92157,35.20329,Asia,Western Asia
 TUV,Tuvalu,-7.540024,178.283237,Oceania,Polynesia
 THA,Thailand,15.502027,101.199542,Asia,South-Eastern Asia
