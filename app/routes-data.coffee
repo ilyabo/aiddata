@@ -565,10 +565,8 @@
         else
           cond += " AND (aiddata_purpose_code='#{purpose}')"
 
-
     pageSize = 10
     page = 0
-
 
     if @query.page
       unless /^[0-9]{0,15}$/.test @query.page
@@ -578,9 +576,13 @@
         offset = @query.page
 
 
-    pg.sql "
-      select 
-        donor, recipient,
+    console.log @query.pagecount
+    if @query.pagecount?
+      q = "CEIL(count(*)/#{pageSize}) AS pagecount"
+      order = ""
+      limit = ""
+    else
+      q = "donor, recipient,
         short_description,
         short_description_original_language,
         long_description, 
@@ -588,13 +590,21 @@
         other_involved_institutions,
         to_char(commitment_amount_usd_constant, 'FM99999999999999999999') as amount_constant,
         COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose_code,
-        aiddata_purpose_name AS purpose_name
+        aiddata_purpose_name AS purpose_name"
+      order = "order by commitment_amount_usd_constant desc"
+      limit = "limit #{pageSize} OFFSET #{pageSize * page}"
+
+
+
+
+    pg.sql "
+      select #{q}
        from aiddata2
       WHERE
         commitment_amount_usd_constant is not null
         #{cond}
-      order by commitment_amount_usd_constant desc
-      limit #{pageSize} OFFSET #{pageSize * page}
+      #{order}
+      #{limit}
     ",
       (err, data) =>
         unless err?
