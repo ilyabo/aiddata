@@ -56,7 +56,17 @@ barHierarchy = barHierarchyChart()
     else
       filters.purpose = [ sel.key ]
     reloadFlows()
+    updatePurposeTooltips()
   )
+
+updatePurposeTooltips = ->
+  $('.tipsy').remove()  # remove all existing tooltips (otherwise they might remain forever)
+  $('#purposeBars g.barg').tipsy
+    gravity: 'w'
+    opacity: 0.9
+    html: true
+    #trigger: "manual"
+    title: -> '<span class="sm">'+formatMagnitude(d3.select(this).data()[0]["sum_#{selectedYear}"])+'</span>'
 
 
 groupFlowsByOD = (flowList) -> 
@@ -166,20 +176,15 @@ reloadPurposes = do ->
       filterq = "?node=" + filters.node[0] # todo: support for multiple node selection
     else
       filterq = ""
+
     d3.json "purposes-with-totals.json#{filterq}", (purposeTree) ->
       purposeTree.name = "Purposes"
       utils.aiddata.purposes.provideWithTotals(purposeTree, valueAttrs, "values", "totals")
       d3.select("#purposeBars")
         .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
         .call(barHierarchy)
-
-      $('#purposeBars g.barg').tipsy
-        gravity: 'w'
-        opacity: 0.9
-        html: true
-        #trigger: "manual"
-        title: -> '<span class="sm">'+formatMagnitude(d3.select(this).data()[0]["sum_#{selectedYear}"])+'</span>'
-
+  
+      updatePurposeTooltips()
 
       $("#purposeBars").show()
 
