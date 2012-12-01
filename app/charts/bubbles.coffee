@@ -102,6 +102,7 @@ this.bubblesChart = ->
     updateYear()
     $(tseriesDiv).bind("updateYear", updateYear)
 
+    tseriesDiv.__chart__ = tschart
     tschart
 
 
@@ -325,6 +326,7 @@ this.bubblesChart = ->
 
     provideNodesWithTotals(data.flows, data.nodes, conf)
 
+
     unless isUpdate
       state = initFlowData(conf)
       state.selAttrIndex = 0 # state.magnAttrs().length - 7  # state.magnAttrs().length - 1
@@ -348,6 +350,27 @@ this.bubblesChart = ->
 
     #timescale = d3.time.scale().domain([d3.min(dates), d3.max(dates)]).range([0, w])          
   
+
+    do ->
+      if selectedNode?
+        tseriesPanel.remove("_overallTotals_")
+      else
+        overallTotals = do ->
+          totals = {}
+          for dir,i in ["outbound"]  # "inbound" is the same for totals 
+            totals[dir] = []
+            for n in data.nodes when n.totals?[dir]?
+                for v,j in n.totals[dir] when v? and not isNaN(v)
+                  totals[dir][j] ?= 0
+                  totals[dir][j] += v
+          nodeTimeSeriesData(totals)
+
+        div = tseriesPanel.find("_overallTotals_")?.get(0)
+        if div?
+          d3.select(div).datum(overallTotals).call(div.__chart__)
+        else
+          div = tseriesPanel.addNew("_overallTotals_", "tseries")
+          createTimeSeriesChart(div, overallTotals, "Total")        
 
 
     unless isUpdate
@@ -577,7 +600,7 @@ this.bubblesChart = ->
     force.nodes(nodes)
 
     update()
-    updateTimeSeries(nodes)
+    updateNodeTimeSeries(nodes)
 
 
 
@@ -753,9 +776,9 @@ this.bubblesChart = ->
 
 
 
-
-  nodeTimeSeriesData = (d) ->
-    totals = d.data.totals
+  # converts totals data into a sturcture which tseriesChart understands
+  nodeTimeSeriesData = (totals) ->
+    #totals = d.data.totals
     inbound :
       if totals?.inbound?
         (for val,i in totals.inbound when val?
@@ -778,32 +801,29 @@ this.bubblesChart = ->
       tseriesDiv = tseriesPanel.addNew(d[conf.nodeIdAttr], "tseries")
       d3.select(tseriesDiv).attr("data-type", "node")
       nodeLabel = d3.select(node).data()[0][conf.nodeLabelAttr]
-      #parent = d3.select(tseries)
-      #parent.setSelDateTo = setSelDateTo
-      tschart = createTimeSeriesChart(tseriesDiv, nodeTimeSeriesData(d), shortenLabel(nodeLabel, 40))        
-      tseriesDiv.__chart__ = tschart
+      tschart = createTimeSeriesChart(tseriesDiv, nodeTimeSeriesData(d.data.totals), shortenLabel(nodeLabel, 40))
+      #tseriesDiv.__chart__ = tschart
 
 
-  updateTimeSeries = (nodesData) ->
+  updateNodeTimeSeries = (nodesData) ->
     byId = d3.nest()
       .key((d) -> d[conf.nodeIdAttr])
       .rollup((list) -> if list.length is 1 then list[0] else list)
       .map(nodesData)
 
     d3.select("#tseriesPanel")
-        .selectAll("div.tseries")
-        .each ->
-          _div = d3.select(this)
-          _chart = this.__chart__
-          _type = _div.attr("data-type")
-          _data = byId[_div.attr("data-id")]
-          switch _type
-            when "node" then _div.datum(nodeTimeSeriesData(_data)).call(_chart)   
+      .selectAll("div.tseries")
+      .each ->
+        _div = d3.select(this)
+        _chart = this.__chart__
+        _type = _div.attr("data-type")
+        _data = byId[_div.attr("data-id")]
+        switch _type
+          when "node" then _div.datum(nodeTimeSeriesData(_data.data.totals)).call(_chart)
 
 
 
   createFlowTimeSeries = (flow, d, i) ->
-    
     dir = (if d3.select(flow).classed("in") then "in" else "out")
 
     flowData = (for attr in state.magnAttrs() when d.data[attr]?

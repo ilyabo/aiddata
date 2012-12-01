@@ -146,7 +146,7 @@
     div id:"bubblesChart"
 
 
-    button id:"showCommitmentsBut", type:"button", class:"btn btn-mini", -> "Show table"
+    button id:"showCommitmentsBut", type:"button", class:"btn", -> "Show table"
 
     div id:"commitmentListModal", class:"modal hide fade", ->
       div class:"modal-header", ->
