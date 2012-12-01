@@ -146,13 +146,14 @@
     div id:"bubblesChart"
 
 
-    button id:"showCommitmentsBut", type:"button", class:"btn btn-mini", -> "Show commitments"
+    button id:"showCommitmentsBut", type:"button", class:"btn btn-mini", -> "Show table"
 
     div id:"commitmentListModal", class:"modal hide fade", ->
       div class:"modal-header", ->
         button type:"button", class:"close", 'data-dismiss':"modal", 'aria-hidden':"true", -> "&times;"
-        h3 -> "Top of the selected commitments"
+        #h3 -> "Commitment details"
       div class:"modal-body", ->
+        
         table class:"table table-striped table-hover commitments", ->
           thead ->
             tr -> 
@@ -160,7 +161,12 @@
               th width:"30%",-> "Recipient"
               th width:"30%",-> "Purpose"
               th width:"10%",-> "Amount"
+            tr ->
+              td colspan:"4", -> div class:"pageCount"
           tbody -> ""
+
+
+        div class:"loading", -> img src:"images/loading.gif"
 
 
       div class:"modal-footer", ->

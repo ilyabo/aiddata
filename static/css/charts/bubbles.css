@@ -34,7 +34,7 @@
 .bubbleChart g.bubble text { pointer-events: none; alignment-baseline:central; /* text-shadow: 0 0 0.3em #FFF */ }
 
 
-.bubbleChart .legend path { stroke:#999; fill:#eee; opacity:0.3; stroke-width:1.5; }
+.bubbleChart .legend path { stroke:#999; fill:#fafafa; stroke-width:0.5; }
 .bubbleChart .legend text { fill:black; font-size:9px;  text-shadow: 0 0 0.2em white; }
 
 .bubbleChart .legend text.caption { font-size:10px; text-shadow:none; }

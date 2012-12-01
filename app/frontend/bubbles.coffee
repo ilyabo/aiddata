@@ -1,5 +1,6 @@
 years = [1947..2011]
-startYear = 2007
+
+selectedYear = 2007
 
 filters = {}
 
@@ -35,9 +36,9 @@ barHierarchy = barHierarchyChart()
   .nameAttr("name")
   .leafsSelectable(true)
   .valueFormat(formatMagnitude)
-  .values((d) -> d["sum_#{startYear}"] ? 0)
-  # .values((d) -> d.totals[startYear].sum ? 0)
-  #.values((d) -> d.totals["sum_#{startYear}"] ? 0)
+  .values((d) -> d["sum_#{selectedYear}"] ? 0)
+  # .values((d) -> d.totals[selectedYear].sum ? 0)
+  #.values((d) -> d.totals["sum_#{selectedYear}"] ? 0)
   .labelsFormat((d) -> shorten(d.name ? d.key, 30))
   .labelsTooltipFormat((d) -> name = d.name ? d.key)
   .breadcrumbText(
@@ -87,8 +88,9 @@ timeSlider = timeSliderControl()
   .width(250 - 30 - 8) # timeSeries margins
   .height(10)
   .on "change", (current, old) ->
+    selectedYear = utils.date.dateToYear(current)
     bubbles.setSelDateTo(current, true)
-    barHierarchy.values((d) -> d["sum_" + utils.date.dateToYear(current)] ? 0)
+    barHierarchy.values((d) -> d["sum_" + selectedYear] ? 0)
 
 # loadData()
 #   .csv('nodes', "#{dynamicDataPath}aiddata-nodes.csv")
@@ -192,7 +194,10 @@ queue()
 
     [ nodes, flows, map, countries,  ] = loaded
 
-
+    nodesByCode = d3.nest()
+      .key((d) -> d.code)
+      .rollup((arr) -> if arr.length is 1 then arr[0] else console.warn("Code collision: ", arr); arr)
+      .map(nodes)
 
     provideCountryNodesWithCoords(
       nodes, { code: 'code', lat: 'Lat', lon: 'Lon'},
@@ -219,7 +224,11 @@ queue()
 
  
 
-    bubbles.setSelDateTo(utils.date.yearToDate(startYear), false)
+    bubbles.setSelDateTo(utils.date.yearToDate(selectedYear), false)
+    $(document).keyup (e) -> 
+      if e.keyCode is 27  and  $("#commitmentListModal").css("display") is "none"
+        bubbles.clearNodeSelection()
+
 
     $("#loading").hide()
     $("#blockUI").hide()
@@ -227,79 +236,101 @@ queue()
     $("#purposeBars").show()
 
 
-    # do ->
-    #   text = (name, c, attr, parentid) ->
-    #       if c[attr]?
-    #         id = 'commListItemDesc_'+parentid+'_'+attr
-    #         return ''+
-    #           '<div class="accordion-heading">'+
-    #           '<a class="accordion-toggle" data-toggle="collapse" data-parent="#'+parentid+'" href="#'+id+'">'+name+'</a>'+
-    #           '<div id="'+id+'" class="accordion-body collapse">'+
-    #           '<pre>'+c[attr]+'</pre>'+
-    #           '</div>'+
-    #           '</div>'
-    #       else 
-    #         ""
-    #   #collink = (text, rowi) -> "<a data-toggle=\"collapse\" data-target=\"#commlist_#{rowi}\">#{text}</a>"
+    do ->
 
-    #   $("#showCommitmentsBut").show().click -> 
-    #     loadingStarted()
-    #     url = "top-commitments.json?page=0"
-    #     url += "&node=#{filters.node}" if filters.node?
-    #     url += "&purpose=#{filters.purpose[0]}" if filters.purpose? and filters.purpose.length>0
-    #     #### TODO: add year!
-    #     #### TODO: use NAME as node key, not CODE
-    #     $.ajax(
-    #       data : "json"
-    #       url : "#{url}",
-    #     ).done (data) ->
-    #       list = $("#commitmentListModal div.modal-body table tbody").empty()
-    #       for c,i in data
-    #         list.append("
-    #           <tr class=\"item\">
-    #             <td>#{shorten(c.donor,50,true)}</td>
-    #             <td>#{shorten(c.recipient,50,true)}</td>
-    #             <td>#{shorten(c.purpose_name ? "",50,true)}</td>
-    #             <td class=\"r\">#{formatMagnitudeLong(c.amount_constant)}</td>
-    #           </tr>
-    #           <tr><td colspan=\"4\" data-index=\"#{i}\"></td></tr>
-    #         ")
+      accordionItem = (attr, value, parentid) ->
+        
+        return null if not(value) or (/^\s*(<br>)?\s*$/.test value)
 
-    #       $("#commitmentListModal tr.item").click ->
-    #         next = $(this).next("tr").find("td")
-    #         div = next.find("div")
-    #         if div.size() == 0
-    #           index = next.data("index")
-    #           c = data[index]
-    #           id = "commDescAccordion#{index}"
-    #           info = ''+
-    #             text('Short description', c, 'short_description', id)+
-    #             text('Short description in original language',c, 'short_description_original_language', id)+
-    #             text('Long description', c, 'long_description', id)+
-    #             text('Long description in original language',c,'long_description_original_language', id)+
-    #             text('Additional info', c, 'additional_info', id)+
-    #             text('Additional info in original language',c,'additional_info_original_language', id)+
-    #             text('Other involved institutions',c,'other_involved_institution', id)
-    #           info = "No detailed information available" if (/^\s*$/.test info)
-    #           next.append(
-    #               "<div class=\"accordion\" id=\"#{id}\">"+
-    #               "<div class=\"accordion-group\">
-    #                 #{info}
-    #               </div></div>"
-    #           )
-    #         else
-    #           div.remove()
+        title = attr[0].toUpperCase()+attr.replace(/_/g,' ').substr(1)
 
-    #       $("#commitmentListModal").modal()
-    #       loadingFinished()
+        if attr.indexOf("amount") > 0 or attr.indexOf("cost") > 0
+          value = formatMagnitudeLongNoCurrency(value)
 
-    #   $("#commitmentListModalClose").click -> $("#commitmentListModal").modal("hide")
-      
-    #   fitToWindow = ->
-    #     $("#commitmentListModal .modal-body")
-    #       .css("height", (window.innerHeight - 200) + "px")
-    #   fitToWindow()
-    #   $(window).resize(fitToWindow)
+        if value.length > 100
+          id = 'commListItemDesc_'+parentid+'_'+attr
+          '<div class="accordion-heading">'+  #  data-parent="#'+parentid+'"  - this makes only one item visible at a time
+          '<a class="accordion-toggle" data-toggle="collapse" href="#'+id+'">'+title+'</a>'+
+          '<div id="'+id+'" class="accordion-body collapse">'+
+          '<pre>'+value+'</pre>'+
+          '</div>'+
+          '</div>'
+        else
+          '<div class="detailAttr">'+
+          '<div class="name">'+title+'</div>'+
+          '<div class="value">'+value+'</div>'+
+          '</div>'
+          
+
+      $("#showCommitmentsBut").show().click ->
+        $("#commitmentListModal").modal()
+        $("#commitmentListModal div.loading").show()
+        body = $("#commitmentListModal div.modal-body")
+
+        list = $("table tbody", body).empty()
+        $('.pageCount', body).text("")
+
+        url = "commitments.json?page=0&year=#{selectedYear}"
+        url += "&nodeName=#{encodeURIComponent nodesByCode[filters.node].name}" if filters.node?
+        url += "&purpose=#{filters.purpose[0]}" if filters.purpose? and filters.purpose.length>0
+
+
+
+        queue()
+          .defer(loadJson, url)
+          .defer(loadJson, url + "&pagecount=1")
+          .await (err, loaded) ->
+            [ data, [{ count:totalCount, pagesize:pageSize, pagecount:pageCount }] ] = loaded
+
+            $('.pageCount', body).text(totalCount+' commitments found')
+
+            for c,i in data
+              list.append("
+                <tr class=\"item\">
+                  <td>#{c.donor}</td>
+                  <td>#{c.recipient}</td>
+                  <td>#{c.purpose_name}</td>
+                  <td class=\"r\">#{formatMagnitudeLong(c.amount_constant)}</td>
+                </tr>
+                <tr class=\"details\"><td colspan=\"4\" data-index=\"#{i}\"></td></tr>
+              ")
+
+            $("#commitmentListModal tr.item").click ->
+              next = $(this).next("tr").find("td")
+              div = next.find("div")
+              if div.size() is 0
+                index = next.data("index")
+                c = data[index]
+                id = "commDescAccordion#{index}"
+
+                accordionItems = (item  for attr, value of c when (item = accordionItem(attr, value, id))?)
+                info = if accordionItems.length > 0
+                  accordionItems.join('')
+                else
+                  "No detailed information available"
+
+                next.append(
+                    "<div class=\"accordion\" id=\"#{id}\">"+
+                    "<div class=\"accordion-group\">
+                      #{info}
+                    </div></div>"
+                )
+              else
+                div.remove()
+
+            
+            $("#commitmentListModal div.loading").hide()
+
+        $("#commitmentListModalClose").click -> $("#commitmentListModal").modal("hide")
+        
+        fitToWindow = ->
+          $("#commitmentListModal")
+            .css("width", (window.innerWidth*0.8) + "px")
+            .css("margin-left", (- window.innerWidth*0.8/2) + "px")
+          $("#commitmentListModal .modal-body")
+            .css("height", (window.innerHeight - 200) + "px")
+        fitToWindow()
+        $(window).resize(fitToWindow)
 
 
 

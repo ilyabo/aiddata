@@ -17,6 +17,8 @@ fmt = d3.format(",.1f")
 
 @formatMagnitudeLong = (d) -> "$#{fmt(d)}"
 
+@formatMagnitudeLongNoCurrency = (d) -> "#{fmt(d)}"
+
 @formatMagnitude = @magnitudeFormat = (d) -> "$" + shortNumberFormat(d)
 
 @formatMagnitudeShort = @shortMagnitudeFormat = (d) -> formatMagnitude(d)

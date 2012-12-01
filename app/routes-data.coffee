@@ -19,6 +19,16 @@
     "flows.csv"
 
 
+  
+  # used to validate the user input in commitments queries
+  aiddataNodeNames = {}
+  csv()
+    .fromPath(__dirname + '/../data/static/data/cached/aiddata-nodes.csv')
+    .on('data', (row, index) ->
+      aiddataNodeNames[row[0]] = row[1]
+    )
+
+
 
   getFlows = caching.loader { preload : true }, (callback) ->
 
@@ -539,20 +549,38 @@
 
 
 
-  @get '/top-commitments.json': ->
-    pageSize = 10
+  selectYear = "TO_CHAR(COALESCE(commitment_date, start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY')"
+  selectPurposeCode = "COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000')"
+  selectPurposeName = "COALESCE(aiddata2.aiddata_purpose_name, aiddata2.crs_purpose_name, '99000')"
+
+
+
+  @get '/commitments.json': ->
+    pageSize = 20
     page = 0
 
     cond = ""
-    if @query.node
-      node = @query.node
 
-      re = /^[A-Za-z\-0-9\,\.\s\(\)]{2,64}$/
-      unless re.test node
-        @send { err: "Bad node" }
+    # if @query.node
+    #   node = @query.node
+
+    #   re = /^[A-Za-z\-0-9\,\.\s\(\)]{2,64}$/
+    #   unless re.test node
+    #     @send { err: "Bad node" }
+    #     return
+    #   else
+    #     cond += " AND (recipientcode='#{node}' OR recipient='#{node}' OR donor='#{node}' OR donorcode='#{node}')"
+
+    if @query.nodeName
+      nodeName = @query.nodeName
+
+      unless aiddataNodeNames[nodeName]?
+        @send { err: "Bad nodeName '#{nodeName}'"}
         return
       else
-        cond += " AND (recipientcode='#{node}' OR recipient='#{node}' OR donor='#{node}' OR donorcode='#{node}')"
+        nodeName = nodeName.replace(/'/g, "\\'")
+        cond += " AND (recipient='#{nodeName}' OR donor='#{nodeName}')"
+
 
     if @query.purpose
       purpose = @query.purpose
@@ -563,11 +591,22 @@
         return
       else
         if purpose.indexOf("*") >= 0
-          purpose = purpose.replace("*", "%")
-          cond += " AND (aiddata_purpose_code like '#{purpose}')"
+          unless purpose is "*"
+            purpose = purpose.replace("*", "%")
+            cond += " AND (#{selectPurposeCode} like '#{purpose}')"
         else
-          cond += " AND (aiddata_purpose_code='#{purpose}')"
+          cond += " AND (#{selectPurposeCode}='#{purpose}')"
 
+
+    if @query.year
+      year = @query.year
+      re = /^[0-9]{4}$/
+
+      unless re.test year
+        @send { err: "Bad year" }
+        return
+      else
+        cond += " AND #{selectYear} = '#{year}'"
 
 
     if @query.page
@@ -578,28 +617,122 @@
         offset = @query.page
 
 
-    console.log @query.pagecount
     if @query.pagecount?
-      q = "CEIL(count(*)/#{pageSize}) AS pagecount"
+      q = "count(*) AS count, #{pageSize} AS pagesize, CEIL(count(*)/#{pageSize}) AS pagecount"
       order = ""
       limit = ""
     else
-      q = "donor, recipient,
-        short_description,
-        short_description_original_language,
-        long_description, 
-        long_description_original_language, additional_info, additional_info_original_language,
-        other_involved_institutions,
-        to_char(commitment_amount_usd_constant, 'FM99999999999999999999') as amount_constant,
-        COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose_code,
-        aiddata_purpose_name AS purpose_name"
+      fields = [
+          #'aiddata_id',
+          'year',
+          'commitment_date',
+          'start_date',
+          'end_date',
+          'donor',
+          'donorcode',
+          'umbrella',
+          #'donor_project_id',
+          #'crsid',
+          'financing_agency',
+          'donor_type',
+          'bi_multi',
+          'recipient',
+          'recipientcode',
+          'private_recipient',
+          'implementing_agency',
+          'channelcode',
+          'borrower',
+          'beneficiary',
+          'guarantor',
+          'other_involved_institutions',
+          'commitment_amount',
+          'commitment_amount_currency',
+          'commitment_amount_usd_nominal',
+          'commitment_amount_usd_constant',
+          'disbursement_amount',
+          'disbursement_amount_currency',
+          'disbursement_amount_usd_nominal',
+          'disbursement_amount_usd_constant',
+          'total_project_cost',
+          'total_project_cost_currency',
+          'total_project_cost_usd_nominal',
+          'total_project_cost_usd_constant',
+          'title',
+          'short_description',
+          'short_description_original_language',
+          'long_description',
+          'long_description_original_language',
+          'additional_info',
+          'additional_info_original_language',
+          'flow_type',
+          'crs_flow_name',
+          'number_repayments_per_year',
+          'repay_type',
+          'loan_term',
+          'grace_period',
+          'interest_rate',
+          'second_interest_rate',
+          'grant_element',
+          'cancelled',
+          'repay_date_first',
+          'repay_date_last',
+          'untied_amount_usd_nominal',
+          'partial_tied_amount_usd_nominal',
+          'tied_amount_usd_nominal',
+          'received_amount_usd_nominal',
+          'irtc_amount_usd_nominal',
+          'expert_commitment_amount_usd_nominal',
+          'expert_extended_amount_usd_nominal',
+          'export_credit_amount_usd_nominal',
+          'outstanding_amount_usd_nominal',
+          'arrears_principal_amount_usd_nominal',
+          'arrears_interest_amount_usd_nominal',
+          'future_ds_principal_amount_usd_nominal',
+          'future_ds_interest_amount_usd_nominal',
+          'interest_amount_usd_nominal',
+          'region',
+          'location',
+          'source',
+          'language',
+          'biodiversity',
+          'climate',
+          'desertification',
+          #'crs_purpose_code',
+          #'crs_purpose_name',
+          'gender',
+          'trade',
+          'pdgg',
+          'ftc',
+          'sector_programme',
+          'sector',
+          #'sector_code',
+          'associated_financing',
+          'initial_report',
+          'finance_t',
+          'environmental_impact_assessment',
+          'environment',
+          'investment_project',
+          'aiddata_purpose_code',
+          'aiddata_purpose_name',
+          'aiddata_activity_code',
+          'aiddata_activity_name',
+          'aiddata_feasibility_study',
+          'aiddata_techinical_assistance',
+          #'coalesced_purpose_code',
+          #'coalesced_purpose_name',
+          ]
+      q = fields.join(",")+","+
+        "to_char(commitment_amount_usd_constant, 'FM99999999999999999999') as amount_constant,
+        #{selectPurposeCode} AS purpose_code,
+        #{selectPurposeName} AS purpose_name
+        "
+
       order = "order by commitment_amount_usd_constant desc"
       limit = "limit #{pageSize} OFFSET #{pageSize * page}"
 
 
 
-
-    pg.sql "
+    query = "
       select #{q}
        from aiddata2
       WHERE
@@ -607,7 +740,9 @@
         #{cond}
       #{order}
       #{limit}
-    ",
+    "
+    #console.log query
+    pg.sql query,
       (err, data) =>
         unless err?
           @send data.rows
@@ -617,13 +752,10 @@
 
 
 
+
   @get '/flows.csv': ->
     pg.sql """
        SELECT 
-              --aiddata2.year, 
-              to_char(COALESCE(commitment_date,  
-                      start_date, to_timestamp(to_char(year, '9999'), 'YYYY')), 'YYYY'  --'YYYYMM' 
-              ) as date,
               COALESCE(
               CASE aiddata2.donorcode
                   WHEN '' THEN aiddata2.donor
@@ -636,7 +768,9 @@
               END, "substring"(aiddata2.recipient, "position"(aiddata2.recipient, '('))) AS recipient, 
               to_char(aiddata2.commitment_amount_usd_constant, 'FM99999999999999999999')   -- 'FM99999999999999999999D99')
                 AS sum_amount_usd_constant, 
-              COALESCE(aiddata2.aiddata_purpose_code, aiddata2.crs_purpose_code, '99000') AS purpose
+              #{selectYear} AS date,
+              #{selectPurposeCode} AS purpose
+              
          FROM aiddata2  --limit 5
       """, (err, data) =>
         unless err?

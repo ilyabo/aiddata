@@ -406,7 +406,7 @@ this.bubblesChart = ->
         .attr("width", bubblesChartWidth)
         .attr("height", bubblesChartHeight)
         .attr("fill", "white")
-        .on 'click', (d) -> clearNodeSelection()
+        .on 'click', (d) -> chart.clearNodeSelection()
 
 
       fitProjection(mapProj, data.map, 
@@ -482,7 +482,7 @@ this.bubblesChart = ->
         .enter().append('path')
           .attr('d', mapProjPath)
           .attr("fill", "#f0f0f0")
-          .on 'click', (d) -> clearNodeSelection()
+          .on 'click', (d) -> chart.clearNodeSelection()
 
       svg.append("g")
         .attr("class", "flows")
@@ -584,7 +584,7 @@ this.bubblesChart = ->
         flows.selectAll("line").remove()
 
 
-    clearNodeSelection = ->
+    chart.clearNodeSelection = ->
       if selectedNode?
         d3.select(selectedNode).selectAll("circle").classed("selected", false)
         flows.selectAll("line").remove()
@@ -594,8 +594,8 @@ this.bubblesChart = ->
         dispatch.selectNode(null, old?.__data__)
 
 
-    unless isUpdate
-      $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
+    #unless isUpdate
+    #  $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
     $('g.bubble').tipsy
       gravity: 'w'
