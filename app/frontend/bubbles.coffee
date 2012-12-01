@@ -267,6 +267,7 @@ queue()
         $("#commitmentListModal div.loading").show()
         body = $("#commitmentListModal div.modal-body")
 
+        pagination = $("#commitmentListModal .pagination").empty()
         list = $("table tbody", body).empty()
         $('.pageCount', body).text("")
 
@@ -275,6 +276,7 @@ queue()
         url += "&purpose=#{filters.purpose[0]}" if filters.purpose? and filters.purpose.length>0
 
 
+        maxPages = 10
 
         queue()
           .defer(loadJson, url)
@@ -282,7 +284,13 @@ queue()
           .await (err, loaded) ->
             [ data, [{ count:totalCount, pagesize:pageSize, pagecount:pageCount }] ] = loaded
 
-            $('.pageCount', body).text(totalCount+' commitments found')
+            $('.pageCount', body).text('Showing top ' + Math.min(totalCount, pageSize) + ' of ' + totalCount+' commitments')
+
+            # pagination.append '<li><a href="#">«</a></li>'
+            # for i in [1..Math.min(pageCount,maxPages)]
+            #   pagination.append('<li><a href="#">'+i+'</a></li>')
+            # pagination.append '<li class="disabled"><a href="#">...</a></li>'  if pageCount > maxPages
+            # pagination.append '<li><a href="#">»</a></li>'
 
             for c,i in data
               list.append("

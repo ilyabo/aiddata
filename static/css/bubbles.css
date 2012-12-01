@@ -51,10 +51,13 @@ text-align:center;
 #commitmentListModal { width:800px; top:300px; margin-left:-400px;  }
 #commitmentListModal h3 { text-align: center;   font: bold 22px sans-serif; }
 #commitmentListModal button.close { border:none; background: none; }
-#commitmentListModal .pageCount { text-align:right; font-size: 10px; }
+#commitmentListModal .pageCount { text-align:right; font-size: 11px; float:left; margin-top:10px; }
 #commitmentListModal .loading { width: 100%; text-align:center; padding-top:20px; }
 #commitmentListModal .modal-header { border-bottom: none; }
-
+#commitmentListModal td.pages { padding-left:0px; text-align: center; }
+#commitmentListModal .pagination { margin: 5px 0 10px 0; height:20px; }
+#commitmentListModal .pagination li { padding:0px; }
+#commitmentListModal .pagination a { padding:3px 7px; line-height: 14px }
 
 #purposeBars {
   display:none;

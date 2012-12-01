@@ -162,7 +162,9 @@
               th width:"30%",-> "Purpose"
               th width:"10%",-> "Amount"
             tr ->
-              td colspan:"4", -> div class:"pageCount"
+              td colspan:"4", class:"pages", ->
+                div class:"pageCount"
+                div class:"pagination-mini pagination", -> ul
           tbody -> ""
 
 

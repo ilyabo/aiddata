@@ -556,7 +556,7 @@
 
 
   @get '/commitments.json': ->
-    pageSize = 20
+    pageSize = 100
     page = 0
 
     cond = ""
