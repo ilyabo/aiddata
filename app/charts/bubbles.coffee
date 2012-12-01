@@ -83,6 +83,12 @@ this.bubblesChart = ->
       .title(title)
       .yticks(3)
       .ytickFormat(shortMagnitudeFormat)
+      #.indexedMode(true)
+      .showRule(true)
+      .hideRuleOnMouseout(false)
+      .on "rulemove", (date) -> if date? then chart.setSelDateTo(date, true)
+
+
       #.propColors(["lightcoral","steelblue"])
 
     # tschart.propColors switch dir

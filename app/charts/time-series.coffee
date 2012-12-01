@@ -26,6 +26,7 @@ this.timeSeriesChart = ->
   showYAxis = true
   ruleDate = null
   valueDomain = dateDomain = null
+  hideRuleOnMouseout = true
 
   eventListeners = {}
 
@@ -93,6 +94,8 @@ this.timeSeriesChart = ->
 
   chart.showRule = (_) -> if (!arguments.length) then showRule else showRule = (if _ then true else false); chart
 
+  chart.hideRuleOnMouseout = (_) -> if (!arguments.length) then hideRuleOnMouseout else hideRuleOnMouseout = (if _ then true else false); chart
+
   chart.showYAxis = (_) -> if (!arguments.length) then showYAxis else showYAxis = (if _ then true else false); chart
 
   chart.legendWidth = (_) -> if (!arguments.length) then legendWidth else legendWidth = _; chart
@@ -119,7 +122,7 @@ this.timeSeriesChart = ->
         rule.attr("visibility", "visible")
           .attr("x1", xscale(date))
           .attr("x2", xscale(date))
-      else
+      else if hideRuleOnMouseout
         rule.attr("visibility", "hidden")
 
       ruleDate = date
@@ -490,7 +493,7 @@ this.timeSeriesChart = ->
       .call(xAxis)
 
     ruleLine = vis.append("line")
-      .attr("visibility", "hidden")
+      .attr("visibility", if hideRuleOnMouseout then "hidden" else "visible")
       .attr("class", "rule")
       .attr("y1", -3)
       .attr("y2", h + 6)
