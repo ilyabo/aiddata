@@ -362,8 +362,6 @@ this.barHierarchyChart = () ->
     )
     ###
 
-    b.append("svg:title")
-        .text(labelsTooltipFormat)
 
     b.append("text")
       .attr("class",
@@ -386,6 +384,7 @@ this.barHierarchyChart = () ->
       .attr("x", 1)
       .attr("width", (d) -> x(valueAccessor(d)))
       .attr("height", barHeight)
+
 
     return b
 
@@ -468,7 +467,7 @@ this.barHierarchyChart = () ->
     breadcrumb = selection
       .append("div")
         .attr("class", "breadcrumb")
-        .style("width", fullwidth + "px")
+        #.style("width", fullwidth + "px")
 
     breadcrumb.append("ul")
 

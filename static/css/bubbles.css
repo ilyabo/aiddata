@@ -98,7 +98,7 @@ text-align:center;
 .bubbleChart .legend {
   position: fixed;
   right:10px;
-  bottom:70px;
+  bottom:60px;
   background-color:white;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;

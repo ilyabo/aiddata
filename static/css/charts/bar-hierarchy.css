@@ -45,7 +45,7 @@
 }
 
 
-.barHierarchy .breadcrumb { font-size:11px; padding:.2em .7em; margin:0 0 0 0; text-align:left; }
+.barHierarchy .breadcrumb { width:460px; font-size:11px; padding:.2em .7em; margin:0 0 0 0; text-align:left; }
 .barHierarchy .breadcrumb ul { padding:0; margin:0; display:inline; }
 .barHierarchy .breadcrumb li.title { margin-right:.5em; }
 

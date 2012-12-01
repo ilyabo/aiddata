@@ -29,7 +29,7 @@ bubbles = bubblesChart()
 
 
 barHierarchy = barHierarchyChart()
-  .width(450)
+  .width(460)
   .barHeight(12)
   .labelsWidth(200)
   .childrenAttr("values")
@@ -149,6 +149,7 @@ reloadFlows = (callback) ->
 
         callback(null, data) if callback?
 
+
       loadingFinished()
 
 
@@ -171,6 +172,16 @@ reloadPurposes = do ->
       d3.select("#purposeBars")
         .datum(purposeTree) #utils.aiddata.purposes.fromCsv(purposes['2007']))
         .call(barHierarchy)
+
+      $('#purposeBars g.barg').tipsy
+        gravity: 'w'
+        opacity: 0.9
+        html: true
+        #trigger: "manual"
+        title: -> '<span class="sm">'+formatMagnitude(d3.select(this).data()[0]["sum_#{selectedYear}"])+'</span>'
+
+
+      $("#purposeBars").show()
 
 
 reloadPurposes()
@@ -232,8 +243,6 @@ queue()
 
     $("#loading").hide()
     $("#blockUI").hide()
-
-    $("#purposeBars").show()
 
 
     do ->
