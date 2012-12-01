@@ -240,12 +240,15 @@ queue()
 
       accordionItem = (attr, value, parentid) ->
         
-        return null if not(value) or (/^\s*(<br>)?\s*$/.test value)
+        if not(value) or (/^\s*(<br>)?\s*$/.test value) or (attr in ['donor', 'recipient', 'amount_constant', 'purpose_code','purpose_name'])
+          return null 
 
         title = attr[0].toUpperCase()+attr.replace(/_/g,' ').substr(1)
 
-        if attr.indexOf("amount") > 0 or attr.indexOf("cost") > 0
-          value = formatMagnitudeLongNoCurrency(value)
+        if attr.indexOf("amount")>-1 or attr.indexOf("cost")>-1
+          unless isNaN(value)
+            fmt = (if attr.indexOf("usd")>-1 then formatMagnitudeLong else formatMagnitudeLongNoCurrency)
+            value = fmt(value)
 
         if value.length > 100
           id = 'commListItemDesc_'+parentid+'_'+attr
