@@ -340,7 +340,7 @@ this.bubblesChart = ->
           d3.max(maxTotalMagnitudes.outbound))
 
     rscale = d3.scale.sqrt()
-      .range([0, Math.min(bubblesChartWidth/20, bubblesChartHeight /10)])
+      .range([0, Math.min(bubblesChartWidth/25, bubblesChartHeight /12)])
       .domain([0, maxTotalMagnitude])
     maxr = rscale.range()[1]
 
