@@ -51,7 +51,7 @@ text-align:center;
 #commitmentListModal { width:800px; top:300px; margin-left:-400px;  }
 #commitmentListModal h3 { text-align: center;   font: bold 22px sans-serif; }
 #commitmentListModal button.close { border:none; background: none; }
-#commitmentListModal .pageCount { text-align:right; font-size: 11px; float:left; margin-top:10px; }
+#commitmentListModal .pageCount { text-align:right; font-size: 12px; float:left; margin-top:10px; }
 #commitmentListModal .loading { width: 100%; text-align:center; padding-top:20px; }
 #commitmentListModal .modal-header { border-bottom: none; }
 #commitmentListModal td.pages { padding-left:0px; text-align: center; }

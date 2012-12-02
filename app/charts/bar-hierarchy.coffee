@@ -445,6 +445,7 @@ this.barHierarchyChart = () ->
 
     breadcrumbList.selectAll("li.node a")
       .attr("href", "#")
+      .attr("title", (d) -> $('<div/>').text(d[nameAttr]).html())  # html encode
       .text(labelsFormat)
       .on "click", (d, i) ->
         if (i < path.length - 1) then up(path[i + 1]) #d.children[0])

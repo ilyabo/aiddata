@@ -301,7 +301,16 @@ queue()
           .await (err, loaded) ->
             [ data, [{ count:totalCount, pagesize:pageSize, pagecount:pageCount }] ] = loaded
 
-            $('.pageCount', body).text('Showing top ' + Math.min(totalCount, pageSize) + ' of ' + totalCount+' commitments')
+            $('.pageCount', body).text(
+              'Showing ' + 
+              (if totalCount < pageSize then ' all ' + totalCount else ' top ' + Math.min(totalCount, pageSize) + ' of ' + totalCount)+
+              ' aid commitments ' + 
+              ' made ' +
+              (if filters.node? then ' by of for ' + nodesByCode[filters.node].name else '') +
+              ' in ' + selectedYear +
+              (if filters.purpose?.length > 0 then ' with purpose "' + $("#purposeBars li.node.sel a").attr("title") + '"' else '') +
+              '.'
+            )
 
             # pagination.append '<li><a href="#">«</a></li>'
             # for i in [1..Math.min(pageCount,maxPages)]
