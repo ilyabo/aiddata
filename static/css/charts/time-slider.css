@@ -8,13 +8,35 @@
  }
 
 .timeSlider {
+  white-space: nowrap;
 }
 
-.timeSlider .caption {
-  padding-bottom: 10px;
-  color:#aaa; font-weight:bold; font-size:70px; line-height:70px; text-align:center; 
+.timeSlider .caption, .timeSlider .prev, .timeSlider .next {
+  color:#aaa; 
+  font-weight:bold; 
+  text-align:center; 
   text-shadow: 0 0 0.05em #000;
+  display: inline-block;
+  margin-top:3px;
 }
+
+.timeSlider .prev, .timeSlider .next {
+  font-size:30px; line-height: 65px; vertical-align: top;
+  cursor: pointer;
+  opacity: 0.2;
+  background-color: #f7f7f7;
+}
+
+.timeSlider .prev:hover, .timeSlider .next:hover {  opacity:1; }
+
+.timeSlider .prev { padding-right:9px; padding-left:6px; margin-right: 2px; }
+.timeSlider .next { padding-left:9px; padding-right: 6px; margin-left: 2px; }
+
+.timeSlider .caption {
+  font-size:65px; line-height:65px;
+  padding-bottom: 5px; 
+}
+
 
 .timeSlider .range { 
   background: #eee;

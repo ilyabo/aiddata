@@ -75,9 +75,19 @@ this.timeSliderControl = ->
       .attr("class", "timeSlider")
       #.on 'mousemove', mousemove
 
+    prev = outerDiv.append("div")
+      .attr("class", "prev")
+      .html("&lt;")
+      .on 'click', -> ci = chart.currentIndex(); chart.setTime(rangeValues[ci - 1]) if ci > 0
+
     caption = outerDiv.append("div")
       .attr("class", "caption")
       #.on 'mousemove', mousemove
+
+    next = outerDiv.append("div")
+      .attr("class", "next")
+      .html("&gt;")
+      .on 'click', -> ci = chart.currentIndex(); chart.setTime(rangeValues[ci + 1]) if ci < rangeValues.length - 1
 
 
     range = outerDiv.append("div")
@@ -104,6 +114,7 @@ this.timeSliderControl = ->
 
 
   chart.setTime = (time) ->
+    time = new Date(time) unless time instanceof Date
     time = step(time)        # align to step
     if current.getTime() != time.getTime()
       #console.log "slider.setTime",time, "<>", current

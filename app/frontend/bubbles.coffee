@@ -191,6 +191,12 @@ reloadPurposes = do ->
 
 reloadPurposes()
 
+(($) ->
+  $.fn.disableSelection = ->
+    @attr("unselectable", "on").css("user-select", "none").on "selectstart", false
+) jQuery
+
+
 queue()
   .defer(loadCsv, "#{dynamicDataPath}aiddata-nodes.csv")
   .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient&filter=%7B%7D"))
@@ -238,6 +244,8 @@ queue()
     d3.select("#timeSlider")
       .call(timeSlider)
 
+    $("#timeSlider").disableSelection()
+    $("#timeSlider div").disableSelection()
  
 
     bubbles.setSelDateTo(utils.date.yearToDate(selectedYear), false)
@@ -248,6 +256,7 @@ queue()
 
     $("#loading").hide()
     $("#blockUI").hide()
+
 
 
     do ->
