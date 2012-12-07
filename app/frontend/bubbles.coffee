@@ -61,8 +61,8 @@ barHierarchy = barHierarchyChart()
 
 updatePurposeTooltips = ->
   $('.tipsy').remove()  # remove all existing tooltips (otherwise they might remain forever)
-  $('#purposeBars g.barg').tipsy
-    gravity: 'w'
+  $('#purposeBars g.barg rect').tipsy
+    gravity: 's'
     opacity: 0.9
     html: true
     #trigger: "manual"
@@ -189,7 +189,6 @@ reloadPurposes = do ->
       $("#purposeBars").show()
 
 
-reloadPurposes()
 
 (($) ->
   $.fn.disableSelection = ->
@@ -377,4 +376,4 @@ queue()
 
 
 
-
+reloadPurposes()
