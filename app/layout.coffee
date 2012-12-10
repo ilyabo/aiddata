@@ -7,6 +7,8 @@
 
     horizon3 : "Horizon3"
 
+    horizon4 : "Horizon4"
+
     breaknsplit : "Break'n'split"
 
     #horizon : "Horizon"
