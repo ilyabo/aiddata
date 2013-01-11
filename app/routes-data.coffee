@@ -13,7 +13,7 @@
   aidutils = require './frontend/utils-aiddata'
   caching = require './caching-loader'
 
-  cachedFlowsFile = if @app.settings.env is "development"
+  cachedFlowsFile = if @app.settings.env is "development-"
     "flows-sample.csv"
   else
     "flows.csv"

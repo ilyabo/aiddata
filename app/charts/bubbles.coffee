@@ -454,6 +454,7 @@ this.bubblesChart = ->
     nodesWithFlows = data.nodes.filter(
       (node) -> hasFlows(node, "inbound") or hasFlows(node, "outbound")
     )
+    .filter (node) -> projectNode(node)?
 
     #nodesWithLocation = nodesWithFlows.filter (node) -> projectNode(node)?
 
@@ -626,12 +627,12 @@ this.bubblesChart = ->
     #unless isUpdate
     #  $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
-    $('g.bubble').tipsy
-      gravity: 'w'
-      html: true
-      opacity: 0.9
-      trigger: "manual"
-      title: -> bubbleTooltip(d3.select(this).data()[0])
+    # $('g.bubble').tipsy
+    #   gravity: 'w'
+    #   html: true
+    #   opacity: 0.9
+    #   trigger: "manual"
+    #   title: -> bubbleTooltip(d3.select(this).data()[0])
 
 
     ###
