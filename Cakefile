@@ -1,7 +1,7 @@
 log = console.log
-app = "app/app.coffee"
+config = (require './config')
+app = config.app
 util = (require './os-utils')
-
 
 cachedPath = 'data/static/data/cached'
 
