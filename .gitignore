@@ -1,4 +1,5 @@
 .DS_Store
+.idea
 config.coffee
 .dbconf.coffee
 .googan.coffee
