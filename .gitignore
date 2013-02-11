@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+apprunner-*.coffee
 config.coffee
 .dbconf.coffee
 .googan.coffee

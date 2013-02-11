@@ -1,6 +1,6 @@
 log = console.log
 config = (require './config')
-app = config.app
+app = "apprunner-" + config.app + ".coffee"
 util = (require './os-utils')
 
 cachedPath = 'data/static/data/cached'
@@ -17,6 +17,7 @@ task 'build', ->
   util.run 'coffee -o static/coffee -c app/frontend/*.coffee app/frontend/*/*.coffee'
   util.run 'coffee -o static/coffee/charts -c app/charts/*.coffee'
 
+  util.run 'echo "require \'./app/app\'" > ' + app
 
 # See: http://stackoverflow.com/questions/7259232/how-to-deploy-node-js-in-cloud-for-high-availability
 
