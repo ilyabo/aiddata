@@ -38,9 +38,9 @@ forever = (action, options) ->
       " --sourceDir ./" +
       " -p ./" +
       " --pidFile forever.pid "+
-      " -l ./logs/aiddata.log "+
-      " -o ./logs/logs/aiddata.out "+
-      " -e ./logs/logs/aiddata.err "+
+      #" -l ./logs/aiddata.log "+
+      #" -o ./logs/logs/aiddata.out "+
+      #" -e ./logs/logs/aiddata.err "+
       " -a" +   # append logs
       " " + app
 
