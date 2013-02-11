@@ -45,10 +45,10 @@ forever = (action, options) ->
       " " + app
 
 
-task 'restart-forever', (options) -> forever 'restart', options
-task 'start-forever', (options) -> forever 'start', options
-task 'stop-forever', (options) -> util.run "node_modules/forever/bin/forever stop -c coffee " + app
-task 'list-forever', (options) -> util.run "node_modules/forever/bin/forever list"
+task 'restartf', (options) -> forever 'restart', options
+task 'startf', (options) -> forever 'start', options
+task 'stopf', (options) -> util.run "node_modules/forever/bin/forever stop -c coffee " + app
+task 'listf', (options) -> util.run "node_modules/forever/bin/forever list"
 
 
 task 'import-data', ->
