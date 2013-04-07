@@ -454,7 +454,7 @@ this.bubblesChart = ->
     nodesWithFlows = data.nodes.filter(
       (node) -> hasFlows(node, "inbound") or hasFlows(node, "outbound")
     )
-    .filter (node) -> projectNode(node)?
+    #.filter (node) -> projectNode(node)?
 
     #nodesWithLocation = nodesWithFlows.filter (node) -> projectNode(node)?
 
