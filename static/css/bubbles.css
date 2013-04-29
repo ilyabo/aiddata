@@ -23,12 +23,14 @@ text-align:center;
 
 
 
-#showCommitmentsBut {
+#bottomButtons {
   display:none;
   position: fixed;
-  right:20px;
+  right:10px;
   bottom:20px;  
 }
+
+#bottomButtons button { margin-left:3px;}
 
 #commitmentListModal table.commitments { font-size:9pt; }
 #commitmentListModal table.commitments  td { padding:3px 10px; }

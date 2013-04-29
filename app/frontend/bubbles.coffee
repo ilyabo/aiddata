@@ -137,11 +137,15 @@ loadingFinished = ->
 
 cache = cachingLoad(100)
 
+getDataUrl = (forDownload = false) -> 
+  filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
+  "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}" + (if forDownload then "&download" else "")
+
 reloadFlows = (callback) ->
   loadingStarted()
-  filterq = if filters? then ("&filter=" + encodeURIComponent JSON.stringify filters) else ""
+  
   queue()
-    .defer(cache(loadCsv, "dv/flows/breaknsplit.csv?breakby=date,donor,recipient#{filterq}"))
+    .defer(cache(loadCsv, getDataUrl()))
     .await (err, loaded) ->
       if err?
         callback err if callback?
@@ -286,8 +290,14 @@ queue()
           '<div class="value">'+value+'</div>'+
           '</div>'
           
+      $("#bottomButtons").show()
 
-      $("#showCommitmentsBut").show().click ->
+      $("#exportCsvBut").click (e) ->
+        e.preventDefault();  # stop the browser from following
+        window.location.href = getDataUrl(true)
+
+
+      $("#showCommitmentsBut").click ->
         $("#commitmentListModal").modal()
         $("#commitmentListModal div.loading").show()
         body = $("#commitmentListModal div.modal-body")

@@ -13,7 +13,7 @@
   aidutils = require './frontend/utils-aiddata'
   caching = require './caching-loader'
 
-  cachedFlowsFile = if @app.settings.env is "development-"
+  cachedFlowsFile = if @app.settings.env is "development"
     "flows-sample.csv"
   else
     "flows.csv"
@@ -226,6 +226,11 @@
 
         anykey = d3.keys(data)[0]
         anycolumn = data[anykey]
+
+        if @query.download?
+          exportFilename = "aiddata-export.csv"
+          @response.setHeader('Content-Type: text/csv; name="'+exportFilename+'";')
+          @response.setHeader('Content-Disposition: attachment; filename="'+exportFilename+'";')
 
         @response.write "#{col for col of data}\n"
         csv()

@@ -146,7 +146,10 @@
     div id:"bubblesChart"
 
 
-    button id:"showCommitmentsBut", type:"button", class:"btn", -> "Show table"
+    div id:"bottomButtons", ->
+      button id:"exportCsvBut", class:"btn btn-mini", -> "Export CSV"
+      button id:"showCommitmentsBut", class:"btn btn-mini", title:"Show detailed info for the top commitments of the selection",
+         -> "Show top details"
 
     div id:"commitmentListModal", class:"modal hide fade", ->
       div class:"modal-header", ->
