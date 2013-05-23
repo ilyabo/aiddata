@@ -1,0 +1,168 @@
+#loading { position:absolute; top:50%; left:50%; } 
+#loading img { 
+  background-color:white; 
+  padding:6px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+#blockUI { 
+  position:absolute; top:0; left:0; right:0; bottom:0; background-color:white; 
+  width:100%; height:100%;
+  opacity:0; z-index:99; 
+  margin-left: -16px; margin-top: -16px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+
+#error { display:none;}
+#bubblesChart {
+text-align:center;
+}
+
+
+
+#bottomButtons {
+  display:none;
+  position: fixed;
+  right:10px;
+  bottom:20px;  
+}
+
+#bottomButtons button { margin-left:3px;}
+
+#commitmentListModal table.commitments { font-size:9pt; }
+#commitmentListModal table.commitments  td { padding:3px 10px; }
+#commitmentListModal table.commitments  tbody td { cursor:pointer;}
+#commitmentListModal table.commitments  td pre { font-size:8pt;}
+#commitmentListModal table.commitments  td.r { text-align: right; }
+#commitmentListModal table.commitments  tr.details td:hover { background-color:white; }
+#commitmentListModal table.commitments div.accordion-group { padding:5px; }
+#commitmentListModal table.commitments a.accordion-toggle { font-weight: bold; }
+#commitmentListModal table.commitments .detailAttr { margin: 3px 5px; padding-left:10px; }
+#commitmentListModal table.commitments .detailAttr .name { display: inline-block; width:25%; font-weight: bold; }
+#commitmentListModal table.commitments .detailAttr .value { 
+  display: inline-block; padding-left:15px; border-spacing: 2px; border-color: gray;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  -webkit-border-radius: 4px; border-radius: 4px;
+  background-color: whiteSmoke;
+  padding: 2px 8.5px;
+}
+#commitmentListModal .modal-body { max-height:none; }
+#commitmentListModal { width:800px; top:300px; margin-left:-400px;  }
+#commitmentListModal h3 { text-align: center;   font: bold 22px sans-serif; }
+#commitmentListModal button.close { border:none; background: none; }
+#commitmentListModal .pageCount { text-align:right; font-size: 12px; float:left; margin-top:10px; }
+#commitmentListModal .loading { width: 100%; text-align:center; padding-top:20px; }
+#commitmentListModal .modal-header { border-bottom: none; }
+#commitmentListModal td.pages { padding-left:0px; text-align: center; }
+#commitmentListModal .pagination { margin: 5px 0 10px 0; height:20px; }
+#commitmentListModal .pagination li { padding:0px; }
+#commitmentListModal .pagination a { padding:3px 7px; line-height: 14px }
+
+#purposeBars {
+  display:none;
+
+	height: auto;
+  position: fixed;
+  right:10px;
+  margin-top:0;
+
+	background-color:rgb(255,255,255);
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px; 
+
+  border:1px solid #ccc;
+
+  padding:0.5em;
+
+  text-align: right;
+
+  
+}
+
+
+#purposeBars .breadcrumb li.node { }
+#purposeBars .breadcrumb li.node.sel {   }
+#purposeBars svg {  }
+#purposeBars svg text.barLabel {  }
+
+
+
+
+#leftSidebar {
+  position: fixed; 
+  left:0;
+}
+
+.bubbleChart .legend {
+  position: fixed;
+  right:10px;
+  bottom:60px;
+  background-color:white;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  border:1px solid #eee;
+  padding:0px 7px;  
+}
+
+#timeSlider {
+  width:255px;
+  margin-left:22px;
+}
+
+#tseriesPanel { 
+  overflow-y: hidden;
+  overflow-x: hidden;
+  width:267px;
+  
+  background-color:#fff;
+  padding:5px;
+  height:auto;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;  
+}
+
+
+.tseries .pi_0 .line { }
+.tseries .pi_0 .dot  { stroke-width:0.5; }
+
+
+/*
+#yearSliderOuter {
+  margin: 0 auto;
+  display:none;
+  vertical-align: top;
+  height:35px;
+  background-color:#eee; 
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+
+#yearSliderInner { float:left; height:40px; }
+
+#yearSlider { display: inline-block; }
+#yearTicks { padding:1px; display: inline-block; }
+
+
+#yearTicks .x.axis line.tick { stroke:#333; stroke-width:.5; }
+#yearTicks .x.axis line.tick.minor { stroke:#999; stroke-width:.5; }
+#yearTicks path.domain { fill:none; }
+
+#yearTicks .x.axis text { cursor:pointer;  }
+
+#play { 
+ margin-left:0;
+ float:left;
+ cursor:pointer;
+ padding:4px; display: inline-block;
+ }
+
+#yearText {  fill:#ccc;  font-weight:bold; }
+*/

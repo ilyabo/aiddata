@@ -1,0 +1,41 @@
+.tipsy { font-size:10pt !important; }
+.tipsy .sm { font-size:8pt;}
+.tipsy-inner { background-color:#333; }
+.tipsy-arrow { border-color:#333; }
+
+.bubbleChart .nodeLabel { cursor:default;}
+
+
+
+.bubbleChart g.flows line { stroke-linecap:round; }
+
+
+.bubbleChart g.bubble circle { stroke:#ccc; stroke-width:1; }
+/*g.bubble circle:hover { stroke:#fff; }*/
+/*.bubbleChart g.bubble circle.selected { stroke:#ccc; /Khaki/ stroke-width:2;}*/
+.bubbleChart g.bubble circle.selected.rin { stroke:rgb(108,1,24); }
+.bubbleChart g.bubble circle.selected.rout { stroke:rgb(0,45,87); }
+.bubbleChart g.bubble.highlighted circle.selected.rin { stroke:rgb(108,1,24); stroke-width:2; }
+.bubbleChart g.bubble.highlighted circle.selected.rout { stroke:rgb(0,45,87); stroke-width:2; }
+
+.bubbleChart g.bubble circle.rin { fill:#d56869 ; }
+.bubbleChart g.bubble circle.rout { fill:steelblue; }
+.bubbleChart g.bubble.highlighted  circle.rin { fill:#d56869; stroke:rgb(160,57,62); stroke-width:2; }
+.bubbleChart g.bubble.highlighted  circle.rout { fill:steelblue; stroke:rgb(0,86,132); stroke-width:2; }
+
+
+.bubbleChart line.in { stroke:#ffb1af; }
+.bubbleChart line.in:hover { stroke:#ffcac8; }
+
+.bubbleChart line.out { stroke:#7ab1e6; }
+.bubbleChart line.out:hover { stroke:#93caff; }
+
+
+.bubbleChart g.bubble text { pointer-events: none; alignment-baseline:central; /* text-shadow: 0 0 0.3em #FFF */ }
+
+
+.bubbleChart .legend path { stroke:#999; fill:#fafafa; stroke-width:0.5; }
+.bubbleChart .legend text { fill:black; font-size:9px;  text-shadow: 0 0 0.2em white; }
+
+.bubbleChart .legend text.caption { font-size:10px; text-shadow:none; }
+.bubbleChart .legend .colors text { font-size:10px; text-shadow:none; }

@@ -1,0 +1,202 @@
+{
+    "name": "AidData",
+    "code": "",
+    "values": [
+        {
+            "name": "Social Infrastructure and Services",
+            "code": "1",
+            "values": [
+                {
+                    "name": "Education",
+                    "code": "11",
+                    "values": [
+                        {
+                            "name": "Education, level unspecified",
+                            "code": "111"
+                        },
+                        {
+                            "name": "Basic education",
+                            "code": "112"
+                        },
+                        {
+                            "name": "Secondary education",
+                            "code": "113"
+                        },
+                        {
+                            "name": "Post-secondary education",
+                            "code": "114"
+                        }
+                    ]
+                },
+                {
+                    "name": "Health",
+                    "code": "12",
+                    "values": [
+                        {
+                            "name": "Health, combination or unspecified",
+                            "code": "120"
+                        },
+                        {
+                            "name": "Health, general",
+                            "code": "121"
+                        },
+                        {
+                            "name": "Basic health",
+                            "code": "122"
+                        }
+                    ]
+                },
+                {
+                    "name": "Population Policies/Programs and Reproductive Health",
+                    "code": "13"
+                },
+                {
+                    "name": "Water Supply and Sanitation",
+                    "code": "14"
+                },
+                {
+                    "name": "Government and Civil Society",
+                    "code": "15",
+                    "values": [
+                        {
+                            "name": "Government and civil society, general",
+                            "code": "151"
+                        },
+                        {
+                            "name": "Conflict prevention and resolution, peace and security",
+                            "code": "152"
+                        }
+                    ]
+                },
+                {
+                    "name": "Other Social Infrastructure and Services",
+                    "code": "16"
+                }
+            ]
+        },
+        {
+            "name": "Economic Infrastructure and Services",
+            "code": "2",
+            "values": [
+                {
+                    "name": "Transport and Storage",
+                    "code": "21"
+                },
+                {
+                    "name": "Communications",
+                    "code": "22"
+                },
+                {
+                    "name": "Energy Generation and Supply",
+                    "code": "23"
+                },
+                {
+                    "name": "Banking and Financial Services",
+                    "code": "24"
+                },
+                {
+                    "name": "Business and Other Services",
+                    "code": "25"
+                }
+            ]
+        },
+        {
+            "name": "Production Sectors",
+            "code": "3",
+            "values": [
+                {
+                    "name": "Agriculture, Forestry, Fishing",
+                    "code": "31",
+                    "values": [
+                        {
+                            "name": "Agriculture",
+                            "code": "311"
+                        },
+                        {
+                            "name": "Forestry",
+                            "code": "312"
+                        },
+                        {
+                            "name": "Fishing",
+                            "code": "313"
+                        }
+                    ]
+                },
+                {
+                    "name": "Industry, Mining, Construction",
+                    "code": "32",
+                    "values": [
+                        {
+                            "name": "Industry",
+                            "code": "321"
+                        },
+                        {
+                            "name": "Mineral resources and mining",
+                            "code": "322"
+                        }
+                    ]
+                },
+                {
+                    "name": "Trade policy and regulations",
+                    "code": "331"
+                },
+                {
+                    "name": "Tourism",
+                    "code": "332"
+                }
+            ]
+        },
+        {
+            "name": "Multi-Sector/Cross-Cutting",
+            "code": "4",
+            "values": [
+                {
+                    "name": "General Environmental Protection",
+                    "code": "41"
+                },
+                {
+                    "name": "Other",
+                    "code": "43"
+                }
+            ]
+        },
+        {
+            "name": "Commodity Aid And General Program Assistance",
+            "code": "5",
+            "values": [
+                {
+                    "name": "Other Commodity Assistance",
+                    "code": "53"
+                }
+            ]
+        },
+        {
+            "name": "Action Relating to Debt",
+            "code": "6"
+        },
+        {
+            "name": "Humanitarian Aid",
+            "code": "7",
+            "values": [
+                {
+                    "name": "Emergency Response",
+                    "code": "72"
+                }
+            ]
+        },
+        {
+            "name": "Other",
+            "code": "9",
+            "values": [
+                {
+                    "name": "Support to Non-Governmental Organizations and Government Organizations",
+                    "code": "92"
+                },
+                {
+                    "name": "Unallocated/Unspecified",
+                    "code": "99"
+                }
+            ]
+        }
+    ]
+}

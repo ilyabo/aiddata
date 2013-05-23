@@ -1,0 +1,11 @@
+{
+  "appenders": [
+    {
+      "type": "file",
+      "filename": "logs/aiddata.log",
+      "maxLogSize": 104857600,
+      "backups": 5,
+      "pollInterval": 15
+    }
+  ]
+}

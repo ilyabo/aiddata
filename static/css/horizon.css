@@ -1,0 +1,116 @@
+/*body { padding-top:40px; }*/
+
+#loading { position:absolute; left:30px; top:60px;}
+
+#horizonParent {  
+  text-align:center;
+  margin: 0px auto; position: relative; 
+}
+.horizonChart {
+  vertical-align: top;
+  margin:0px;  
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  /*margin: 30px auto; position: relative; width: 500px; position: relative;*/
+  display:inline-block;
+  padding:0px 20px;
+}
+
+.horizonChart .content {
+  margin-top:70px;
+  margin-bottom:30px;
+}
+
+.horizonChart  .viewTitle {
+  font: bold 22px sans-serif;
+  position: fixed;
+  padding:10px 0px 5px 0px;
+  width:inherit;
+  text-align:center;
+  z-index:4;
+  background-color:white;
+  height:25px;
+}
+
+header {
+  padding: 6px 0;
+}
+
+
+.group {
+  margin-bottom: 1em;
+}
+
+.axis {
+  font: 10px sans-serif;
+  position: fixed;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.axis.top { margin-top:75px; }
+
+.axis text {
+  -webkit-transition: fill-opacity 250ms linear;
+}
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis.top {
+  background-image: linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  top: 0px;
+  padding: 0 0 34px 0;
+}
+
+.axis.bottom {
+  background-image: linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  bottom: 0px;
+  padding: 34px 0 0 0;
+}
+
+.horizon {
+  border-bottom: solid 1px #999;
+  border-top: solid 1px #999;
+  /*overflow: hidden;*/
+  position: relative;
+}
+
+.horizon + .horizon {
+  border-top: none;
+}
+
+.horizon canvas {
+  display: block;
+}
+
+
+.horizon .title,
+.horizon .value {
+  font-size:8pt;
+  bottom: 0;
+  line-height: 20px;
+  margin: 0 6px;
+  position: absolute;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  white-space: nowrap;
+}
+
+
+.line {
+  background: #000;
+  z-index: 2;
+}

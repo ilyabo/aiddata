@@ -1,0 +1,237 @@
+#loading { position:absolute; top:60px; left:20px; }
+#loading .blockUI { 
+  position:absolute; top:0; left:0; right:0; bottom:0; background-color:white; 
+  opacity:0; z-index:99;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#horizonParent {
+text-align: center;
+margin: 0px auto;
+position: relative;
+}
+
+#donorsChart {
+  left:120px;  
+}
+
+#recipientsChart {
+  left:560px;  
+}
+
+#purposesChart {
+  left:1000px;  
+}
+
+.horizonChart {
+  position: fixed;
+  vertical-align: top;
+  margin:0px;  
+  margin-top:20px;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  display:inline-block;
+  padding:0;
+  margin:auto;
+  width: 410px;
+}
+
+.horizonChart .controls {
+  text-align: right;
+}
+
+
+
+.horizon {
+/*border-bottom: solid 1px #999;*/
+border-bottom: solid 1px #ccc;
+position: relative;
+padding-left:60px;
+width:350px;
+}
+
+.horizon:hover {
+/*outline:1px solid rgba(250, 200, 200, 100);
+outline-offset: -1px;
+border-bottom: solid 1px white;
+*/
+background-color: #f0f0f0;
+}
+
+.horizon:first-of-type { border-top: none; }
+
+.horizon canvas {
+display: block;
+margin:0;
+}
+
+.horizonChart  .line.rule {
+display:none;
+background: black;
+opacity: 0.4;
+z-index: 2;
+}
+
+.horizonChart  .viewTitle {
+  font: bold 22px sans-serif;
+  /*position: fixed;*/
+  padding:0px 0px 10px 0px;
+  width:inherit;
+  text-align:center;
+  z-index:4;
+  background-color:white;
+  height:25px;
+  width: 410px;
+}
+
+.bands {
+  border-top:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+
+/*  position: relative;
+  top:-25px;
+*/  overflow-y:scroll;
+  overflow-x:hidden;
+  height:100%; margin:auto;
+/*  padding-top:20px;
+*/  
+  width:410px;
+  padding-right:20px;
+}
+
+.horizon label { display:inline; font-size:11px; }
+
+/*.horizon label:hover { text-decoration: underline; color:blue; }*/
+
+.horizon .item {
+left:0px;
+font-size: 8pt;
+top: 0;
+line-height: 20px;
+vertical-align: middle;
+position: absolute;
+margin:0 6px;
+text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+white-space: nowrap;
+}
+
+.horizon .item input {
+  margin-right:3px;
+}
+
+
+.horizonChart .legend {
+  background-color: white;
+  z-index: 1000;
+  padding:3px;
+  border:1px solid #cccccc;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px; 
+}
+
+#donorsChart  .legend {
+  top:115px; left:5px;
+  position: fixed;  
+}
+
+
+.horizonChart .legend text {
+font-size:7pt;
+}
+
+
+
+
+.axis {
+   padding-left:43px;
+  font: 10px sans-serif;
+  /*position: fixed; */
+  pointer-events: none;
+  z-index: 30;
+}
+
+.axis.top { margin-top:0px; }
+
+.axis text {
+  font-size:9px;
+  -webkit-transition: fill-opacity 250ms linear;
+}
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis.top {
+  background-image: linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255,255,255,0) 100%);
+  top: 0px;
+/*  padding: 0 0 14px 0;
+*/}
+
+.axis.bottom {
+  background-image: linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255,255,255,0) 100%);
+  bottom: 0px;
+  padding: 34px 0 0 0;
+}
+
+#tooltip {
+  font-size:12px;
+  font-family:"Helvetica Neue", Helvetica, arial;
+  position:absolute;
+  padding:5px;
+  z-index:100000;
+}
+
+#tooltip div {
+  background-color:#000;
+  opacity: 0.8;
+  -moz-opacity: 0.8;
+  filter:alpha(opacity=8);
+  color:#fff;
+  color:#fff;
+  padding:5px 8px 4px 8px;
+  text-align:left;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
+}
+
+.btn-group.applied button {
+  border-color:#f76;
+  border-width:1px;
+}
+
+
+#indicatorChart  .legend { position:fixed; margin-left:450px;  }
+#indicatorChart { position:fixed; }
+
+#indicatorModal { width:800px; top:300px; margin-left:-400px;  }
+#indicatorModal h3 { text-align: center;   font: bold 22px sans-serif; }
+#indicatorModal button.close { border:none; background: none; }
+
+.ctl-hint { font-size:8pt; text-align:left !important; color:#999;}
+#indicatorTypeahead { width:500px; margin-bottom:0; }
+ul.typeahead.dropdown-menu { font-size:11px;}
+#indicatorModal .horizonChart {  }
+
+#indicatorModal .modal-body { max-height:none; }
+
+#indicatorDesc { position:relative; margin-left:450px; margin-top:200px;  }
+#indicatorDesc .name { font-weight: bold; font-size:13px; }
+#indicatorDesc .source { font-size:9px; }
+#indicatorDesc .sourceNote { font-size:11px; width:300px; margin-top:10px; margin-bottom:10px; }
+#indicatorDesc .topics { font-size: 12px; }
+

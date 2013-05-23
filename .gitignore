@@ -1,4 +1,13 @@
 .DS_Store
 .idea
-app/*.js
-Cakefile.js
+apprunner-*.coffee
+config.coffee
+.dbconf.coffee
+.googan.coffee
+node_modules/
+static/coffee/
+logs/
+data/static/data/cached/
+data/imports/temp/
+aiddata.sublime-project
+aiddata.sublime-workspace

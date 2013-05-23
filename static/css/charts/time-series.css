@@ -1,0 +1,70 @@
+
+
+/* Time-series */
+div.tseries { }
+
+.tseries .title { fill:#666; font-size:11px; font-weight:normal;}
+.tseries .line { fill: none; stroke-width: 1.5px; }
+.tseries .dot  { stroke-width:1.5; fill:#fff; }
+
+
+.tseries svg  { }
+
+.tseries rect.background {
+  fill:white;
+  stroke:#eee;
+  stroke-width:1;
+}
+
+.tseries rect.foreground {
+  fill:white;
+  opacity:0;
+  stroke:none;
+}
+
+.tseries .axis path {
+  fill: none;
+  shape-rendering: crispEdges;
+}
+
+.tseries line.rule { stroke:#000; opacity:.3; }
+
+.tseries .y.axis line, #tseries .y.axis path {
+  stroke:#eee; stroke-width:1;
+}
+
+
+.tseries .x.axis line {
+  stroke-width:1;
+  stroke:#ccc;
+}
+
+.tseries .axis text {
+  font-size:9px;
+  fill:gray;
+}
+
+.tseries .legendItem text { font-size:7pt; fill:#666; dominant-baseline: central;}
+
+.tseries .legendItem rect { stroke-width:.5px; }
+
+.tseries .index text { font-size:7pt; fill:#999; }
+
+.tseries div.tooltip  {
+  font-size:12px;
+  font-family:"Helvetica Neue", Helvetica, arial;
+  position:absolute;
+  z-index:100000;
+
+    background-color:#000;
+  opacity: 0.7;
+  -moz-opacity: 0.7;
+  filter:alpha(opacity=7);
+  color:#fff;
+  color:#fff;
+  padding:5px 8px 4px 8px;
+  text-align:left;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
+}
