@@ -1,36 +1,43 @@
 @include = ->
 
-  @get '/': -> @render 'bubbles': {layout: 'bootstrap.eco'}
-
-  @get '/breaknsplit': ->    
-    @render breaknsplit: {layout: 'bootstrap.eco'}
-
-  @get '/ffprints': -> @render ffprints: {layout: 'bootstrap.eco'}
-
-  @get '/bubbles': -> @render bubbles: {layout: 'bootstrap.eco'}
-
-  @get '/horizon': -> @render horizon: {layout: 'bootstrap.eco'}
+  @get '/': -> @render 'bubbles', layout: 'layout'
+  @get '/bubbles': -> @render 'bubbles', layout: 'layout'
+  @get '/breaknsplit': -> @render 'breaknsplit', layout: 'layout'
+  @get '/horizon3': -> @render 'horizon3', layout: 'layout'
+  @get '/horizon4': -> @render 'horizon4', layout: 'layout'
  
-  @get '/horizon3': -> @render horizon3: {layout: 'bootstrap.eco'}
-  @get '/horizon4': -> @render horizon4: {layout: 'bootstrap.eco'}
+
+
+
+  config = require '../config'
+
+  menu = 
+    bubbles : "Bubbles"
+
+    horizon3 : "Horizons"
+
+    horizon4 : "Horizons (small)"
+
+    breaknsplit : "Break'n'split"
+
+
+  @view layout: ->
+    doctype 5
+    html ->
+      head ->    
+
+        style '@import url("libs/bootstrap/css/bootstrap.css")'
+        style '@import url("libs/bootstrap/css/bootstrap-responsive.css")'
+        style '@import url("css/layout.css")'
+        style 'body { padding-top: 30px; }'
+
+        script -> 'dynamicDataPath = "data/";'
+        script src: 'js/browser-check.js'
+        script src: 'libs/jquery/jquery-1.7.1.min.js'
+        script src: 'libs/bootstrap/js/bootstrap.js'
+        script src: 'd3.v2.js'
+
+      body ->
+        div class: 'container', -> @body
+
  
-  @get '/flowmap': -> @render flowmap: {layout: 'bootstrap.eco'}
- 
-  @get '/chord': -> @render chord: {layout: 'bootstrap.eco'}
- 
-  @get '/crossfilter': -> @render crossfilter: {layout: 'bootstrap.eco'}
- 
-  @get '/time-series': -> @render tseries: {layout: 'bootstrap.eco'}
-
-  @get '/purpose-tree': -> @render purposeTree: {layout: 'bootstrap.eco'}
-
-  @get '/purpose-pack': -> @render purposePack: {layout: 'bootstrap.eco'}
-
-  @get '/purpose-bars': -> @render purposeBars: {layout: 'bootstrap.eco'}
-
-  @get '/us-donations': -> @render "us-donations": {layout: 'bootstrap.eco'}
-
-  @get '/streemap': -> @render spatialTreemap: {layout: 'bootstrap.eco'}
-
-  @get '/ffprints?refugees': -> 
-    @render ffprints: {layout: 'bootstrap.eco', dataset: "refugees"}

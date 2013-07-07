@@ -1,10 +1,12 @@
 config = require '../config'
 
-require('zappa').run config.port, ->
+require('zappajs').run config.port, ->
   
 
   express = require('express')
-  @include './layout'
+  @use 'partials'
+
+
   @include './views'
   @include './routes-data-extern'
   @include './routes-data'
@@ -46,8 +48,7 @@ require('zappa').run config.port, ->
   @include './frontend/query-history'
   @include './frontend/breaknsplit'
 
-
-
+  @app.use express.compress()   # this should enable gzipping, but does not work
   @use 'bodyParser', 'methodOverride', @app.router
   @use 'static': __dirname + '/../static'
   @use 'static': __dirname + '/../data/static'
@@ -59,8 +60,8 @@ require('zappa').run config.port, ->
   #@enable 'default layout'
   #@enable 'minify'
 
-
   @app.use (err, req, res, next) ->
     console.error err
     res.status = 
     res.send "Something went wrong..."
+
