@@ -17,7 +17,6 @@ require('zappajs').run config.port, ->
 
   @configure
     development: => 
-      #log4js.addAppender(log4js.consoleAppender())
       logger = log4js.getLogger('app')
       @use log4js.connectLogger logger, 
         level: log4js.levels.DEBUG
@@ -26,7 +25,10 @@ require('zappajs').run config.port, ->
       logger.info "Starting in development mode"
 
     production: => 
-      log4js.configure('log4js-production.json')
+      log4js.configure
+        appenders: [
+          type: 'console'
+        ]
       logger = log4js.getLogger('app')
       @use log4js.connectLogger logger, 
         level: log4js.levels.INFO
