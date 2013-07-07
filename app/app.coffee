@@ -6,7 +6,6 @@ require('zappa').run config.port, ->
   express = require('express')
   @include './layout'
   @include './views'
-  @include './routes-data-mongo'
   @include './routes-data-extern'
   @include './routes-data'
   @include './routes-views'
