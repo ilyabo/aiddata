@@ -13,7 +13,7 @@ Then, run
     foreman start
 
 
-This is a Heroku-ready version. To publish a new app install the [Heroku toolbelt][https://toolbelt.heroku.com/] and use:
+This is a Heroku-ready version. To publish a new app install the [Heroku toolbelt][toolbelt] and use:
 
     heroku create
 
@@ -23,10 +23,12 @@ This is a Heroku-ready version. To publish a new app install the [Heroku toolbel
     heroku config:set NODE_ENV=production
 
 
-For more details, check out [Getting Started with Node.js on Heroku][https://devcenter.heroku.com/articles/nodejs].
+For more details, check out [Getting Started with Node.js on Heroku][guide].
 
 
 
 [foreman]: https://github.com/ddollar/foreman
 [demo]: http://aiddata.herokuapp.com
 [aiddata]: http://aiddata.org
+[toolbelt]: https://toolbelt.heroku.com/
+[guide]: https://devcenter.heroku.com/articles/nodejs
