@@ -33,16 +33,22 @@ require('zappa').run config.port, ->
       logger.info "Starting in production mode"
 
 
+  @include './charts/time-series'
+  @include './charts/bar-hierarchy'
+  @include './charts/bubbles'
+  @include './charts/time-slider'
+
+  @include './frontend/utils-aiddata'
+  @include './frontend/utils'
+  @include './frontend/bubbles'
 
 
-  
+
   @use 'bodyParser', 'methodOverride', @app.router
   @use 'static': __dirname + '/../static'
   @use 'static': __dirname + '/../data/static'
   @use 'static': __dirname + '/../node_modules/underscore'
   @use 'static': __dirname + '/../node_modules/d3'
-  @use 'static': __dirname + '/../node_modules/crossfilter'
-  @use 'static': __dirname + '/../node_modules/cubism'
   @use 'static': __dirname + '/../node_modules/queue-async'
   @use 'static': __dirname + '/../node_modules/history.js'
 
