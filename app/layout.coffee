@@ -5,19 +5,12 @@
   menu = 
     bubbles : "Bubbles"
 
-    horizon3 : "Horizon3"
+    horizon3 : "Horizons"
 
-    horizon4 : "Horizon4"
+    horizon4 : "Horizons (small)"
 
     breaknsplit : "Break'n'split"
 
-    #horizon : "Horizon"
-
-    ffprints : "Flowprints"
-
-    #crossfilter : "Crossfilter"
-
-    "purpose-pack" : "Purposes"
 
 
 
