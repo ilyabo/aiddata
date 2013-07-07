@@ -7,17 +7,8 @@ To install dependencies run
 
 Then, run
 
-    cake refresh-cached
+    foreman start
 
     
-To run the app in the development mode use
-  
-    cake restart
-
-To run in production
-
-    cake start-forever
-
-
-[demo]: http://diuf.unifr.ch/diva/viz/aiddata/
+[demo]: http://aiddata.herokuapp.com
 [aiddata]: http://aiddata.org
