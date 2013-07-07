@@ -41,6 +41,10 @@ require('zappa').run config.port, ->
   @include './frontend/utils-aiddata'
   @include './frontend/utils'
   @include './frontend/bubbles'
+  @include './frontend/horizon/horizon3'
+  @include './frontend/horizon/horizon4'
+  @include './frontend/query-history'
+  @include './frontend/breaknsplit'
 
 
 

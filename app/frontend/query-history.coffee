@@ -1,57 +1,60 @@
-#
-# queries are expected to support two methods: copy() and load()
-#
-@queryHistory = ->
+@include = ->
 
-  current = null
-  history = []
-  forwardHistory = []
+  @coffee '/coffee/query-history.js' : -> 
+    #
+    # queries are expected to support two methods: copy() and load()
+    #
+    @queryHistory = ->
 
-  load = (q, callback, updateHistory, clearForwardHistory) ->
+      current = null
+      history = []
+      forwardHistory = []
 
-    q.load (err, data) ->
-      if err?
-        callback err
-      else
-        if clearForwardHistory
-          forwardHistory = []
+      load = (q, callback, updateHistory, clearForwardHistory) ->
 
-        if updateHistory
-          if current?
-            history.push(current)
+        q.load (err, data) ->
+          if err?
+            callback err
+          else
+            if clearForwardHistory
+              forwardHistory = []
 
-        current = q.copy()
+            if updateHistory
+              if current?
+                history.push(current)
 
-        if callback? then callback(null, data)
+            current = q.copy()
 
-  top = -> 
-    if history.length > 0
-      history[history.length - 1]
-    else
-      null
+            if callback? then callback(null, data)
+
+      top = -> 
+        if history.length > 0
+          history[history.length - 1]
+        else
+          null
 
 
-  {
-    top : top
+      {
+        top : top
 
-    current : -> current?.copy()
+        current : -> current?.copy()
 
-    back : (callback) ->
-      if history.length > 0
-        top = history.pop()
-        forwardHistory.push(current)
-        load(top.copy(), callback, false, false)
+        back : (callback) ->
+          if history.length > 0
+            top = history.pop()
+            forwardHistory.push(current)
+            load(top.copy(), callback, false, false)
 
-    forward : (callback) ->
-      if forwardHistory.length > 0
-        top = forwardHistory.pop()
-        load(top.copy(), callback, true, false)
+        forward : (callback) ->
+          if forwardHistory.length > 0
+            top = forwardHistory.pop()
+            load(top.copy(), callback, true, false)
 
-    isBackEmpty : -> history.length is 0
+        isBackEmpty : -> history.length is 0
 
-    isForwardEmpty : -> forwardHistory.length is 0
+        isForwardEmpty : -> forwardHistory.length is 0
 
-    load : (q, callback) -> load(q, callback, true, true)
-  }
+        load : (q, callback) -> load(q, callback, true, true)
+      }
 
 
