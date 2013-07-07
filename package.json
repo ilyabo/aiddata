@@ -26,5 +26,5 @@
     "request": "*",
     "csv": "0.0.19"
     },
-  "engines": { "node": "*" }
+  "engines": { "node": "0.10.12" }
 }
