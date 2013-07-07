@@ -54,7 +54,7 @@
           <link rel="apple-touch-icon-precomposed" sizes="72x72" href="libs/bootstrap/ico/apple-touch-icon-72-precomposed.png">
           <link rel="apple-touch-icon-precomposed" href="libs/bootstrap/ico/apple-touch-icon-57-precomposed.png">
 
-          <script>dynamicDataPath = "data/cached/";</script>
+          <script>dynamicDataPath = "data/";</script>
         </head>
 
         <body>
