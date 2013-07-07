@@ -6,7 +6,6 @@
   csv = require 'csv'
   queue = require 'queue-async'
 
-  pg = require './pg-sql'
   dv = require './dv-table'
   utils = require './data-utils'
   pu = require '../data/purposes'
@@ -45,78 +44,78 @@
 
 
 
-  getPurposeTree = caching.loader { preload : true }, (callback) ->
+  # getPurposeTree = caching.loader { preload : true }, (callback) ->
 
-    queue()
-      .defer((cb) ->
-        fs.readFile 'data/static/data/purpose-categories.json', (err, result) ->
-          result = JSON.parse(result) unless err?
-          console.log "Purpose categories file loaded"
-          cb(err, result)
-      )
-      .defer((cb) ->
-        console.log "Loading category list from postgres..."
-        pg.sql(
-          "select
-              distinct(coalesced_purpose_code) as code,
-              coalesced_purpose_name as name
-            from aiddata2
-            order by coalesced_purpose_name", 
-            (err, data) ->
-              if err?
-                console.log "Category list couldn't be loaded: " + err
-              else
-                console.log "Category list loaded from postgres"
-              cb(err, data)
-        )
-      )
-      .await (err, results) =>
-        if err? then callback(err)
-        else
-          [ cats, { 'rows': purposes } ] = results
+  #   queue()
+  #     .defer((cb) ->
+  #       fs.readFile 'data/static/data/purpose-categories.json', (err, result) ->
+  #         result = JSON.parse(result) unless err?
+  #         console.log "Purpose categories file loaded"
+  #         cb(err, result)
+  #     )
+  #     .defer((cb) ->
+  #       console.log "Loading category list from postgres..."
+  #       pg.sql(
+  #         "select
+  #             distinct(coalesced_purpose_code) as code,
+  #             coalesced_purpose_name as name
+  #           from aiddata2
+  #           order by coalesced_purpose_name", 
+  #           (err, data) ->
+  #             if err?
+  #               console.log "Category list couldn't be loaded: " + err
+  #             else
+  #               console.log "Category list loaded from postgres"
+  #             cb(err, data)
+  #       )
+  #     )
+  #     .await (err, results) =>
+  #       if err? then callback(err)
+  #       else
+  #         [ cats, { 'rows': purposes } ] = results
 
-          # insert purpose into the tree of the categories
-          # by so that the purpose code corresponds to the prefix
-          insert = (p, tree) ->
-            if tree.values?
-              for e in tree.values
-                if p.code?.indexOf(e.code) is 0  # startsWith
-                  return insert(p, e)
+  #         # insert purpose into the tree of the categories
+  #         # by so that the purpose code corresponds to the prefix
+  #         insert = (p, tree) ->
+  #           if tree.values?
+  #             for e in tree.values
+  #               if p.code?.indexOf(e.code) is 0  # startsWith
+  #                 return insert(p, e)
 
-            tree.values ?= []
-            tree.values.push { name:p.name, code:p.code }
-            tree
-
-
-
-          insert(p, cats) for p in pu.groupPurposesByCode purposes
-
-          console.log "Purpose tree was built"
-          callback(null, cats)
+  #           tree.values ?= []
+  #           tree.values.push { name:p.name, code:p.code }
+  #           tree
 
 
-          # cats = pu.provideWithPurposeCategories pu.groupPurposesByCode data.rows
 
-          # nested = d3.nest()
-          #   .key((p) -> p.category)
-          #   .key((p) -> p.subcategory)
-          #   #.key((p) -> p.subsubcategory)
-          #   #.key((p) -> p.name)
-          #   # .rollup((ps) -> 
-          #   #   #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
-          #   #   ps.map (p) ->
-          #   #     key : p.code
-          #   #     name : p.name
-          #   # )
-          #   .entries(cats)
+  #         insert(p, cats) for p in pu.groupPurposesByCode purposes
 
-          # data = aidutils.utils.aiddata.purposes.removeSingleChildNodes {
-          #   key : "AidData"
-          #   values : nested
-          # }
+  #         console.log "Purpose tree was built"
+  #         callback(null, cats)
 
 
-          #callback null, data
+  #         # cats = pu.provideWithPurposeCategories pu.groupPurposesByCode data.rows
+
+  #         # nested = d3.nest()
+  #         #   .key((p) -> p.category)
+  #         #   .key((p) -> p.subcategory)
+  #         #   #.key((p) -> p.subsubcategory)
+  #         #   #.key((p) -> p.name)
+  #         #   # .rollup((ps) -> 
+  #         #   #   #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
+  #         #   #   ps.map (p) ->
+  #         #   #     key : p.code
+  #         #   #     name : p.name
+  #         #   # )
+  #         #   .entries(cats)
+
+  #         # data = aidutils.utils.aiddata.purposes.removeSingleChildNodes {
+  #         #   key : "AidData"
+  #         #   values : nested
+  #         # }
+
+
+  #         #callback null, data
 
 
 
