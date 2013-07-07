@@ -6,14 +6,14 @@ To install dependencies run
     npm install
 
 
-Install [foreman][foreman] (it is a part of Heroku toolbelt)
+Install [foreman][foreman] (it is included in the Heroku toolbelt, see below).
 
 Then, run
 
     foreman start
 
 
-This is a Heroku-ready version. To publish a new app install the [Heroku toolbelt][toolbelt] and use:
+This is a Heroku-ready version. To publish a new app, install the [Heroku toolbelt][toolbelt] and use:
 
     heroku create
 
