@@ -343,9 +343,12 @@
               d3.max(maxTotalMagnitudes.inbound), 
               d3.max(maxTotalMagnitudes.outbound))
 
+
         rscale = d3.scale.sqrt()
-          .range([0, Math.min(bubblesChartWidth/25, bubblesChartHeight /12)])
           .domain([0, maxTotalMagnitude])
+          .range([0, Math.min(bubblesChartWidth/25, bubblesChartHeight/12)])
+
+
         maxr = rscale.range()[1]
 
         fwscale = d3.scale.sqrt() #.linear()
@@ -586,9 +589,9 @@
 
           createNodeTimeSeries(this, d, i)
 
-          $(this).tipsy("show")
-          $(tipsy.$tip)  # fix vertical position
-              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+#          $(this).tipsy("show")
+#          $(tipsy.$tip)  # fix vertical position
+#              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
 
         .on 'mouseout', (d, i) ->
           d3.select(this).classed("highlighted", false)
@@ -599,7 +602,7 @@
           if selectedNode != this
             tseriesPanel.remove(d[conf.nodeIdAttr])
 
-          $(this).tipsy("hide")
+#          $(this).tipsy("hide")
 
 
         force.nodes(nodes)
@@ -750,34 +753,35 @@
           .attr("x2", (d) -> d.target.x)
           .attr("y2", (d) -> d.target.y)
           .attr("visibility", (d) -> if flowLineValue(d) > 0 then "visible" else "hidden")
-          .on "mouseover", (d, i) ->
+          .on("mouseover", (d, i) ->
             if this.parentNode?
               this.parentNode.appendChild(this)
 
-            $(this).tipsy("show")
-
             createFlowTimeSeries(this, d, i)
+#            $(this).tipsy("show")
 
-            $(tipsy.$tip)
-                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
-                .css('left', d3.event.pageX + 10)
-          .on "mouseout", (d, i) ->
-            $(this).tipsy("hide")
+
+#            $(tipsy.$tip)
+#                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+#                .css('left', d3.event.pageX + 10)
+          ).on("mouseout", (d, i) ->
+#            $(this).tipsy("hide")
             tseriesPanel.remove("flow" + i)
+          )
 
-          lines
-            .transition()
-                .duration(200)
-                  .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
-                  #.attr("opacity", 1)
+        lines
+          .transition()
+              .duration(200)
+                .attr("stroke-width", (d) -> fwscale(flowLineValue(d)))
+                #.attr("opacity", 1)
 
 
-        $('g.flows line').tipsy
-          gravity: 'w'
-          opacity: 0.9
-          html: true
-          trigger: "manual"
-          title: -> flowTooltip(d3.select(this).datum())
+#        $('g.flows line').tipsy
+#          gravity: 'w'
+#          opacity: 0.9
+#          html: true
+#          trigger: "manual"
+#          title: -> flowTooltip(d3.select(this).datum())
 
 
 
