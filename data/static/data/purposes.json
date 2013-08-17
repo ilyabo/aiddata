@@ -1,0 +1,1370 @@
+{
+    "key": "*",
+    "name": "AidData",
+    "values": [
+        {
+            "key": "1*",
+            "name": "Social Infrastructure and Services",
+            "values": [
+                {
+                    "key": "11*",
+                    "name": "Education",
+                    "values": [
+                        {
+                            "key": "111*",
+                            "name": "Education, level unspecified",
+                            "values": [
+                                {
+                                    "key": "11100",
+                                    "name": "Education, level unspecified, combinations of purposes"
+                                },
+                                {
+                                    "key": "11105",
+                                    "name": "Education, level unspecified, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "11110",
+                                    "name": "Education policy and administrative management"
+                                },
+                                {
+                                    "key": "11120",
+                                    "name": "Education facilities and training",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "11130",
+                                    "name": "Teacher training"
+                                },
+                                {
+                                    "key": "11182",
+                                    "name": "Educational research"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "112*",
+                            "name": "Basic education",
+                            "values": [
+                                {
+                                    "key": "11220",
+                                    "name": "Primary education"
+                                },
+                                {
+                                    "key": "11230",
+                                    "name": "Basic life skills for youth and adults"
+                                },
+                                {
+                                    "key": "11240",
+                                    "name": "Early childhood education"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "113*",
+                            "name": "Secondary education",
+                            "values": [
+                                {
+                                    "key": "11320",
+                                    "name": "Secondary education"
+                                },
+                                {
+                                    "key": "11330",
+                                    "name": "Vocational training",
+                                    "sum_": 0,
+                                    "count_": 3
+                                }
+                            ]
+                        },
+                        {
+                            "key": "114*",
+                            "name": "Post-secondary education",
+                            "values": [
+                                {
+                                    "key": "11420",
+                                    "name": "Higher education"
+                                },
+                                {
+                                    "key": "11430",
+                                    "name": "Advanced technical and managerial training"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "11000",
+                            "name": "Education, combinations of purposes"
+                        }
+                    ]
+                },
+                {
+                    "key": "12*",
+                    "name": "Health",
+                    "values": [
+                        {
+                            "key": "120*",
+                            "name": "Health, combination or unspecified",
+                            "values": [
+                                {
+                                    "key": "12000",
+                                    "name": "Health, combination of general, basic, and population policy/reproductive health purposes"
+                                },
+                                {
+                                    "key": "12005",
+                                    "name": "Health, purpose unspecified or does not fit under any other applicable codes"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "121*",
+                            "name": "Health, general",
+                            "values": [
+                                {
+                                    "key": "12100",
+                                    "name": "Health, general, combinations of activities"
+                                },
+                                {
+                                    "key": "12105",
+                                    "name": "Health, general, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "12110",
+                                    "name": "Health policy and administrative management"
+                                },
+                                {
+                                    "key": "12181",
+                                    "name": "Medical education/training"
+                                },
+                                {
+                                    "key": "12182",
+                                    "name": "Medical research"
+                                },
+                                {
+                                    "key": "12191",
+                                    "name": "Medical services"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "122*",
+                            "name": "Basic health",
+                            "values": [
+                                {
+                                    "key": "12220",
+                                    "name": "Basic health care"
+                                },
+                                {
+                                    "key": "12230",
+                                    "name": "Basic health infrastructure"
+                                },
+                                {
+                                    "key": "12240",
+                                    "name": "Basic nutrition"
+                                },
+                                {
+                                    "key": "12250",
+                                    "name": "Infectious & Parasitic disease control",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "12261",
+                                    "name": "Health education"
+                                },
+                                {
+                                    "key": "12262",
+                                    "name": "Malaria control"
+                                },
+                                {
+                                    "key": "12263",
+                                    "name": "Tuberculosis control"
+                                },
+                                {
+                                    "key": "12281",
+                                    "name": "Health personnel development"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "key": "13*",
+                    "name": "Population Policies/Programs and Reproductive Health",
+                    "values": [
+                        {
+                            "key": "13000",
+                            "name": "Population policies/ programmes and reproductive health, combinations of activities"
+                        },
+                        {
+                            "key": "13005",
+                            "name": "Population policies/ programmes and reproductive health, purpose unspecified or does not fit under any other applicable codes"
+                        },
+                        {
+                            "key": "13010",
+                            "name": "Population policy and administrative management"
+                        },
+                        {
+                            "key": "13020",
+                            "name": "Reproductive health care"
+                        },
+                        {
+                            "key": "13030",
+                            "name": "Family planning"
+                        },
+                        {
+                            "key": "13040",
+                            "name": "Std control including hiv/aids"
+                        },
+                        {
+                            "key": "13081",
+                            "name": "Personnel dvpt: pop. & repro health"
+                        }
+                    ]
+                },
+                {
+                    "key": "14*",
+                    "name": "Water Supply and Sanitation",
+                    "values": [
+                        {
+                            "key": "14000",
+                            "name": "Water Supply and Sanitation, combination of purposes"
+                        },
+                        {
+                            "key": "14005",
+                            "name": "Water Supply and Sanitation, purpose unspecified or does not fit under any other applicable codes",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "14010",
+                            "name": "Water resources policy and administrative management"
+                        },
+                        {
+                            "key": "14015",
+                            "name": "Water resources protection"
+                        },
+                        {
+                            "key": "14020",
+                            "name": "Water supply and sanitation - large systems",
+                            "sum_": 0,
+                            "count_": 2
+                        },
+                        {
+                            "key": "14030",
+                            "name": "Basic drinking water supply and basic sanitation"
+                        },
+                        {
+                            "key": "14040",
+                            "name": "River development"
+                        },
+                        {
+                            "key": "14050",
+                            "name": "Waste management/disposal",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "14081",
+                            "name": "Education and training in water supply and sanitation"
+                        },
+                        {
+                            "key": "14082",
+                            "name": "Water Research"
+                        }
+                    ]
+                },
+                {
+                    "key": "15*",
+                    "name": "Government and Civil Society",
+                    "values": [
+                        {
+                            "key": "151*",
+                            "name": "Government and civil society, general",
+                            "values": [
+                                {
+                                    "key": "15100",
+                                    "name": "Government and civil society, general, combination of activities"
+                                },
+                                {
+                                    "key": "15105",
+                                    "name": "Government and civil society, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "15110",
+                                    "name": "Economic and development policy/planning"
+                                },
+                                {
+                                    "key": "15111",
+                                    "name": "Public finance management"
+                                },
+                                {
+                                    "key": "15112",
+                                    "name": "Decentralisation and support to subnational govt."
+                                },
+                                {
+                                    "key": "15113",
+                                    "name": "Anti-corruption organisations and institutions"
+                                },
+                                {
+                                    "key": "15120",
+                                    "name": "Public sector financial management"
+                                },
+                                {
+                                    "key": "15130",
+                                    "name": "Legal and judicial development",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "15140",
+                                    "name": "Government administration"
+                                },
+                                {
+                                    "key": "15150",
+                                    "name": "Democratic participation and civil society"
+                                },
+                                {
+                                    "key": "15151",
+                                    "name": "Elections"
+                                },
+                                {
+                                    "key": "15152",
+                                    "name": "Legislatures and political parties"
+                                },
+                                {
+                                    "key": "15153",
+                                    "name": "Media and free flow of information"
+                                },
+                                {
+                                    "key": "15160",
+                                    "name": "Human rights"
+                                },
+                                {
+                                    "key": "15161",
+                                    "name": "Elections"
+                                },
+                                {
+                                    "key": "15162",
+                                    "name": "Human rights"
+                                },
+                                {
+                                    "key": "15163",
+                                    "name": "Free flow of information"
+                                },
+                                {
+                                    "key": "15164",
+                                    "name": "Women's equality organisations and institutions"
+                                },
+                                {
+                                    "key": "15170",
+                                    "name": "Women's equality organisations and institutions"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "152*",
+                            "name": "Conflict prevention and resolution, peace and security",
+                            "values": [
+                                {
+                                    "key": "15200",
+                                    "name": "Conflict prevention and resolution, peace and security, combinations of activities"
+                                },
+                                {
+                                    "key": "15205",
+                                    "name": "Conflict prevention and resolution, peace and security, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "15210",
+                                    "name": "Security system management and reform"
+                                },
+                                {
+                                    "key": "15220",
+                                    "name": "Civilian peace-building, conflict prevention and resolution"
+                                },
+                                {
+                                    "key": "15230",
+                                    "name": "Post-conflict peace building (un)"
+                                },
+                                {
+                                    "key": "15240",
+                                    "name": "Reintegration and salw control"
+                                },
+                                {
+                                    "key": "15250",
+                                    "name": "Land mine clearance"
+                                },
+                                {
+                                    "key": "15261",
+                                    "name": "Child soldiers (prevention and demobilisation)"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "15000",
+                            "name": "Government and civil society, combination of activities"
+                        }
+                    ]
+                },
+                {
+                    "key": "16*",
+                    "name": "Other Social Infrastructure and Services",
+                    "values": [
+                        {
+                            "key": "16010",
+                            "name": "Social/ welfare services"
+                        },
+                        {
+                            "key": "16020",
+                            "name": "Employment policy and administrative management"
+                        },
+                        {
+                            "key": "16030",
+                            "name": "Housing policy and administrative management"
+                        },
+                        {
+                            "key": "16040",
+                            "name": "Low-cost housing"
+                        },
+                        {
+                            "key": "16050",
+                            "name": "Multisector aid for social services"
+                        },
+                        {
+                            "key": "16061",
+                            "name": "Culture and recreation"
+                        },
+                        {
+                            "key": "16062",
+                            "name": "Statistical capacity building"
+                        },
+                        {
+                            "key": "16063",
+                            "name": "Narcotics control"
+                        },
+                        {
+                            "key": "16064",
+                            "name": "Social mitigation of hiv/aids"
+                        },
+                        {
+                            "key": "16081",
+                            "name": "Other social infrastructure and services, education and training"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "2*",
+            "name": "Economic Infrastructure and Services",
+            "values": [
+                {
+                    "key": "21*",
+                    "name": "Transport and Storage",
+                    "values": [
+                        {
+                            "key": "21000",
+                            "name": "Transport and Storage, combination of purposes"
+                        },
+                        {
+                            "key": "21005",
+                            "name": "Transport and Storage, purpose unspecified or does not fit under any other applicable codes",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "21010",
+                            "name": "Transport policy and administrative management"
+                        },
+                        {
+                            "key": "21020",
+                            "name": "Road transport"
+                        },
+                        {
+                            "key": "21030",
+                            "name": "Rail transport",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "21040",
+                            "name": "Water transport"
+                        },
+                        {
+                            "key": "21050",
+                            "name": "Air transport",
+                            "sum_": 0,
+                            "count_": 3
+                        },
+                        {
+                            "key": "21061",
+                            "name": "Storage"
+                        },
+                        {
+                            "key": "21081",
+                            "name": "Education and training in transport and storage"
+                        }
+                    ]
+                },
+                {
+                    "key": "22*",
+                    "name": "Communications",
+                    "values": [
+                        {
+                            "key": "22000",
+                            "name": "Communications, combinations of activities"
+                        },
+                        {
+                            "key": "22005",
+                            "name": "Communications, purpose unspecified or does not fit under any other applicable codes"
+                        },
+                        {
+                            "key": "22010",
+                            "name": "Communications policy and administrative management"
+                        },
+                        {
+                            "key": "22020",
+                            "name": "Telecommunications"
+                        },
+                        {
+                            "key": "22030",
+                            "name": "Radio/television/print media"
+                        },
+                        {
+                            "key": "22040",
+                            "name": "Information and communication technology (ICT)"
+                        },
+                        {
+                            "key": "22081",
+                            "name": "Communications, education and training."
+                        }
+                    ]
+                },
+                {
+                    "key": "23*",
+                    "name": "Energy Generation and Supply",
+                    "values": [
+                        {
+                            "key": "23000",
+                            "name": "Energy generation and supply, combinations of activities",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "23005",
+                            "name": "Energy generation and supply, purpose unspecified or does not fit under any other applicable codes",
+                            "sum_": 0,
+                            "count_": 2
+                        },
+                        {
+                            "key": "23010",
+                            "name": "Energy policy and administrative management",
+                            "sum_": 0,
+                            "count_": 2
+                        },
+                        {
+                            "key": "23020",
+                            "name": "Power generation/non-renewable sources"
+                        },
+                        {
+                            "key": "23030",
+                            "name": "Power generation/renewable sources",
+                            "sum_": 0,
+                            "count_": 8
+                        },
+                        {
+                            "key": "23040",
+                            "name": "Electrical transmission/distribution"
+                        },
+                        {
+                            "key": "23050",
+                            "name": "Gas distribution"
+                        },
+                        {
+                            "key": "23055",
+                            "name": "Petroleum distribution and storage"
+                        },
+                        {
+                            "key": "23061",
+                            "name": "Oil-fired power plants"
+                        },
+                        {
+                            "key": "23062",
+                            "name": "Gas-fired power plants"
+                        },
+                        {
+                            "key": "23063",
+                            "name": "Coal-fired power plants"
+                        },
+                        {
+                            "key": "23064",
+                            "name": "Nuclear power plants"
+                        },
+                        {
+                            "key": "23065",
+                            "name": "Hydro-electric power plants"
+                        },
+                        {
+                            "key": "23066",
+                            "name": "Geothermal energy"
+                        },
+                        {
+                            "key": "23067",
+                            "name": "Solar energy"
+                        },
+                        {
+                            "key": "23068",
+                            "name": "Wind power"
+                        },
+                        {
+                            "key": "23069",
+                            "name": "Ocean power"
+                        },
+                        {
+                            "key": "23070",
+                            "name": "Biomass"
+                        },
+                        {
+                            "key": "23081",
+                            "name": "Energy education/training"
+                        },
+                        {
+                            "key": "23082",
+                            "name": "Energy research"
+                        }
+                    ]
+                },
+                {
+                    "key": "24*",
+                    "name": "Banking and Financial Services",
+                    "values": [
+                        {
+                            "key": "24000",
+                            "name": "Banking and financial services, combinations of activities"
+                        },
+                        {
+                            "key": "24005",
+                            "name": "Banking and financial services, purpose unspecified or does not fit under any other applicable codes"
+                        },
+                        {
+                            "key": "24010",
+                            "name": "Financial policy and administrative management"
+                        },
+                        {
+                            "key": "24020",
+                            "name": "Monetary institutions"
+                        },
+                        {
+                            "key": "24030",
+                            "name": "Formal sector financial intermediaries",
+                            "sum_": 0,
+                            "count_": 5
+                        },
+                        {
+                            "key": "24040",
+                            "name": "Informal/semi-formal financial intermediaries",
+                            "sum_": 0,
+                            "count_": 2
+                        },
+                        {
+                            "key": "24081",
+                            "name": "Education/training in banking and financial services"
+                        }
+                    ]
+                },
+                {
+                    "key": "25*",
+                    "name": "Business and Other Services",
+                    "values": [
+                        {
+                            "key": "25010",
+                            "name": "Business support services and institutions",
+                            "sum_": 0,
+                            "count_": 6
+                        },
+                        {
+                            "key": "25020",
+                            "name": "Privatisation"
+                        },
+                        {
+                            "key": "25081",
+                            "name": "Business education and training"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "3*",
+            "name": "Production Sectors",
+            "values": [
+                {
+                    "key": "31*",
+                    "name": "Agriculture, Forestry, Fishing",
+                    "values": [
+                        {
+                            "key": "311*",
+                            "name": "Agriculture",
+                            "values": [
+                                {
+                                    "key": "31100",
+                                    "name": "Agriculture, combinations of purposes in Agriculture, Agro-industry, Agribusiness"
+                                },
+                                {
+                                    "key": "31105",
+                                    "name": "Agriculture, purpose unspecified or does not fit under any other applicable codes",
+                                    "sum_": 0,
+                                    "count_": 7
+                                },
+                                {
+                                    "key": "31110",
+                                    "name": "Agricultural policy and administrative management"
+                                },
+                                {
+                                    "key": "31120",
+                                    "name": "Agricultural development",
+                                    "sum_": 0,
+                                    "count_": 5
+                                },
+                                {
+                                    "key": "31130",
+                                    "name": "Agricultural land resources"
+                                },
+                                {
+                                    "key": "31140",
+                                    "name": "Agricultural water resources",
+                                    "sum_": 0,
+                                    "count_": 2
+                                },
+                                {
+                                    "key": "31150",
+                                    "name": "Agricultural inputs"
+                                },
+                                {
+                                    "key": "31161",
+                                    "name": "Food crop production"
+                                },
+                                {
+                                    "key": "31162",
+                                    "name": "Industrial crops/export crops"
+                                },
+                                {
+                                    "key": "31163",
+                                    "name": "Livestock"
+                                },
+                                {
+                                    "key": "31164",
+                                    "name": "Agrarian reform"
+                                },
+                                {
+                                    "key": "31165",
+                                    "name": "Agricultural alternative development"
+                                },
+                                {
+                                    "key": "31166",
+                                    "name": "Agricultural extension"
+                                },
+                                {
+                                    "key": "31181",
+                                    "name": "Agricultural education/training"
+                                },
+                                {
+                                    "key": "31182",
+                                    "name": "Agricultural research"
+                                },
+                                {
+                                    "key": "31191",
+                                    "name": "Agricultural services, purpose",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "31192",
+                                    "name": "Plant/post-harvest prot. & pest ctrl"
+                                },
+                                {
+                                    "key": "31193",
+                                    "name": "Agricultural financial services"
+                                },
+                                {
+                                    "key": "31194",
+                                    "name": "Agricultural co-operatives"
+                                },
+                                {
+                                    "key": "31195",
+                                    "name": "Livestock/veterinary services"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "312*",
+                            "name": "Forestry",
+                            "values": [
+                                {
+                                    "key": "31205",
+                                    "name": "Forestry, purpose unspecified or does not fit under any other applicable codes",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "31210",
+                                    "name": "Forestry policy and administrative management",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "31220",
+                                    "name": "Forestry development"
+                                },
+                                {
+                                    "key": "31261",
+                                    "name": "Fuelwood/charcoal"
+                                },
+                                {
+                                    "key": "31281",
+                                    "name": "Forestry education/training"
+                                },
+                                {
+                                    "key": "31282",
+                                    "name": "Forestry research"
+                                },
+                                {
+                                    "key": "31291",
+                                    "name": "Forestry services"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "313*",
+                            "name": "Fishing",
+                            "values": [
+                                {
+                                    "key": "31300",
+                                    "name": "Fishing, combination of activities"
+                                },
+                                {
+                                    "key": "31305",
+                                    "name": "Fishing, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "31310",
+                                    "name": "Fishing policy and administrative management"
+                                },
+                                {
+                                    "key": "31320",
+                                    "name": "Fishery development"
+                                },
+                                {
+                                    "key": "31330",
+                                    "name": "Fishing Development"
+                                },
+                                {
+                                    "key": "31381",
+                                    "name": "Fishery education/training"
+                                },
+                                {
+                                    "key": "31382",
+                                    "name": "Fishery research"
+                                },
+                                {
+                                    "key": "31391",
+                                    "name": "Fishery services"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "31000",
+                            "name": "Agriculture, combination of purposes in Agriculture, Forestry, Fishing"
+                        }
+                    ]
+                },
+                {
+                    "key": "32*",
+                    "name": "Industry, Mining, Construction",
+                    "values": [
+                        {
+                            "key": "321*",
+                            "name": "Industry",
+                            "values": [
+                                {
+                                    "key": "32105",
+                                    "name": "Industry, purpose unspecified (includes manufacturing of goods not specified below) or does not fit under any other applicable codes",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "32110",
+                                    "name": "Industrial policy and administrative management"
+                                },
+                                {
+                                    "key": "32120",
+                                    "name": "Industrial development",
+                                    "sum_": 0,
+                                    "count_": 2
+                                },
+                                {
+                                    "key": "32130",
+                                    "name": "Small and medium-sized enterprises (SME) development",
+                                    "sum_": 0,
+                                    "count_": 1
+                                },
+                                {
+                                    "key": "32140",
+                                    "name": "Cottage industries and handicraft"
+                                },
+                                {
+                                    "key": "32161",
+                                    "name": "Agro-industries"
+                                },
+                                {
+                                    "key": "32162",
+                                    "name": "Forest industries"
+                                },
+                                {
+                                    "key": "32163",
+                                    "name": "Textiles - leather & substitutes"
+                                },
+                                {
+                                    "key": "32164",
+                                    "name": "Chemicals"
+                                },
+                                {
+                                    "key": "32165",
+                                    "name": "Fertilizer plants"
+                                },
+                                {
+                                    "key": "32166",
+                                    "name": "Cement/lime/plaster"
+                                },
+                                {
+                                    "key": "32167",
+                                    "name": "Energy manufacturing"
+                                },
+                                {
+                                    "key": "32168",
+                                    "name": "Pharmaceutical production"
+                                },
+                                {
+                                    "key": "32169",
+                                    "name": "Basic metal industries"
+                                },
+                                {
+                                    "key": "32170",
+                                    "name": "Non-ferrous metal industries"
+                                },
+                                {
+                                    "key": "32171",
+                                    "name": "Engineering"
+                                },
+                                {
+                                    "key": "32172",
+                                    "name": "Transport equipment industry"
+                                },
+                                {
+                                    "key": "32181",
+                                    "name": "Industry education and training"
+                                },
+                                {
+                                    "key": "32182",
+                                    "name": "Technological research and development"
+                                },
+                                {
+                                    "key": "32191",
+                                    "name": "Industry services"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "322*",
+                            "name": "Mineral resources and mining",
+                            "values": [
+                                {
+                                    "key": "32200",
+                                    "name": "Mineral resources and mining, combination of purposes"
+                                },
+                                {
+                                    "key": "32205",
+                                    "name": "Mineral resources and mining, purpose unspecified or does not fit under any other applicable codes"
+                                },
+                                {
+                                    "key": "32210",
+                                    "name": "Mineral/mining policy and administrative management"
+                                },
+                                {
+                                    "key": "32220",
+                                    "name": "Mineral/Metal prospection and exploration"
+                                },
+                                {
+                                    "key": "32261",
+                                    "name": "Coal"
+                                },
+                                {
+                                    "key": "32262",
+                                    "name": "Oil and gas"
+                                },
+                                {
+                                    "key": "32263",
+                                    "name": "Ferrous metals"
+                                },
+                                {
+                                    "key": "32264",
+                                    "name": "Non-ferrous metals"
+                                },
+                                {
+                                    "key": "32265",
+                                    "name": "Precious metals/materials"
+                                },
+                                {
+                                    "key": "32266",
+                                    "name": "Industrial minerals"
+                                },
+                                {
+                                    "key": "32267",
+                                    "name": "Fertilizer minerals"
+                                },
+                                {
+                                    "key": "32268",
+                                    "name": "Off-shore minerals"
+                                },
+                                {
+                                    "key": "32281",
+                                    "name": "Mining Education / Training"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "32000",
+                            "name": "Industry, combination of purposes Industry, Mining and Construction"
+                        },
+                        {
+                            "key": "32310",
+                            "name": "Construction policy and administrative management",
+                            "sum_": 0,
+                            "count_": 3
+                        }
+                    ]
+                },
+                {
+                    "key": "331*",
+                    "name": "Trade policy and regulations",
+                    "values": [
+                        {
+                            "key": "33100",
+                            "name": "Trade policy and regulations, combination of purposes"
+                        },
+                        {
+                            "key": "33105",
+                            "name": "Trade policy and regulations, purpose unspecified (includes trade and trade promotion activities) or does not fit under any other applicable codes"
+                        },
+                        {
+                            "key": "33110",
+                            "name": "Trade policy and administrative management"
+                        },
+                        {
+                            "key": "33120",
+                            "name": "Trade facilitation"
+                        },
+                        {
+                            "key": "33130",
+                            "name": "Regional trade agreements    (rtas)"
+                        },
+                        {
+                            "key": "33140",
+                            "name": "Multilateral trade negotiations"
+                        },
+                        {
+                            "key": "33150",
+                            "name": "Trade-related adjustment"
+                        },
+                        {
+                            "key": "33181",
+                            "name": "Trade education/training"
+                        }
+                    ]
+                },
+                {
+                    "key": "332*",
+                    "name": "Tourism",
+                    "values": [
+                        {
+                            "key": "33210",
+                            "name": "Tourism policy and administrative management",
+                            "sum_": 0,
+                            "count_": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "4*",
+            "name": "Multi-Sector/Cross-Cutting",
+            "values": [
+                {
+                    "key": "41*",
+                    "name": "General Environmental Protection",
+                    "values": [
+                        {
+                            "key": "41000",
+                            "name": "General environmental protection, combinations of purposes",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "41005",
+                            "name": "General environmental protection, purpose unspecified (includes miscellaneous conservation and protection measures not mentioned below) or does not fit under any other applicable codes",
+                            "sum_": 0,
+                            "count_": 2
+                        },
+                        {
+                            "key": "41010",
+                            "name": "Environmental policy and administrative management",
+                            "sum_": 0,
+                            "count_": 6
+                        },
+                        {
+                            "key": "41020",
+                            "name": "Biosphere protection",
+                            "sum_": 0,
+                            "count_": 4
+                        },
+                        {
+                            "key": "41030",
+                            "name": "Bio-diversity",
+                            "sum_": 0,
+                            "count_": 5
+                        },
+                        {
+                            "key": "41040",
+                            "name": "Site preservation"
+                        },
+                        {
+                            "key": "41050",
+                            "name": "Flood prevention/control"
+                        },
+                        {
+                            "key": "41081",
+                            "name": "Environmental education/training"
+                        },
+                        {
+                            "key": "41082",
+                            "name": "Environmental research"
+                        }
+                    ]
+                },
+                {
+                    "key": "43*",
+                    "name": "Other",
+                    "values": [
+                        {
+                            "key": "43010",
+                            "name": "Multisector aid"
+                        },
+                        {
+                            "key": "43030",
+                            "name": "Urban development and management",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "43040",
+                            "name": "Rural development",
+                            "sum_": 0,
+                            "count_": 5
+                        },
+                        {
+                            "key": "43050",
+                            "name": "Non-agricultural alternative development"
+                        },
+                        {
+                            "key": "43081",
+                            "name": "Multisector education/training"
+                        },
+                        {
+                            "key": "43082",
+                            "name": "Research/scientific institutions"
+                        }
+                    ]
+                },
+                {
+                    "key": "42010",
+                    "name": "Women in development"
+                }
+            ]
+        },
+        {
+            "key": "5*",
+            "name": "Commodity Aid And General Program Assistance",
+            "values": [
+                {
+                    "key": "53*",
+                    "name": "Other Commodity Assistance",
+                    "values": [
+                        {
+                            "key": "53030",
+                            "name": "Import support (capital goods)"
+                        },
+                        {
+                            "key": "53040",
+                            "name": "Import support (commodities)"
+                        },
+                        {
+                            "key": "53050",
+                            "name": "Export Support"
+                        }
+                    ]
+                },
+                {
+                    "key": "51010",
+                    "name": "General budget support",
+                    "sum_": 0,
+                    "count_": 3
+                },
+                {
+                    "key": "52010",
+                    "name": "Food aid/Food security programmes"
+                }
+            ]
+        },
+        {
+            "key": "6*",
+            "name": "Action Relating to Debt",
+            "values": [
+                {
+                    "key": "60010",
+                    "name": "Action relating to debt"
+                },
+                {
+                    "key": "60020",
+                    "name": "Debt forgiveness"
+                },
+                {
+                    "key": "60030",
+                    "name": "Relief of multilateral debt"
+                },
+                {
+                    "key": "60040",
+                    "name": "Rescheduling and refinancing"
+                },
+                {
+                    "key": "60061",
+                    "name": "Debt for development swap"
+                },
+                {
+                    "key": "60062",
+                    "name": "Other debt swap"
+                },
+                {
+                    "key": "60063",
+                    "name": "Debt buy-back"
+                }
+            ]
+        },
+        {
+            "key": "7*",
+            "name": "Humanitarian Aid",
+            "values": [
+                {
+                    "key": "72*",
+                    "name": "Emergency Response",
+                    "values": [
+                        {
+                            "key": "72000",
+                            "name": "Emergency Response, combination of purposes"
+                        },
+                        {
+                            "key": "72010",
+                            "name": "Material relief assistance and services"
+                        },
+                        {
+                            "key": "72020",
+                            "name": "Emergency health services/support"
+                        },
+                        {
+                            "key": "72030",
+                            "name": "Water and sanitation services/support"
+                        },
+                        {
+                            "key": "72040",
+                            "name": "Emergency food aid"
+                        },
+                        {
+                            "key": "72050",
+                            "name": "Relief co-ordination; protection and support services"
+                        }
+                    ]
+                },
+                {
+                    "key": "70000",
+                    "name": "Emergency Assistance and Reconstruction, combinations of purposes"
+                },
+                {
+                    "key": "73010",
+                    "name": "Reconstruction relief and rehabilitation"
+                },
+                {
+                    "key": "74010",
+                    "name": "Disaster prevention and preparedness"
+                }
+            ]
+        },
+        {
+            "key": "9*",
+            "name": "Other",
+            "values": [
+                {
+                    "key": "92*",
+                    "name": "Support to Non-Governmental Organizations and Government Organizations",
+                    "values": [
+                        {
+                            "key": "92000",
+                            "name": "Support to non-governmental organizations and government organizations, combination of purposes"
+                        },
+                        {
+                            "key": "92005",
+                            "name": "Support to non-governmental organizations and government organizations, purpose unspecified or does not fit under any other applicable codes"
+                        },
+                        {
+                            "key": "92010",
+                            "name": "Support to national ngos"
+                        },
+                        {
+                            "key": "92020",
+                            "name": "Support to international ngos"
+                        },
+                        {
+                            "key": "92030",
+                            "name": "Support to local and regional ngos"
+                        }
+                    ]
+                },
+                {
+                    "key": "99*",
+                    "name": "Unallocated/Unspecified",
+                    "values": [
+                        {
+                            "key": "99000",
+                            "name": "Unknown"
+                        },
+                        {
+                            "key": "99810",
+                            "name": "Sectors not specified",
+                            "sum_": 0,
+                            "count_": 1
+                        },
+                        {
+                            "key": "99820",
+                            "name": "Promotion of development awareness"
+                        }
+                    ]
+                },
+                {
+                    "key": "91010",
+                    "name": "Administrative costs"
+                },
+                {
+                    "key": "93010",
+                    "name": "Refugees in donor countries"
+                }
+            ]
+        }
+    ]
+}

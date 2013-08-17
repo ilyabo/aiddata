@@ -48,75 +48,19 @@
 
     queue()
       .defer((cb) ->
-        fs.readFile 'data/static/data/purpose-categories.json', (err, result) ->
+        fs.readFile 'data/static/data/purposes.json', (err, result) ->
           result = JSON.parse(result) unless err?
-          console.log "Purpose categories file loaded"
+          console.log "Purposes file loaded"
           cb(err, result)
-      )
-      .defer((cb) ->
-        # console.log "Loading category list from postgres..."
-        # pg.sql(
-        #   "select
-        #       distinct(coalesced_purpose_code) as code,
-        #       coalesced_purpose_name as name
-        #     from aiddata2
-        #     order by coalesced_purpose_name", 
-        #     (err, data) ->
-        #       if err?
-        #         console.log "Category list couldn't be loaded: " + err
-        #       else
-        #         console.log "Category list loaded from postgres"
-        #       cb(err, data)
-        # )
-        cb(null, { 'rows': [] })
       )
       .await (err, results) =>
         if err? then callback(err)
         else
-          [ cats, { 'rows': purposes } ] = results
+          [ purposes ] = results
 
-          # insert purpose into the tree of the categories
-          # by so that the purpose code corresponds to the prefix
-          insert = (p, tree) ->
-            if tree.values?
-              for e in tree.values
-                if p.code?.indexOf(e.code) is 0  # startsWith
-                  return insert(p, e)
-
-            tree.values ?= []
-            tree.values.push { name:p.name, code:p.code }
-            tree
+          callback(null, purposes)
 
 
-
-          insert(p, cats) for p in pu.groupPurposesByCode purposes
-
-          console.log "Purpose tree was built"
-          callback(null, cats)
-
-
-          # cats = pu.provideWithPurposeCategories pu.groupPurposesByCode data.rows
-
-          # nested = d3.nest()
-          #   .key((p) -> p.category)
-          #   .key((p) -> p.subcategory)
-          #   #.key((p) -> p.subsubcategory)
-          #   #.key((p) -> p.name)
-          #   # .rollup((ps) -> 
-          #   #   #if ps.length == 1 then ps[0].code else ps.map (p) -> p.code
-          #   #   ps.map (p) ->
-          #   #     key : p.code
-          #   #     name : p.name
-          #   # )
-          #   .entries(cats)
-
-          # data = aidutils.utils.aiddata.purposes.removeSingleChildNodes {
-          #   key : "AidData"
-          #   values : nested
-          # }
-
-
-          #callback null, data
 
 
 
@@ -409,24 +353,25 @@
         else
           [ purposeTree, flowsByPurpose ] = results
 
+
           # provide the leaves (not the parent nodes!) with totals
 
           recurse = (tree) ->
             unless tree.values?
               # leaf nodes
               t =   
-                key : tree.code
+                key : tree.key
                 name : tree.name
                 #totals : flowsByPurpose[tree.code]
 
               # flatten sum and count attrs to simplify "provideWithTotals"
-              for date, vals of flowsByPurpose[tree.code]
+              for date, vals of flowsByPurpose[tree.key]
                 for name, v of vals
                   t["#{name}_#{date}"] = v
 
             else
               t =
-                key : tree.code + "*"
+                key : tree.key  #+ "*"
                 name : tree.name
                 values : (recurse(n) for n in tree.values)
 
