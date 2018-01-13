@@ -4,7 +4,9 @@ require('zappajs').run config.port, ->
   
 
   express = require('express')
+  compression = require('compression')
   @use 'partials'
+
 
 
   @include './views'
@@ -50,7 +52,7 @@ require('zappajs').run config.port, ->
   @include './frontend/query-history'
   @include './frontend/breaknsplit'
 
-  @app.use express.compress()   # this should enable gzipping, but does not work
+  @app.use(compression())
   @use 'bodyParser', 'methodOverride', @app.router
   @use 'static': __dirname + '/../static'
   @use 'static': __dirname + '/../data/static'

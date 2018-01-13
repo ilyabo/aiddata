@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "coffee-script": "^1.4.0",
+    "compression": "^1.7.1",
     "csv": "0.0.19",
     "d3": "^3.5.17",
     "express": "3.x",
