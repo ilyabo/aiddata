@@ -35,7 +35,7 @@
         script src: 'js/browser-check.js'
         script src: 'libs/jquery/jquery-1.7.1.min.js'
         script src: 'libs/bootstrap/js/bootstrap.js'
-        script src: 'd3.v2.js'
+        script src: 'd3.js'
 
       body ->
         div class: 'container', -> @body

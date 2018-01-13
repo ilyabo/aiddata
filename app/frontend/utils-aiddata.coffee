@@ -1,6 +1,6 @@
 @include = ->
 
-  @coffee '/coffee/utils-aiddata.js' : -> 
+  @coffee '/coffee/utils-aiddata.js' : ->
   
     fmt = d3.format(",.1f")
 
