@@ -589,9 +589,9 @@
 
           createNodeTimeSeries(this, d, i)
 
-#          $(this).tipsy("show")
-#          $(tipsy.$tip)  # fix vertical position
-#              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+          $(this).tipsy("show")
+          $(tipsy.$tip)  # fix vertical position
+              .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
 
         .on 'mouseout', (d, i) ->
           d3.select(this).classed("highlighted", false)
@@ -602,7 +602,7 @@
           if selectedNode != this
             tseriesPanel.remove(d[conf.nodeIdAttr])
 
-#          $(this).tipsy("hide")
+          $(this).tipsy("hide")
 
 
         force.nodes(nodes)
@@ -634,12 +634,12 @@
         #unless isUpdate
         #  $(document).keyup (e) -> if e.keyCode == 27 then clearNodeSelection()
 
-        # $('g.bubble').tipsy
-        #   gravity: 'w'
-        #   html: true
-        #   opacity: 0.9
-        #   trigger: "manual"
-        #   title: -> bubbleTooltip(d3.select(this).data()[0])
+         $('g.bubble').tipsy
+           gravity: 'w'
+           html: true
+           opacity: 0.9
+           trigger: "manual"
+           title: -> bubbleTooltip(d3.select(this).data()[0])
 
 
         ###
@@ -758,14 +758,14 @@
               this.parentNode.appendChild(this)
 
             createFlowTimeSeries(this, d, i)
-#            $(this).tipsy("show")
+            $(this).tipsy("show")
 
 
-#            $(tipsy.$tip)
-#                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
-#                .css('left', d3.event.pageX + 10)
+            $(tipsy.$tip)
+                .css('top', d3.event.pageY-($(tipsy.$tip).outerHeight()/2))
+                .css('left', d3.event.pageX + 10)
           ).on("mouseout", (d, i) ->
-#            $(this).tipsy("hide")
+            $(this).tipsy("hide")
             tseriesPanel.remove("flow" + i)
           )
 
@@ -776,12 +776,12 @@
                 #.attr("opacity", 1)
 
 
-#        $('g.flows line').tipsy
-#          gravity: 'w'
-#          opacity: 0.9
-#          html: true
-#          trigger: "manual"
-#          title: -> flowTooltip(d3.select(this).datum())
+        $('g.flows line').tipsy
+          gravity: 'w'
+          opacity: 0.9
+          html: true
+          trigger: "manual"
+          title: -> flowTooltip(d3.select(this).datum())
 
 
 
