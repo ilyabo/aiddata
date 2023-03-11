@@ -7,19 +7,11 @@ Try in action [here][demo].
 
 To install dependencies run
 
-    npm install
-
-or
-
-    yarn install
+    npm install  # or   yarn install
 
 Then, to run locally:
 
-    npm start
-
-or
-
-     yarn start
+    npm start  # or  yarn start
 
 Then, open in browser: [http://localhost:5555](http://localhost:5555).
 
