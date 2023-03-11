@@ -1,5 +1,8 @@
 # Visualizations of the [AidData][aiddata].
 
+![image](https://user-images.githubusercontent.com/351828/224481037-fee5fcb6-6211-4051-ae3f-1317b2193446.png)
+
+
 Try in action [here][demo].
 
 To install dependencies run
