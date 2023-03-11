@@ -91,10 +91,6 @@
             <%- @body %>
 
           </div> <!-- /container -->
-
-          ''' + config.visitorTrackingCode + '''
-
-
         </body>
       </html>
     '''
