@@ -113,10 +113,11 @@
       chart.on = (eventName, listener) -> 
         (eventListeners[eventName] ?= []).push(listener); chart
 
-      fire = (eventName, args...) -> 
+      fire = (eventName) -> 
         listeners = eventListeners[eventName]
+        rest = Array.from(arguments).slice(1)
         if listeners?
-          l.apply(chart, args) for l in listeners
+          l.apply(chart, rest) for l in listeners
 
 
       chart.moveRule = (date) ->

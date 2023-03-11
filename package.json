@@ -15,7 +15,7 @@
     "url": "http://github.com/ilyabo/aiddata.git"
   },
   "dependencies": {
-    "coffee-script": "^1.4.0",
+    "coffee-script": "^1.12.7",
     "compression": "^1.7.1",
     "csv": "0.0.19",
     "d3": "^3.5.17",
@@ -31,6 +31,9 @@
     "node": "8.9.0"
   },
   "scripts": {
-    "start": "coffee app/app.coffee"
+    "start": "PORT=5555 coffee app/app.coffee"
+  },
+  "volta": {
+    "node": "8.9.0"
   }
 }
