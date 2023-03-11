@@ -16,6 +16,19 @@ or
 
      yarn start
 
+Then open [http://localhost:5555](http://localhost:5555) in browser.
+
+# Run in Docker
+Build an image:
+
+    docker build -t aiddata .
+
+Run the container:
+
+    docker run --name aiddata -dp 5555:5555 aiddata
+
+# Heroku
+
 Install [foreman][foreman] (it is included in the Heroku toolbelt, see below).
 
 Then, run
