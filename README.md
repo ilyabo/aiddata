@@ -1,9 +1,8 @@
-# Visualizations of the [AidData][aiddata].
+# Visualizations of the [AidData](http://aiddata.org)
 
 ![image](https://user-images.githubusercontent.com/351828/224481037-fee5fcb6-6211-4051-ae3f-1317b2193446.png)
 
-
-Try in action [here][demo].
+Try in action [here](https://aiddata.boyandin.me/).
 
 To install dependencies run
 
