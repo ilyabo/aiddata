@@ -12,7 +12,7 @@ Then, to run locally:
 
     npm start  # or  yarn start
 
-Then, open in browser: [http://localhost:5555](http://localhost:5555).
+Then, open in browser: [http://localhost:8080](http://localhost:8080).
 
 ## Run in Docker
 
@@ -22,7 +22,7 @@ Build an image:
 
 Run the container:
 
-    docker run --name aiddata -dp 5555:5555 aiddata
+    docker run --name aiddata -dp 8080:8080 aiddata
 
 ## Heroku
 

@@ -31,7 +31,7 @@
     "node": "8.17.0"
   },
   "scripts": {
-    "start": "PORT=5555 coffee app/app.coffee"
+    "start": "PORT=8080 coffee app/app.coffee"
   },
   "volta": {
     "node": "8.17.0"
