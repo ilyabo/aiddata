@@ -4,13 +4,10 @@
 
 Try in action [here](https://aiddata.boyandin.me/).
 
-To install dependencies run
+## Running locally
 
     npm install  # or   yarn install
-
-Then, to run locally:
-
-    npm start  # or  yarn start
+    npm start    # or   yarn start
 
 Then, open in browser: [http://localhost:8080](http://localhost:8080).
 
